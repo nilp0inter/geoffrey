@@ -3,10 +3,7 @@ Geoffrey
 
 Geoffrey is a local continuous integration server.
 
-.. image:: https://raw.githubusercontent.com/nilp0inter/geoffrey/develop/src/geoffrey/web/assets/goeffrey.jpg
-
-    :width: 60%
-
+.. image:: https://raw.githubusercontent.com/nilp0inter/geoffrey/develop/src/geoffrey/web/assets/geoffrey.jpg
 
 Dependencies
 ------------
