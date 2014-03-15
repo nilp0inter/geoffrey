@@ -17,14 +17,12 @@ from fnmatch import fnmatch
 from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
 from rainfall.web import Application, HTTPHandler
 
-from .config import Config
+from geoffrey import default
+from geoffrey.config import Config
 
 logging.basicConfig(level=logging.INFO)
 
 queue = asyncio.Queue()
-HOST = '127.0.0.1'
-WEBSERVER_PORT = 8888
-WEBSOCKET_PORT = 8765
 
 
 @asyncio.coroutine
@@ -103,12 +101,12 @@ def watch_files(paths):
             notifier.read_events()
 
 
-
 def get_app(config, args):
     main = config['geoffrey']
-    host = main.get('host', HOST)
-    websocket_port = main.get('websocket_port', WEBSOCKET_PORT)
-    webserver_port = main.get('webserver_port', WEBSERVER_PORT)
+    host = main.get('host', default.HOST)
+    websocket_port = main.get('websocket_port', default.WEBSOCKET_PORT)
+    webserver_port = main.get('webserver_port', default.WEBSERVER_PORT)
+
     class DashboardHandler(HTTPHandler):
         def handle(self, request):
             return self.render('index.html',
@@ -130,19 +128,19 @@ def get_app(config, args):
     )
     return app
 
+
 def main():
     parser = argparse.ArgumentParser()
-    configfile = os.path.join(os.path.expanduser('~'), '.goeffreyrc')
-    parser.add_argument('-c', '--config', default=configfile)
+    parser.add_argument('-c', '--config', default=default.GEOFFREY_RC_FILE)
     parser.add_argument('path', nargs='+')
     args = parser.parse_args()
     print(args.config)
     config = Config(args.config, create=True)
 
     main = config['geoffrey']
-    host = main.get('host', HOST)
-    websocket_port = main.get('websocket_port', WEBSOCKET_PORT)
-    webserver_port = main.get('webserver_port', WEBSERVER_PORT)
+    host = main.get('host', default.HOST)
+    websocket_port = main.get('websocket_port', default.WEBSOCKET_PORT)
+    webserver_port = main.get('webserver_port', default.WEBSERVER_PORT)
 
     loop = asyncio.get_event_loop()
 

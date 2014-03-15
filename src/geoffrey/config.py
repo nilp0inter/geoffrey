@@ -1,12 +1,13 @@
 import os
 import configparser
 
-GEOFFREY_CONFIG_TEMPLATE = """[geoffrey]
-host=127.0.0.1
-webserver_port=8555
-websocket_port=8556
+from geoffrey import default
 
-"""
+GEOFFREY_CONFIG_TEMPLATE = """[geoffrey]
+host={default.HOST}
+webserver_port={default.WEBSERVER_PORT}
+websocket_port={default.WEBSOCKET_PORT}
+""".format(default=default)
 
 
 class Config(configparser.ConfigParser):

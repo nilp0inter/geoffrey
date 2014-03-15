@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='geoffrey',
       version='0.0.1',
@@ -15,7 +15,8 @@ setup(name='geoffrey',
           'pyinotify==0.9.4',
       ],
       packages=['geoffrey'],
-      package_dir={'geoffrey': 'src/geoffrey'},
+      package_dir={'': 'src'},
+      include_package_data=True,
       package_data={'geoffrey': ['web/*']},
       entry_points={
           "console_scripts": ["geoffrey = geoffrey.server:main"]
