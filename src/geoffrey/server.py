@@ -19,10 +19,12 @@ from rainfall.web import Application, HTTPHandler
 
 from geoffrey import default
 from geoffrey.config import Config
+from geoffrey.plugin import EventManager, get_plugins
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
-queue = asyncio.Queue()
+event_queue = asyncio.Queue()
+output_queue = asyncio.Queue()
 
 
 @asyncio.coroutine
@@ -34,45 +36,17 @@ def websocket_server(websocket, uri):
     logging.info("New connection from %s. %s", uri, websocket)
 
     while True:
-        event = yield from queue.get()
-        filename = os.path.join(event.path, event.name)
-        if fnmatch(filename, '*.py'):
-            print("< {}".format(filename))
-            _, stdout, _ = yield from getstatusoutput(
-                '/usr/local/bin/pylint', filename)
-            #_, stdout, _ = yield from getstatusoutput(
-            #    '/home/nil/Envs/geoffrey/bin/radon',
-            #    'cc', '-a',
-            #    filename)
-            print("> {}".format(stdout))
-            try:
-                yield from websocket.send(stdout.decode('utf-8'))
-            except websockets.exceptions.InvalidState as err:
-                logging.error('Invalid socket state %s', err)
-                return False
+        output = yield from output_queue.get()
+        try:
+            yield from websocket.send(output.decode('utf-8'))
+        except websockets.exceptions.InvalidState as err:
+            logging.error('Invalid socket state %s', err)
+            yield from output_queue.put(output)
+            return False
 
 
 @asyncio.coroutine
-def getstatusoutput(*args):
-    """
-    Devuelve el resultado de la ejecución de un comando.
-
-    """
-    proc = yield from asyncio.create_subprocess_exec(*args,
-                                                     stdout=subprocess.PIPE,
-                                                     stderr=subprocess.STDOUT)
-    try:
-        stdout, stderr = yield from proc.communicate()
-    except:
-        proc.kill()
-        yield from proc.wait()
-        raise
-    exitcode = yield from proc.wait()
-    return (exitcode, stdout, stderr)
-
-
-@asyncio.coroutine
-def watch_files(paths):
+def watch_files(paths, mask):
     """
     Vigila los ficheros de path y encola en queue los eventos producidos.
 
@@ -83,7 +57,7 @@ def watch_files(paths):
     @asyncio.coroutine
     def send_event(event):
         """Encola un evento en la cola."""
-        yield from queue.put(event)
+        yield from event_queue.put(event)
 
     notifier = ThreadedNotifier(
         watcher,
@@ -144,10 +118,18 @@ def main():
 
     loop = asyncio.get_event_loop()
 
+    em = EventManager()
+    plugins = get_plugins(config, output_queue)
+    for subscriptions in plugins.call('get_subscriptions'):
+        em.add_subscriptions(subscriptions)
+
+    mask = em.get_mask()
+
     asyncio.Task(websockets.serve(websocket_server, host, websocket_port))
 
-    asyncio.Task(watch_files(args.path))
+    asyncio.Task(watch_files(args.path, mask=mask))
+    asyncio.Task(em.consume_events(event_queue, output_queue))
 
-    webbrowser.open('http://{host}:{port}'.format(host=host,
-                                                  port=webserver_port))
+    #webbrowser.open('http://{host}:{port}'.format(host=host,
+    #                                              port=webserver_port))
     get_app(config, args).run()

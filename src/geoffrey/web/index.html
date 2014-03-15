@@ -55,9 +55,6 @@
     var pre = document.createElement("pre");
     pre.style.wordWrap = "break-word";
     pre.innerHTML = message;
-    while (output.firstChild) {
-        output.removeChild(output.firstChild);
-    }
     output.appendChild(pre);
   }
 
