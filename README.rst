@@ -3,6 +3,11 @@ Geoffrey
 
 Geoffrey is a local continuous integration server.
 
+Dependencies
+------------
+
+Geoffrey works on Python>=3.3 .
+
 Install
 -------
 
