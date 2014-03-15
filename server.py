@@ -3,6 +3,7 @@ Servidor de geoffrey.
 
 """
 # pylint: disable=I0011, E1101
+import argparse
 from asyncio import subprocess
 
 import webbrowser
@@ -16,13 +17,14 @@ from fnmatch import fnmatch
 from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
 from rainfall.web import Application, HTTPHandler
 
+from config import Config
+
 logging.basicConfig(level=logging.INFO)
 
 queue = asyncio.Queue()
-WEBSERVER_HOST = WEBSOCKET_HOST = '127.0.0.1'
+HOST = '127.0.0.1'
 WEBSERVER_PORT = 8888
 WEBSOCKET_PORT = 8765
-MONITOR_PATH = os.path.realpath(sys.argv[1])
 
 
 @asyncio.coroutine
@@ -38,14 +40,14 @@ def websocket_server(websocket, uri):
         filename = os.path.join(event.path, event.name)
         if fnmatch(filename, '*.py'):
             print("< {}".format(filename))
-            #_, stdout, _ = yield from getstatusoutput(
-            #    '/home/nil/Envs/geoffrey/bin/pylint',
-            #    '--rcfile=/home/nil/Projects/geoffrey/.pylintrc',
-            #    filename)
             _, stdout, _ = yield from getstatusoutput(
-                '/home/nil/Envs/geoffrey/bin/radon',
-                'cc', '-a',
+                '/home/nil/Envs/geoffrey/bin/pylint',
+                '--rcfile=/home/nil/Projects/geoffrey/.pylintrc',
                 filename)
+            #_, stdout, _ = yield from getstatusoutput(
+            #    '/home/nil/Envs/geoffrey/bin/radon',
+            #    'cc', '-a',
+            #    filename)
             print("> {}".format(stdout))
             try:
                 yield from websocket.send(stdout.decode('utf-8'))
@@ -74,7 +76,7 @@ def getstatusoutput(*args):
 
 
 @asyncio.coroutine
-def watch_files(path):
+def watch_files(paths):
     """
     Vigila los ficheros de path y encola en queue los eventos producidos.
 
@@ -92,7 +94,9 @@ def watch_files(path):
         lambda e: asyncio.get_event_loop().call_soon_threadsafe(
             asyncio.async, send_event(e)))
 
-    watcher.add_watch(path, mask, rec=True)
+    for path in paths:
+        watcher.add_watch(path, mask, rec=True)
+
     while True:
         notifier.process_events()
         event_present = yield from asyncio.get_event_loop().run_in_executor(
@@ -101,37 +105,53 @@ def watch_files(path):
             notifier.read_events()
 
 
-class DashboardHandler(HTTPHandler):
-    def handle(self, request):
-        return self.render('index.html',
-                           host=WEBSOCKET_HOST,
-                           port=WEBSOCKET_PORT,
-                           path=MONITOR_PATH)
 
-settings = {
-    'template_path': os.path.join(os.path.dirname(__file__), "web"),
-    'host': WEBSERVER_HOST,
-    'port': str(WEBSERVER_PORT),
-}
+def get_app(config, args):
+    main = config['geoffrey']
+    host = main.get('host', HOST)
+    websocket_port = main.get('websocket_port', WEBSOCKET_PORT)
+    webserver_port = main.get('webserver_port', WEBSERVER_PORT)
+    class DashboardHandler(HTTPHandler):
+        def handle(self, request):
+            return self.render('index.html',
+                               host=host,
+                               port=websocket_port,
+                               path=args.path)
 
-app = Application(
-    {
-        r'^/$': DashboardHandler(),
-    },
-    settings=settings
-)
+    settings = {
+        'template_path': os.path.join(os.path.dirname(__file__), "web"),
+        'host': host,
+        'port': str(webserver_port),
+    }
+
+    app = Application(
+        {
+            r'^/$': DashboardHandler(),
+        },
+        settings=settings
+    )
+    return app
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    configfile = os.path.join(os.path.expanduser('~'), '.goeffreyrc')
+    parser.add_argument('-c', '--config', default=configfile)
+    parser.add_argument('path', nargs='+')
+    args = parser.parse_args()
+    print(args.config)
+    config = Config(args.config, create=True)
 
+    main = config['geoffrey']
+    host = main.get('host', HOST)
+    websocket_port = main.get('websocket_port', WEBSOCKET_PORT)
+    webserver_port = main.get('webserver_port', WEBSERVER_PORT)
 
     loop = asyncio.get_event_loop()
 
-    asyncio.Task(websockets.serve(websocket_server,
-                                  WEBSOCKET_HOST,
-                                  WEBSOCKET_PORT)),
-    asyncio.Task(watch_files(MONITOR_PATH))
+    asyncio.Task(websockets.serve(websocket_server, host, websocket_port))
 
-    webbrowser.open(
-        'http://{host}:{port}'.format(
-            host=WEBSERVER_HOST, port=WEBSERVER_PORT))
-    app.run()
+    asyncio.Task(watch_files(args.path))
+
+    webbrowser.open('http://{host}:{port}'.format(host=host,
+                                                  port=webserver_port))
+    get_app(config, args).run()
