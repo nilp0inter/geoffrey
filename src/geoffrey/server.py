@@ -17,7 +17,7 @@ from fnmatch import fnmatch
 from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
 from rainfall.web import Application, HTTPHandler
 
-from config import Config
+from .config import Config
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,9 +41,7 @@ def websocket_server(websocket, uri):
         if fnmatch(filename, '*.py'):
             print("< {}".format(filename))
             _, stdout, _ = yield from getstatusoutput(
-                '/home/nil/Envs/geoffrey/bin/pylint',
-                '--rcfile=/home/nil/Projects/geoffrey/.pylintrc',
-                filename)
+                '/usr/local/bin/pylint', filename)
             #_, stdout, _ = yield from getstatusoutput(
             #    '/home/nil/Envs/geoffrey/bin/radon',
             #    'cc', '-a',
@@ -132,7 +130,7 @@ def get_app(config, args):
     )
     return app
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     configfile = os.path.join(os.path.expanduser('~'), '.goeffreyrc')
     parser.add_argument('-c', '--config', default=configfile)
