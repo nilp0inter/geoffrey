@@ -14,8 +14,15 @@ import websockets
 from fnmatch import fnmatch
 
 from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
+from rainfall.web import Application, HTTPHandler
 
 logging.basicConfig(level=logging.INFO)
+
+queue = asyncio.Queue()
+WEBSERVER_HOST = WEBSOCKET_HOST = '127.0.0.1'
+WEBSERVER_PORT = 8888
+WEBSOCKET_PORT = 8765
+MONITOR_PATH = os.path.realpath(sys.argv[1])
 
 
 @asyncio.coroutine
@@ -26,8 +33,6 @@ def websocket_server(websocket, uri):
     """
     logging.info("New connection from %s. %s", uri, websocket)
 
-    queue = asyncio.Queue()
-    asyncio.async(watch_files(queue, sys.argv[1]))
     while True:
         event = yield from queue.get()
         filename = os.path.join(event.path, event.name)
@@ -42,7 +47,11 @@ def websocket_server(websocket, uri):
                 'cc', '-a',
                 filename)
             print("> {}".format(stdout))
-            yield from websocket.send(stdout.decode('utf-8'))
+            try:
+                yield from websocket.send(stdout.decode('utf-8'))
+            except websockets.exceptions.InvalidState as err:
+                logging.error('Invalid socket state %s', err)
+                return False
 
 
 @asyncio.coroutine
@@ -65,7 +74,7 @@ def getstatusoutput(*args):
 
 
 @asyncio.coroutine
-def watch_files(queue, path):
+def watch_files(path):
     """
     Vigila los ficheros de path y encola en queue los eventos producidos.
 
@@ -92,8 +101,37 @@ def watch_files(queue, path):
             notifier.read_events()
 
 
+class DashboardHandler(HTTPHandler):
+    def handle(self, request):
+        return self.render('index.html',
+                           host=WEBSOCKET_HOST,
+                           port=WEBSOCKET_PORT,
+                           path=MONITOR_PATH)
+
+settings = {
+    'template_path': os.path.join(os.path.dirname(__file__), "web"),
+    'host': WEBSERVER_HOST,
+    'port': str(WEBSERVER_PORT),
+}
+
+app = Application(
+    {
+        r'^/$': DashboardHandler(),
+    },
+    settings=settings
+)
+
 if __name__ == '__main__':
-    webbrowser.open('file:///home/nil/Projects/geoffrey/websocket.html')
-    asyncio.get_event_loop().run_until_complete(
-        websockets.serve(websocket_server, 'localhost', 8765))
-    asyncio.get_event_loop().run_forever()
+
+
+    loop = asyncio.get_event_loop()
+
+    asyncio.Task(websockets.serve(websocket_server,
+                                  WEBSOCKET_HOST,
+                                  WEBSOCKET_PORT)),
+    asyncio.Task(watch_files(MONITOR_PATH))
+
+    webbrowser.open(
+        'http://{host}:{port}'.format(
+            host=WEBSERVER_HOST, port=WEBSERVER_PORT))
+    app.run()
