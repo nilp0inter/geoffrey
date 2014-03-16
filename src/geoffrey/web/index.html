@@ -36,7 +36,18 @@
 
   function onMessage(evt)
   {
-    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    obj = JSON.parse(evt.data);
+    writeToScreen('<span style="color: orange;">TYPE: ' + obj.type +'</span><br/>')
+    if (obj.type == 'Text') {
+        writeToScreen('<span style="color: blue;"><pre>RESPONSE: ' + obj.content +'</pre></span>');
+    } else if (obj.type == 'Image') {
+        writeToScreen('<span style="color: blue;"><img src="' + obj.content + '"></span>');
+    } else if (obj.type == 'HTML') {
+        writeToScreen('<span>' + obj.content + '</span>');
+    } else {
+        writeToScreen('<span style="color: red;">UNSUPPORTED DATA TYPE</span>');
+    }
+    writeToScreen('<hr>');
   }
 
   function onError(evt)
