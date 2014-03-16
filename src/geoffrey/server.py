@@ -38,7 +38,8 @@ def websocket_server(websocket, uri):
     while True:
         output = yield from output_queue.get()
         try:
-            yield from websocket.send(output.decode('utf-8'))
+            raw = output.dump()
+            yield from websocket.send(raw)
         except websockets.exceptions.InvalidState as err:
             logging.error('Invalid socket state %s', err)
             yield from output_queue.put(output)

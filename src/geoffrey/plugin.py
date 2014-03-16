@@ -3,6 +3,7 @@ import asyncio
 from asyncio import subprocess
 from fnmatch import fnmatchcase
 from collections import defaultdict
+import logging
 
 from straight.plugin import load
 from straight.plugin.manager import PluginManager
@@ -11,6 +12,7 @@ from geoffrey.events import EVENTS
 from functools import reduce
 from operator import or_
 
+logger = logging.getLogger(__name__)
 
 class EventManager:
     def __init__(self):
@@ -31,7 +33,7 @@ class EventManager:
     def consume_events(self, queue, output):
 
         def done(future):
-            yield from output.put(future.result())
+            return future.result()
 
         while True:
             event = yield from queue.get()
