@@ -16,7 +16,6 @@ Install
 Geoffrey can be installed via PyPI::
 
    $ python setup.py install
-   $ pip install --upgrade git+https://github.com/aaugustin/websockets.git  # Temporal FIX
 
 Running
 -------
