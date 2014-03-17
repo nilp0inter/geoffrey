@@ -14,10 +14,11 @@ setup(name='geoffrey',
           'websockets==2.0',
           'pyinotify==0.9.4',
       ],
-      packages=['geoffrey'],
+      packages=find_packages('src'),
+      namespace_package=['geoffrey.plugins'],
       package_dir={'': 'src'},
       include_package_data=True,
-      package_data={'geoffrey': ['web/*']},
+      package_data={'geoffrey': ['web/*', 'web/assets/*.*']},
       entry_points={
           "console_scripts": ["geoffrey = geoffrey.server:main"]
       },
