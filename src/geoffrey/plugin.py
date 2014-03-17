@@ -23,7 +23,12 @@ class EventManager:
         Get event mask from subscriptions.
 
         """
-        return reduce(or_, self.subscriptions.keys())
+        subscriptions = list(self.subscriptions.keys())
+        if subscriptions:
+            return reduce(or_, subscriptions)
+        else:
+            # TODO: Test this
+            return 0
 
     def add_subscriptions(self, subscriptions):
         for subscription in subscriptions:
