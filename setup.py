@@ -18,7 +18,7 @@ setup(name='geoffrey',
       namespace_package=['geoffrey.plugins'],
       package_dir={'': 'src'},
       include_package_data=True,
-      package_data={'geoffrey': ['web/*', 'web/assets/*.*']},
+      package_data={'geoffrey': ['web/*.*', 'web/assets/*.*']},
       entry_points={
           "console_scripts": ["geoffrey = geoffrey.server:main"]
       },
