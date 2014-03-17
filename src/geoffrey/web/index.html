@@ -2,11 +2,11 @@
 
 <meta charset="utf-8" />
 
-<title>Geoffrey</title>
+<title>Geoffrey [ {{ path }} ]</title>
 
 <script language="javascript" type="text/javascript">
 
-  var wsUri = "ws://localhost:8765/";
+  var wsUri = "ws://{{ host }}:{{ port }}/";
   var output;
 
   function init()
@@ -36,7 +36,18 @@
 
   function onMessage(evt)
   {
-    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    obj = JSON.parse(evt.data);
+    writeToScreen('<span style="color: orange;">TYPE: ' + obj.type +'</span><br/>')
+    if (obj.type == 'Text') {
+        writeToScreen('<span style="color: blue;"><pre>RESPONSE: ' + obj.content +'</pre></span>');
+    } else if (obj.type == 'Image') {
+        writeToScreen('<span style="color: blue;"><img src="' + obj.content + '"></span>');
+    } else if (obj.type == 'HTML') {
+        writeToScreen('<span>' + obj.content + '</span>');
+    } else {
+        writeToScreen('<span style="color: red;">UNSUPPORTED DATA TYPE</span>');
+    }
+    writeToScreen('<hr>');
   }
 
   function onError(evt)
@@ -55,9 +66,6 @@
     var pre = document.createElement("pre");
     pre.style.wordWrap = "break-word";
     pre.innerHTML = message;
-    while (output.firstChild) {
-        output.removeChild(output.firstChild);
-    }
     output.appendChild(pre);
   }
 
@@ -65,7 +73,7 @@
 
 </script>
 
-<h2>Geoffrey</h2>
+<h2>Geoffrey [ {{ path }} ]</h2>
 
 <div id="output"></div>
 
