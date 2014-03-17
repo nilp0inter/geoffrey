@@ -13,7 +13,12 @@ Geoffrey works on Python>=3.3 .
 Install
 -------
 
-Geoffrey can be installed via PyPI::
+Clone the repository and submodules::
+
+   $ git clone --recursive https://github.com/nilp0inter/geoffrey.git
+   $ cd geoffrey
+
+Install as a standard python package::
 
    $ python setup.py install
 
