@@ -106,7 +106,7 @@ Informa de una diferencia con respecto a la última versión de un fichero.
      "username":"nil",
      "namespace":"filesystem",
      "object":"/home/nil/Projects/geoffrey/setup.py",
-     "type":"change",
+     "type":"changed",
      "source":"filediff",
      "data":{"patch": "..."}
    }
@@ -123,7 +123,7 @@ Se ha borrado un fichero del disco.
      "username":"nil",
      "namespace":"filesystem",
      "object":"/home/nil/Projects/geoffrey/deleteme.txt",
-     "type":"delete",
+     "type":"deleted",
      "source":"filesystem",
      "data":null
    }
