@@ -5,8 +5,8 @@ from fnmatch import fnmatchcase
 from collections import defaultdict
 import logging
 
-from straight.plugin import load
-from straight.plugin.manager import PluginManager
+from geoffrey.deps.straight.plugin import load
+from geoffrey.deps.straight.plugin.manager import PluginManager
 
 from geoffrey.events import EVENTS
 from functools import reduce
