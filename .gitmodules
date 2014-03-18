@@ -1,3 +1,6 @@
 [submodule "src/geoffrey/deps/straight"]
 	path = src/geoffrey/deps/straight
 	url = https://github.com/nilp0inter/straight.plugin.git
+[submodule "src/geoffrey/deps/aiobottle"]
+	path = src/geoffrey/deps/aiobottle
+	url = https://github.com/nilp0inter/aiobottle.git
