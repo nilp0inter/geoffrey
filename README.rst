@@ -88,3 +88,36 @@ Running
 2. Open a browser and point to http://localhost:8700.
 3. Make some modifications to any .py file in your project.
 4. Enjoy the mess. :)
+
+
+Develop
+-------
+
+We develop Geoffrey using Vagrant.
+
+1. Install Vagrant from http://www.vagrantup.com/
+2. Execute:
+
+   .. code-block:: bash
+
+      $ vagrant up
+
+3. Your develop environment is up and running. You can modify the files and
+   the changes will be reflected automatically in your vagrant box.
+
+4. Enter into your vagrant box with:
+
+   .. code-block:: bash
+
+      $ vagrant ssh
+
+5. Execute geoffrey:
+
+   .. code-block:: bash
+
+      $ geoffrey /home/vagrant
+
+6. You can enter de UI from your system. Point your browser to:
+
+   http://localhost:8700
+
