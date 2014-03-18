@@ -89,6 +89,7 @@ Tipos de eventos de un objeto.
   * deleted: Un objeto ha sido borrado.
   * changed: Un objeto ha cambiado.
   * discovered. Un objeto ha sido descubierto.
+  * status. Un objeto ha sido (re)descubierto por petición del UI.
 
 
 Ejemplos
