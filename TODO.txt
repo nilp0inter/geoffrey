@@ -1,1 +1,2 @@
 * Use watchdog instead of pyinotify.
+* Use BerkleyDB DB_RECNO as a persistent queue.
