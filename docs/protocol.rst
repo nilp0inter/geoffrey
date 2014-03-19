@@ -24,6 +24,11 @@ Definiremos los siguientes actores:
 El protocolo que describiremos a continuación es el que se utilizará para la
 transmisión de información entre `Geoffrey Server` y `Geoffrey UI`.
 
+Diagrama de secuencia
+---------------------
+
+.. image:: _static/ui_seq1.png
+
 
 Alta de UI
 ----------
