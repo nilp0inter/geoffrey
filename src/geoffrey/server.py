@@ -15,7 +15,6 @@ import websockets
 from fnmatch import fnmatch
 
 from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
-from rainfall.web import Application, HTTPHandler
 
 from geoffrey import default
 from geoffrey import webapp
