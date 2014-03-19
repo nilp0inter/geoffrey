@@ -10,7 +10,6 @@ setup(name='geoffrey',
       url='http://github.com/nilp0inter/geoffrey',
       install_requires=[
           'asyncio==0.4.1',
-          'rainfall==0.8.3',
           'websockets==2.0',
           'pyinotify==0.9.4',
           'enum34',

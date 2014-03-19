@@ -18,6 +18,7 @@ from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
 from rainfall.web import Application, HTTPHandler
 
 from geoffrey import default
+from geoffrey import webapp
 from geoffrey.config import Config
 from geoffrey.plugin import EventManager, get_plugins
 
@@ -76,40 +77,11 @@ def watch_files(paths, mask):
             notifier.read_events()
 
 
-def get_app(config, args):
-    main = config['geoffrey']
-    host = main.get('host', default.HOST)
-    websocket_port = main.get('websocket_port', default.WEBSOCKET_PORT)
-    webserver_port = main.get('webserver_port', default.WEBSERVER_PORT)
-
-    class DashboardHandler(HTTPHandler):
-        def handle(self, request):
-            return self.render('index.html',
-                               host=host,
-                               port=websocket_port,
-                               path=args.path)
-
-    settings = {
-        'template_path': os.path.join(os.path.dirname(__file__), "web"),
-        'host': host,
-        'port': str(webserver_port),
-    }
-
-    app = Application(
-        {
-            r'^/$': DashboardHandler(),
-        },
-        settings=settings
-    )
-    return app
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', default=default.GEOFFREY_RC_FILE)
     parser.add_argument('path', nargs='+')
     args = parser.parse_args()
-    print(args.config)
     config = Config(args.config, create=True)
 
     main = config['geoffrey']
@@ -127,10 +99,7 @@ def main():
     mask = em.get_mask()
 
     asyncio.Task(websockets.serve(websocket_server, host, websocket_port))
-
     asyncio.Task(watch_files(args.path, mask=mask))
     asyncio.Task(em.consume_events(event_queue, output_queue))
-
-    #webbrowser.open('http://{host}:{port}'.format(host=host,
-    #                                              port=webserver_port))
-    get_app(config, args).run()
+    webapp.run()
+    loop.run_forever()
