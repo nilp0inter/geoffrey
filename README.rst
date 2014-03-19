@@ -5,10 +5,15 @@ Geoffrey is a local continuous integration server.
 
 .. image:: https://raw.githubusercontent.com/nilp0inter/geoffrey/develop/src/geoffrey/web/assets/geoffrey.jpg
 
+
+* Documentation (spanish): http://geoffrey.readthedocs.org/en/latest/index.html
+
+
 Dependencies
 ------------
 
 Geoffrey works on Python>=3.3 .
+
 
 Install
 -------
