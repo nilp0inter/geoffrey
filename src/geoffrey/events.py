@@ -46,7 +46,6 @@ class Event:
 
         self.source = source
         self.data = data
-        self.events = events
 
     def dump(self, *args, **kwargs):
         def get_attr(key, trans=lambda x: x):
@@ -65,7 +64,6 @@ class Event:
         data.update(get_attr('type', lambda x: x.value))
         data.update(get_attr('source'))
         data.update(get_attr('data'))
-        data.update(get_attr('events'))
 
         return json.dumps(data, *args, **kwargs)
 
