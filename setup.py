@@ -5,10 +5,6 @@ from setuptools.command.test import test as TestCommand
 import sys
 import os
 
-# Can't hard link inside Vagrant so...
-# http://bugs.python.org/issue8876#msg208776
-del os.link
-
 
 class Tox(TestCommand):
     def finalize_options(self):
