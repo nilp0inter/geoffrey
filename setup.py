@@ -1,6 +1,40 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
+import sys
+import os
+
+# Can't hard link inside Vagrant so...
+# http://bugs.python.org/issue8876#msg208776
+del os.link
+
+
+class Tox(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+
+        #import here, cause outside the eggs aren't loaded
+        import tox
+        import coverage
+        coverage.cmdline.main(argv=['erase'])
+        errno = -1
+        try:
+            errno = tox.cmdline(self.test_args)
+        except SystemExit as exitcode:
+            errno = exitcode.code
+        finally:
+            if errno == 0:
+                coverage.cmdline.main(argv=['combine'])
+                coverage.cmdline.main(argv=['html'])
+
+            # We don't use coverage.xml so remove it.
+            os.system('rm -f coverage.xml')
+            sys.exit(errno)
 
 setup(name='geoffrey',
       version='0.0.1',
@@ -25,4 +59,6 @@ setup(name='geoffrey',
       entry_points={
           "console_scripts": ["geoffrey = geoffrey.server:main"]
       },
+      tests_require=['tox', 'coverage'],
+      cmdclass = {'test': Tox},
       )
