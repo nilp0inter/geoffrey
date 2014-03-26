@@ -18,13 +18,21 @@ class Server:
         self.projects = {}
         default_projects_root = os.path.join(
             os.path.dirname(config), 'projects')
-        project_root = self.config.get('projects', 'root',
-                                       fallback=default_projects_root)
-        if not os.path.isdir(project_root):
-            os.makedirs(project_root)
-        self.projects = {name: os.path.join(project_root, name)
-                         for name in os.listdir(project_root)
-                         if os.path.isdir(os.path.join(project_root, name))}
+        projects_root = self.config.get('projects', 'root',
+                                        fallback=default_projects_root)
+        if not os.path.isdir(projects_root):
+            os.makedirs(projects_root)
+
+        self.projects = {}
+        for name in os.listdir(projects_root):
+            project_root = os.path.join(projects_root, name)
+            if os.path.isdir(project_root):
+                project_config = os.path.join(project_root,
+                                              '{}.conf'.format(name))
+                if os.path.isfile(project_config):
+                    self.projects[name] = Project(name=name,
+                                                  config=project_config)
+
         self.loop = asyncio.get_event_loop()
 
     @staticmethod

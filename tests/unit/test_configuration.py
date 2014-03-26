@@ -42,10 +42,24 @@ def test_server_projects():
                                    '{}.conf'.format(project)), 'w') as f:
                 f.write('[project]\n\n')
 
+        # Weird cases:
+        # 1. Project config is a dir instead of a file
+        os.makedirs(os.path.join(configdir, 'projects',
+                                 'project3', 'project3.conf'))
+
+        # 2. Files inside `projects` dir.
+        with open(os.path.join(configdir, 'projects', 'project4'), 'w') as f:
+            f.write('nothing')
+
         # Create the server, read the config and test project existence
         server = geoffrey.Server(config=config_file)
         for project in fake_projects:
             assert project in server.projects
+            assert isinstance(server.projects[project], geoffrey.Project)
+
+        # Weird cases
+        assert 'project3' not in server.projects
+        assert 'project4' not in server.projects
 
 
 def test_main_config_must_be_file():
