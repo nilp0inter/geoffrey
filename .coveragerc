@@ -3,4 +3,4 @@ branch = True
 parallel = True
 
 [report]
-include = src/*, tests/*
+include = tests/*, src/geoffrey/*
