@@ -29,13 +29,25 @@ class Server:
 
     @staticmethod
     def read_main_config(filename=DEFAULT_CONFIG_FILENAME):
-        if not os.path.isfile(filename):
-            # Config does not exists. Create the default one.
-            with open(filename, 'w') as f:
-                f.write('[geoffrey]\n\n')
-
         config = configparser.ConfigParser()
-        config.read(filename)
+
+        if os.path.exists(filename):
+            if os.path.isfile(filename):
+                config.read(filename)
+            else:
+                raise TypeError('Config file is not a regular file.')
+        else:
+            # Config does not exists. Create the default one.
+
+            root = os.path.dirname(filename)
+            if not os.path.exists(root):
+                os.makedirs(root)
+
+            with open(filename, 'w+') as f:
+                f.write('[geoffrey]\n\n')
+                f.seek(0)
+                config.read_file(f)
+
         return config
 
     def handle_ctrl_c(self):
