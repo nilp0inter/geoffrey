@@ -73,6 +73,9 @@ class Project:
         self.name = name
         self.config = configparser.ConfigParser()
         self.config.read(config)
+        self.plugins = {s.split(':')[1]: None
+                        for s in self.config.sections()
+                        if s.startswith('plugin:')}
 
 
 def main():

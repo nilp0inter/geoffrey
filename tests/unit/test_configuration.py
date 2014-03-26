@@ -78,3 +78,19 @@ def test_project_configuration():
             f.write('[project]\n\n')
         project = geoffrey.Project(name='projectname', config=project_config)
         assert 'project' in project.config.sections()
+
+
+def test_project_plugins():
+    """The project know its active plugins."""
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        fake_project_dir = os.path.join(configdir, 'projects', 'project1')
+        os.makedirs(fake_project_dir)
+        fake_project_config = os.path.join(fake_project_dir, 'project1.conf')
+        with open(fake_project_config, 'w') as f:
+            f.write("[project]\n\n[plugin:pylint]\n\n[plugin:radon]\n")
+
+        server = geoffrey.Server(config=config_file)
+        assert 'pylint' in server.projects['project1'].plugins
+        assert 'radon' in server.projects['project1'].plugins
