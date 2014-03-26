@@ -55,7 +55,8 @@ def test_server_projects():
         server = geoffrey.Server(config=config_file)
         for project in fake_projects:
             assert project in server.projects
-            assert isinstance(server.projects[project], geoffrey.Project)
+            assert isinstance(server.projects[project],
+                              geoffrey.project.Project)
 
         # Weird cases
         assert 'project3' not in server.projects
@@ -76,7 +77,8 @@ def test_project_configuration():
         project_config = os.path.join(projectdir, 'projectname.conf')
         with open(project_config, 'w') as f:
             f.write('[project]\n\n')
-        project = geoffrey.Project(name='projectname', config=project_config)
+        project = geoffrey.project.Project(name='projectname',
+                                           config=project_config)
         assert 'project' in project.config.sections()
 
 

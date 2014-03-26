@@ -1,104 +1,69 @@
-"""
-Servidor de geoffrey.
-
-"""
-# pylint: disable=I0011, E1101
-import argparse
-from asyncio import subprocess
-
-import webbrowser
-import asyncio
-import logging
 import os
-import sys
-import websockets
-from fnmatch import fnmatch
+import asyncio
+import signal
+import configparser
 
-from pyinotify import WatchManager, ThreadedNotifier, EventsCodes
+from .project import Project
 
-from geoffrey import default
-from geoffrey import webapp
-from geoffrey.config import Config
-from geoffrey.plugin import EventManager, get_plugins
-
-logging.basicConfig(level=logging.DEBUG)
-
-event_queue = asyncio.Queue()
-output_queue = asyncio.Queue()
+DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
+DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')
 
 
-@asyncio.coroutine
-def websocket_server(websocket, uri):
-    """
-    Sirve el resultado de la ejecución de pylint por el websocket.
+class Server:
+    """The Geoffrey server."""
+    def __init__(self, config=DEFAULT_CONFIG_FILENAME):
+        self.config = self.read_main_config(filename=config)
+        self.projects = {}
+        default_projects_root = os.path.join(
+            os.path.dirname(config), 'projects')
+        projects_root = self.config.get('projects', 'root',
+                                        fallback=default_projects_root)
+        if not os.path.isdir(projects_root):
+            os.makedirs(projects_root)
 
-    """
-    logging.info("New connection from %s. %s", uri, websocket)
+        self.projects = {}
+        for name in os.listdir(projects_root):
+            project_root = os.path.join(projects_root, name)
+            if os.path.isdir(project_root):
+                project_config = os.path.join(project_root,
+                                              '{}.conf'.format(name))
+                if os.path.isfile(project_config):
+                    self.projects[name] = Project(name=name,
+                                                  config=project_config)
 
-    while True:
-        output = yield from output_queue.get()
-        try:
-            raw = output.dump()
-            yield from websocket.send(raw)
-        except websockets.exceptions.InvalidState as err:
-            logging.error('Invalid socket state %s', err)
-            yield from output_queue.put(output)
-            return False
+        self.loop = asyncio.get_event_loop()
 
+    @staticmethod
+    def read_main_config(filename=DEFAULT_CONFIG_FILENAME):
+        """Read server configuration."""
+        config = configparser.ConfigParser()
 
-@asyncio.coroutine
-def watch_files(paths, mask):
-    """
-    Vigila los ficheros de path y encola en queue los eventos producidos.
+        if os.path.exists(filename):
+            if os.path.isfile(filename):
+                config.read(filename)
+            else:
+                raise TypeError('Config file is not a regular file.')
+        else:
+            # Config does not exists. Create the default one.
 
-    """
-    watcher = WatchManager()
-    mask = (EventsCodes.ALL_FLAGS.get('IN_MODIFY', 0))
+            root = os.path.dirname(filename)
+            if not os.path.exists(root):
+                os.makedirs(root)
 
-    @asyncio.coroutine
-    def send_event(event):
-        """Encola un evento en la cola."""
-        yield from event_queue.put(event)
+            with open(filename, 'w+') as file_:
+                file_.write('[geoffrey]\n\n')
+                file_.seek(0)
+                config.read_file(file_)
 
-    notifier = ThreadedNotifier(
-        watcher,
-        lambda e: asyncio.get_event_loop().call_soon_threadsafe(
-            asyncio.async, send_event(e)))
+        return config
 
-    for path in paths:
-        watcher.add_watch(path, mask, rec=True)
+    def handle_ctrl_c(self):
+        """Control Ctrl-C to the server."""
+        # TODO: Use logging
+        print("Exiting...")
+        self.loop.stop()
 
-    while True:
-        notifier.process_events()
-        event_present = yield from asyncio.get_event_loop().run_in_executor(
-            None, notifier.check_events)
-        if event_present:
-            notifier.read_events()
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', default=default.GEOFFREY_RC_FILE)
-    parser.add_argument('path', nargs='+')
-    args = parser.parse_args()
-    config = Config(args.config, create=True)
-
-    main = config['geoffrey']
-    host = main.get('host', default.HOST)
-    websocket_port = main.get('websocket_port', default.WEBSOCKET_PORT)
-    webserver_port = main.get('webserver_port', default.WEBSERVER_PORT)
-
-    loop = asyncio.get_event_loop()
-
-    em = EventManager()
-    plugins = get_plugins(config, output_queue)
-    for subscriptions in plugins.call('get_subscriptions'):
-        em.add_subscriptions(subscriptions)
-
-    mask = em.get_mask()
-
-    asyncio.Task(websockets.serve(websocket_server, host, websocket_port))
-    asyncio.Task(watch_files(args.path, mask=mask))
-    asyncio.Task(em.consume_events(event_queue, output_queue))
-    webapp.run()
-    loop.run_forever()
+    def run(self):
+        """Run the server."""
+        self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
+        self.loop.run_forever()
