@@ -13,6 +13,9 @@ Contents:
 
    architecture
    protocol
+   configuration
+   geoffrey_conf
+   project_conf
 
 Indices and tables
 ==================
