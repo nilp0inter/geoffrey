@@ -60,6 +60,13 @@ class Server:
         self.loop.run_forever()
 
 
+class Project:
+    def __init__(self, name, config):
+        self.name = name
+        self.config = configparser.ConfigParser()
+        self.config.read(config)
+
+
 def main():
     server = Server()
     server.run()
