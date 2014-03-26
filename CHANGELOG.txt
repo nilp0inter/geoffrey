@@ -14,6 +14,12 @@ Initial development using TDD.
   * Main function
   * Main entry_point
   * Exit on Ctrl-C
+* Configuration structure.
+  * Define configuration structure in the documentation
+  * The server can read the main configuration
+  * The server knows its active projects
+  * A project can read its own configuration
+  * The project know its active plugins
 
 0.0.1
 -----
