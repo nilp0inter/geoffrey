@@ -1,0 +1,21 @@
+0.1.0
+-----
+
+Initial development using TDD.
+
+* Testing infrastructure: https://github.com/nilp0inter/geoffrey/issues/5
+  * Create tox configuration
+  * py.test for unit testing
+  * Integrate behave
+  * Coverage integration
+  * Vagrant integration
+  * Use TravisCI
+* Server process: https://github.com/nilp0inter/geoffrey/issues/1
+  * Main function
+  * Main entry_point
+  * Exit on Ctrl-C
+
+0.0.1
+-----
+
+* PoC
