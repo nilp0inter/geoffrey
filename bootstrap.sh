@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # If deps are installed exit gracefully.
-which python3.3 && which python3.4m && exit 0
+which python3.3 && which python3.4 && exit 0
 
 apt-get update
 
