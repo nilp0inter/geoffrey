@@ -27,3 +27,6 @@ apt-get install -y python3.4 python3.4-dev
 
 # Python 3.4 (pip)
 python3.4 -m ensurepip
+
+# We need virtualenv for tox testing
+pip3.3 install virtualenv
