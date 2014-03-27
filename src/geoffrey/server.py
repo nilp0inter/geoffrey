@@ -4,6 +4,7 @@ import signal
 import configparser
 
 from .project import Project
+from geoffrey.deps.aiobottle import AsyncBottle
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
 DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')
@@ -71,20 +72,12 @@ class Server:
         self.start_webserver()
         self.loop.run_forever()
 
-    def start_webserver(self):
-        """Run the internal webserver."""
-        from geoffrey.deps.aiobottle import AsyncBottle, AsyncServer
+    def get_webapp(self, bottle=AsyncBottle):
+        """Return the bottle application of the server."""
         from bottle import static_file, TEMPLATE_PATH, jinja2_view
-        from bottle import run
 
         webbase = os.path.join(os.path.dirname(__file__), "web")
         TEMPLATE_PATH[:] = [webbase]
-
-        http_server_host = self.config.get('geoffrey', 'http_server_host',
-                                           fallback='127.0.0.1')
-
-        http_server_port = self.config.getint('geoffrey', 'http_server_port',
-                                              fallback=8700)
 
         websocket_server_host = self.config.get('geoffrey',
                                                 'websocket_server_host',
@@ -94,7 +87,7 @@ class Server:
                                                    'websocket_server_port',
                                                    fallback=8701)
 
-        app = AsyncBottle()
+        app = bottle()
 
         @app.get('/')
         @jinja2_view('index.html')
@@ -108,5 +101,18 @@ class Server:
             """Serve static files under web/assets at /assets."""
             return static_file(filepath, root=os.path.join(webbase, 'assets'))
 
+        return app
+
+    def start_webserver(self):
+        """Run the internal webserver."""
+        from geoffrey.deps.aiobottle import AsyncServer
+        from bottle import run
+        http_server_host = self.config.get('geoffrey', 'http_server_host',
+                                           fallback='127.0.0.1')
+
+        http_server_port = self.config.getint('geoffrey', 'http_server_port',
+                                              fallback=8700)
+
+        app = self.get_webapp()
         run(app, host=http_server_host, port=http_server_port,
             server=AsyncServer, quiet=True)
