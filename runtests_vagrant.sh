@@ -1,8 +1,8 @@
 vagrant up
 vagrant ssh -c '\
-    rsync -r --exclude=.tox --exclude=.git --exclude=.vagrant /vagrant/ /tmp/geoffrey && \
+    sudo rsync -r --exclude=.tox --exclude=.git --exclude=.vagrant /vagrant/ /tmp/geoffrey && \
     cd /tmp/geoffrey && \
-    python3.3 setup.py test && \
+    sudo sh ./runtests.sh && \
     cp -Rvf htmlcov /vagrant/'
 
 if [ $? -eq 0 ]
