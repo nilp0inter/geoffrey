@@ -65,5 +65,21 @@ class Server:
 
     def run(self):
         """Run the server."""
+
         self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
+
+        self.start_webserver()
         self.loop.run_forever()
+
+    def start_webserver(self):
+        """Run the internal webserver."""
+        from geoffrey.deps.aiobottle import AsyncBottle, AsyncServer
+        from bottle import run
+
+        app = AsyncBottle()
+
+        @app.get('/')
+        def index():
+            return "Geoffrey"
+
+        run(app, host='localhost', port=8700, server=AsyncServer)
