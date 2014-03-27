@@ -21,7 +21,7 @@ def run(host='0.0.0.0', port=8700, websocket_port=8701):
     def server_static(filepath):
         return static_file(filepath, root=os.path.join(BASE, 'assets'))
 
-    run(app, host=host, port=port, server=AsyncServer)
+    run(app, host=host, port=port, server=AsyncServer, quiet=True)
 
 if __name__ == '__main__':
     run()
