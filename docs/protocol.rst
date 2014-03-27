@@ -24,6 +24,11 @@ Definiremos los siguientes actores:
 El protocolo que describiremos a continuación es el que se utilizará para la
 transmisión de información entre `Geoffrey Server` y `Geoffrey UI`.
 
+Diagrama de secuencia
+---------------------
+
+.. image:: _static/ui_seq1.png
+
 
 Alta de UI
 ----------
@@ -89,6 +94,7 @@ Tipos de eventos de un objeto.
   * deleted: Un objeto ha sido borrado.
   * changed: Un objeto ha cambiado.
   * discovered. Un objeto ha sido descubierto.
+  * status. Un objeto ha sido (re)descubierto por petición del UI.
 
 
 Ejemplos
