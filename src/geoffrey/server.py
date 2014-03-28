@@ -3,8 +3,10 @@ import asyncio
 import signal
 import configparser
 
-from .project import Project
+import websockets
 from geoffrey.deps.aiobottle import AsyncBottle
+
+from .project import Project
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
 DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')
@@ -66,10 +68,17 @@ class Server:
 
     def run(self):
         """Run the server."""
+        websocket_server_host = self.config.get(
+            'geoffrey', 'websocket_server_host', fallback='127.0.0.1')
+        websocket_server_port = self.config.getint(
+            'geoffrey', 'websocket_server_port', fallback=8701)
 
         self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
 
         self.start_webserver()
+        asyncio.Task(websockets.serve(self.websocket_server,
+                                      websocket_server_host,
+                                      websocket_server_port))
         self.loop.run_forever()
 
     def get_webapp(self, bottle=AsyncBottle):
@@ -116,3 +125,11 @@ class Server:
         app = self.get_webapp()
         run(app, host=http_server_host, port=http_server_port,
             server=AsyncServer, quiet=True)
+
+    @asyncio.coroutine
+    def websocket_server(self, websocket, uri):
+        """Websocket server for real-time data.  """
+        try:
+            yield from websocket.send('{"data": "test"}')
+        except websockets.exceptions.InvalidState as err:
+            return False
