@@ -14,12 +14,21 @@ Geoffrey is a work in progress project.
 
 If you want to see a proof of concept checkout the tag `v0.0.1` and follow the README.
 
+Running the tests
+-----------------
+
+It is recommended to run this inside of a new virtualenv.
+
+.. code-block:: bash
+
+   $ sh ./runtests.sh
+
+
 Status
 ------
 
-
-.. image:: https://coveralls.io/repos/nilp0inter/geoffrey/badge.png
-     :target: https://coveralls.io/r/nilp0inter/geoffrey
+.. image:: https://coveralls.io/repos/nilp0inter/geoffrey/badge.png?branch=develop
+     :target: https://coveralls.io/r/nilp0inter/geoffrey?branch=develop
 
 .. image:: https://travis-ci.org/nilp0inter/geoffrey.svg?branch=develop
      :target: https://travis-ci.org/nilp0inter/geoffrey
