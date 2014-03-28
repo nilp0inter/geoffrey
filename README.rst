@@ -27,8 +27,8 @@ It is recommended to run this inside of a new virtualenv.
 Status
 ------
 
-.. image:: https://coveralls.io/repos/nilp0inter/geoffrey/badge.png
-     :target: https://coveralls.io/r/nilp0inter/geoffrey
+.. image:: https://coveralls.io/repos/nilp0inter/geoffrey/badge.png?branch=develop
+     :target: https://coveralls.io/r/nilp0inter/geoffrey?branch=develop
 
 .. image:: https://travis-ci.org/nilp0inter/geoffrey.svg?branch=develop
      :target: https://travis-ci.org/nilp0inter/geoffrey
