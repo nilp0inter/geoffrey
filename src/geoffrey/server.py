@@ -5,8 +5,9 @@ import os
 import signal
 
 import websockets
-from geoffrey.deps.aiobottle import AsyncBottle
 
+from geoffrey.deps.aiobottle import AsyncBottle
+from geoffrey import utils, defaults
 from .project import Project
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
@@ -45,9 +46,7 @@ class Server:
         config = configparser.ConfigParser()
 
         if os.path.exists(filename):
-            if os.path.isfile(filename):
-                config.read(filename)
-            else:
+            if not os.path.isfile(filename):
                 raise TypeError('Config file is not a regular file.')
         else:
             # Config does not exists. Create the default one.
@@ -56,11 +55,9 @@ class Server:
             if not os.path.exists(root):
                 os.makedirs(root)
 
-            with open(filename, 'w+') as file_:
-                file_.write('[geoffrey]\n\n')
-                file_.seek(0)
-                config.read_file(file_)
+            utils.write_template(filename, defaults.GEOFFREY_CONFIG_DEFAULT)
 
+        config.read(filename)
         return config
 
     def handle_ctrl_c(self):
