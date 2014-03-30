@@ -20,6 +20,17 @@ Initial development using TDD.
   * The server knows its active projects
   * A project can read its own configuration
   * The project know its active plugins
+* Server can manage projects.
+  * Create a new project.
+  * Delete project.
+* Project cleanup.
+* Add logging to the server.
+* Add websocket server.
+* Add webserver.
+  * Integrate bottle into server
+  * Serve index.html
+  * Serve static files.
+
 
 0.0.1
 -----
