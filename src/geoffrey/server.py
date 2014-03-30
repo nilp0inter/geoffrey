@@ -22,14 +22,14 @@ class Server:
         self.projects = {}
         default_projects_root = os.path.join(
             os.path.dirname(config), 'projects')
-        projects_root = self.config.get('projects', 'root',
-                                        fallback=default_projects_root)
-        if not os.path.isdir(projects_root):
-            os.makedirs(projects_root)
+        self.projects_root = self.config.get('projects', 'root',
+                                             fallback=default_projects_root)
+        if not os.path.isdir(self.projects_root):
+            os.makedirs(self.projects_root)
 
         self.projects = {}
-        for name in os.listdir(projects_root):
-            project_root = os.path.join(projects_root, name)
+        for name in os.listdir(self.projects_root):
+            project_root = os.path.join(self.projects_root, name)
             if os.path.isdir(project_root):
                 project_config = os.path.join(project_root,
                                               '{}.conf'.format(name))
@@ -140,3 +140,11 @@ class Server:
             yield from websocket.send('{"data": "test"}')
         except websockets.exceptions.InvalidState as err:
             return False
+
+    def create_project(self, project_name):
+        project_root = os.path.join(self.projects_root, project_name)
+        os.makedirs(project_root)
+        project_config = os.path.join(project_root,
+                                      '{}.conf'.format(project_name))
+        self.projects[project_name] = Project(name=project_name,
+                                              config=project_config)
