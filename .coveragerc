@@ -4,3 +4,4 @@ parallel = True
 
 [report]
 include = tests/*, src/geoffrey/*
+omit = src/geoffrey/deps/*
