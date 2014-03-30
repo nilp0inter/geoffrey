@@ -148,3 +148,10 @@ class Server:
                                       '{}.conf'.format(project_name))
         self.projects[project_name] = Project(name=project_name,
                                               config=project_config)
+
+    def delete_project(self, project_name):
+        if project_name in self.projects:
+            project = self.projects.pop(project_name)
+            project.remove()
+        else:
+            raise RuntimeError("Geoffrey can't delete unmanaged projects.")
