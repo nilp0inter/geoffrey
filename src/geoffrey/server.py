@@ -1,7 +1,8 @@
-import os
 import asyncio
-import signal
 import configparser
+import logging
+import os
+import signal
 
 import websockets
 from geoffrey.deps.aiobottle import AsyncBottle
@@ -10,6 +11,8 @@ from .project import Project
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
 DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')
+
+logger = logging.getLogger(__name__)
 
 
 class Server:
@@ -63,11 +66,13 @@ class Server:
     def handle_ctrl_c(self):
         """Control Ctrl-C to the server."""
         # TODO: Use logging
-        print("Exiting...")
+        logger.warning("Pressed Ctrl-C. Exiting.")
         self.loop.stop()
 
     def run(self):
         """Run the server."""
+        logger.info("Starting Geoffrey server!")
+
         websocket_server_host = self.config.get(
             'geoffrey', 'websocket_server_host', fallback='127.0.0.1')
         websocket_server_port = self.config.getint(
@@ -79,6 +84,8 @@ class Server:
         asyncio.Task(websockets.serve(self.websocket_server,
                                       websocket_server_host,
                                       websocket_server_port))
+
+        logger.debug("Starting the main loop.")
         self.loop.run_forever()
 
     def get_webapp(self, bottle=AsyncBottle):
@@ -124,7 +131,7 @@ class Server:
 
         app = self.get_webapp()
         run(app, host=http_server_host, port=http_server_port,
-            server=AsyncServer, quiet=True)
+            server=AsyncServer, quiet=True, debug=False)
 
     @asyncio.coroutine
     def websocket_server(self, websocket, uri):
