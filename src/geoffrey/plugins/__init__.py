@@ -1,2 +1,0 @@
-# Namespace package
-# KEEP EMPTY
