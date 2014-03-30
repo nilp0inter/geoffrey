@@ -5,8 +5,9 @@ import os
 import signal
 
 import websockets
-from geoffrey.deps.aiobottle import AsyncBottle
 
+from geoffrey.deps.aiobottle import AsyncBottle
+from geoffrey import utils, defaults
 from .project import Project
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
@@ -18,26 +19,35 @@ logger = logging.getLogger(__name__)
 class Server:
     """The Geoffrey server."""
     def __init__(self, config=DEFAULT_CONFIG_FILENAME):
-        self.config = self.read_main_config(filename=config)
-        self.projects = {}
-        default_projects_root = os.path.join(
-            os.path.dirname(config), 'projects')
-        self.projects_root = self.config.get('projects', 'root',
-                                             fallback=default_projects_root)
+        self.configfile = config
+        self.config = self.read_main_config(filename=self.configfile)
+
         if not os.path.isdir(self.projects_root):
             os.makedirs(self.projects_root)
 
-        self.projects = {}
+        self.projects = self.get_projects()
+        self.loop = asyncio.get_event_loop()
+
+    @property
+    def projects_root(self):
+        """Returns the projects directory."""
+        return self.config.get(
+            'projects', 'root',
+            fallback=os.path.join(os.path.dirname(self.configfile),
+                                  'projects'))
+
+    def get_projects(self):
+        """Gets all the projects."""
+        projects = {}
         for name in os.listdir(self.projects_root):
             project_root = os.path.join(self.projects_root, name)
             if os.path.isdir(project_root):
                 project_config = os.path.join(project_root,
                                               '{}.conf'.format(name))
                 if os.path.isfile(project_config):
-                    self.projects[name] = Project(name=name,
-                                                  config=project_config)
+                    projects[name] = Project(name=name, config=project_config)
 
-        self.loop = asyncio.get_event_loop()
+        return projects
 
     @staticmethod
     def read_main_config(filename=DEFAULT_CONFIG_FILENAME):
@@ -45,9 +55,7 @@ class Server:
         config = configparser.ConfigParser()
 
         if os.path.exists(filename):
-            if os.path.isfile(filename):
-                config.read(filename)
-            else:
+            if not os.path.isfile(filename):
                 raise TypeError('Config file is not a regular file.')
         else:
             # Config does not exists. Create the default one.
@@ -56,11 +64,9 @@ class Server:
             if not os.path.exists(root):
                 os.makedirs(root)
 
-            with open(filename, 'w+') as file_:
-                file_.write('[geoffrey]\n\n')
-                file_.seek(0)
-                config.read_file(file_)
+            utils.write_template(filename, defaults.GEOFFREY_CONFIG_DEFAULT)
 
+        config.read(filename)
         return config
 
     def handle_ctrl_c(self):
@@ -142,6 +148,7 @@ class Server:
             return False
 
     def create_project(self, project_name):
+        """Create a new project."""
         project_root = os.path.join(self.projects_root, project_name)
         os.makedirs(project_root)
         project_config = os.path.join(project_root,
@@ -150,6 +157,7 @@ class Server:
                                               config=project_config)
 
     def delete_project(self, project_name):
+        """Delete a project."""
         if project_name in self.projects:
             project = self.projects.pop(project_name)
             project.remove()

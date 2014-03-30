@@ -16,6 +16,7 @@ def test_create_project():
                                            'newproject'))
         assert os.path.exists(os.path.join(configdir, 'projects', 'newproject',
                                            'newproject.conf'))
+        assert 'newproject' in server.projects
 
 
 def test_delete_project():

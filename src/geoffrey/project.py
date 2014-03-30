@@ -1,5 +1,6 @@
 import os
 import configparser
+from geoffrey import utils, defaults
 
 
 class Project:
@@ -8,8 +9,7 @@ class Project:
         self.name = name
         self.configfile = config
         if not os.path.exists(config):
-            with open(config, 'w') as f:
-                f.write('[project]\n\n')
+            utils.write_template(config, defaults.PROJECT_CONFIG_DEFAULT)
         self.config = configparser.ConfigParser()
         self.config.read(config)
         self.plugins = {s.split(':')[1]: None
