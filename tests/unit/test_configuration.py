@@ -84,6 +84,7 @@ def test_project_configuration():
 
 def test_project_plugins():
     """The project know its active plugins."""
+    from geoffrey.plugins.dummy import DummyPlugin1, DummyPlugin2
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -91,8 +92,16 @@ def test_project_plugins():
         os.makedirs(fake_project_dir)
         fake_project_config = os.path.join(fake_project_dir, 'project1.conf')
         with open(fake_project_config, 'w') as f:
-            f.write("[project]\n\n[plugin:pylint]\n\n[plugin:radon]\n")
+            f.write("""
+                [project]
+                [plugin:DummyPlugin1]
+                [plugin:DummyPlugin2]""")
 
         server = geoffrey.Server(config=config_file)
-        assert 'pylint' in server.projects['project1'].plugins
-        assert 'radon' in server.projects['project1'].plugins
+        plugins = server.projects['project1'].plugins
+        assert 'DummyPlugin1' in plugins
+        assert isinstance(plugins['DummyPlugin1'], DummyPlugin1)
+        assert 'DummyPlugin2' in plugins
+        assert isinstance(plugins['DummyPlugin2'], DummyPlugin2)
+
+

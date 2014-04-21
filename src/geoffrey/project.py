@@ -1,6 +1,6 @@
 import os
 import configparser
-from geoffrey import utils, defaults
+from geoffrey import utils, defaults, plugin
 
 
 class Project:
@@ -12,9 +12,7 @@ class Project:
             utils.write_template(config, defaults.PROJECT_CONFIG_DEFAULT)
         self.config = configparser.ConfigParser()
         self.config.read(config)
-        self.plugins = {s.split(':')[1]: None
-                        for s in self.config.sections()
-                        if s.startswith('plugin:')}
+        self.plugins = {p.name: p for p in plugin.get_plugins(self.config)}
 
     def remove(self):
         """Remove this project from disk."""
