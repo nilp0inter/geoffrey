@@ -1,3 +1,5 @@
+#!/bin/bash
+set -e
 pip install -r requirements/tests.txt
 coverage erase
 rm -Rf htmlcov
