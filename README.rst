@@ -33,6 +33,6 @@ Status
 .. image:: https://travis-ci.org/nilp0inter/geoffrey.svg?branch=develop
      :target: https://travis-ci.org/nilp0inter/geoffrey
 
-.. image:: https://badge.waffle.io/nilp0inter/geoffrey.png?label=ready&title=Ready 
+.. image:: https://badge.waffle.io/nilp0inter/geoffrey.png?label=wip&title=WIP
  :target: https://waffle.io/nilp0inter/geoffrey 
- :alt: 'Stories in Ready'
+ :alt: 'Stories in WIP'
