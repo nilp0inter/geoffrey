@@ -1,4 +1,3 @@
-import asyncio
 import pytest  # pragma: nocover
 
 @pytest.fixture  # pragma: nocover

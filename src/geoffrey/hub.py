@@ -10,7 +10,6 @@ class EventHUB:
         self.events = asyncio.Queue(loop=loop)
         self.states = {}
         self.subscriptions = []
-        self.active = True
         self._run_once = False
 
     def add_subscriptions(self, subscriptions):
@@ -22,11 +21,11 @@ class EventHUB:
 
     @asyncio.coroutine
     def publish(self):
-        while self.active:
+        while True:
             data = yield from self.events.get()
             for subscription in self.subscriptions:
                 yield from subscription.put(data)
-            if self._run_once:
+            if self._run_once:  # pragma: no cover
                 break
 
     @asyncio.coroutine

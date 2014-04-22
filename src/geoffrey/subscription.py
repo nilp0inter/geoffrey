@@ -1,7 +1,6 @@
 import asyncio
 
 ANYTHING = lambda x: True
-NOTHING = lambda x: False
 
 
 class Subscription:
@@ -9,7 +8,6 @@ class Subscription:
         self.allow_funcs = []
         self.callbacks = []
         self.queue = asyncio.Queue(loop=loop)
-        self.active = True
         self._run_once = False
         self.loop = loop
 
@@ -26,11 +24,11 @@ class Subscription:
 
     @asyncio.coroutine
     def run(self):
-        while self.active:
+        while True:
             data = yield from self.queue.get()
             for callback in self.callbacks:
                 future = yield from self.loop.run_in_executor(
                     None, callback, data)
 
-            if self._run_once:
+            if self._run_once:  # pragma: no cover
                 break

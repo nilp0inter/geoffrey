@@ -71,7 +71,6 @@ class Server:
 
     def handle_ctrl_c(self):
         """Control Ctrl-C to the server."""
-        # TODO: Use logging
         logger.warning("Pressed Ctrl-C. Exiting.")
         self.loop.stop()
 
