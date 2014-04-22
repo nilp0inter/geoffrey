@@ -10,7 +10,7 @@ class EventHUB:
         self.states = {}
 
     @coroutine
-    def send(self, data):
+    def put(self, data):
         if isinstance(data, Event):
             yield from self.events.put(data)
         elif isinstance(data, State):
@@ -21,7 +21,7 @@ class EventHUB:
                         self.states[data.key] = data.value
                         ev = Event(type=EventType.modified, key=data.key,
                                    value=data.value)
-                        yield from self.send(ev)
+                        yield from self.put(ev)
                     else:
                         # Same value.
                         # (It's covered but coverage does not detect it.)
@@ -30,13 +30,13 @@ class EventHUB:
                     # No value means. Deletion.
                     del self.states[data.key]
                     ev = Event(type=EventType.deleted, key=data.key)
-                    yield from self.send(ev)
+                    yield from self.put(ev)
             elif data.value:
                 # New value. Creation
                 self.states[data.key] = data.value
                 ev = Event(type=EventType.created, key=data.key,
                            value=data.value)
-                yield from self.send(ev)
+                yield from self.put(ev)
             else:
                 # No value means. Deletion. But is an unknown key.
                 # (It's covered but coverage does not detect it.)

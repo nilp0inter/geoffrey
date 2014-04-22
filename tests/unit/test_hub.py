@@ -4,23 +4,23 @@ def test_hub(hub):
     assert hub
 
 
-def test_send_event(hub, event, loop):
+def test_put_event(hub, event, loop):
     assert hub.events.qsize() == 0
-    loop.run_until_complete(hub.send(event))
+    loop.run_until_complete(hub.put(event))
     assert hub.events.qsize() == 1
     ret_event = loop.run_until_complete(hub.events.get())
     assert event == ret_event
 
 
-def test_send_state(hub, state, loop):
+def test_put_state(hub, state, loop):
     assert hub.events.qsize() == 0
-    loop.run_until_complete(hub.send(state))
+    loop.run_until_complete(hub.put(state))
     assert hub.events.qsize() == 0
 
 
-def test_cant_send_garbage(hub, loop):
+def test_cant_put_garbage(hub, loop):
     with pytest.raises(TypeError):
-        loop.run_until_complete(hub.send("nothing"))
+        loop.run_until_complete(hub.put("nothing"))
 
 
 def test_new_state_created_event(hub, loop):
@@ -30,7 +30,7 @@ def test_new_state_created_event(hub, loop):
     state = State(object='testobject', value='something interesting')
 
 
-    loop.run_until_complete(hub.send(state))
+    loop.run_until_complete(hub.put(state))
     event = loop.run_until_complete(hub.events.get())
     assert event.type == EventType.created
     assert state.key in hub.states
@@ -42,14 +42,14 @@ def test_modified_state_modified_event(hub, loop):
 
     state1 = State(object='testobject', value='something interesting')
 
-    loop.run_until_complete(hub.send(state1))
+    loop.run_until_complete(hub.put(state1))
     ev1 = loop.run_until_complete(hub.events.get())
     assert ev1.type == EventType.created
     assert state1.key in hub.states
 
     state2 = State(object='testobject', value='different stuff')
 
-    loop.run_until_complete(hub.send(state2))
+    loop.run_until_complete(hub.put(state2))
     ev2 = loop.run_until_complete(hub.events.get())
     assert ev2.type == EventType.modified
     assert state2.key in hub.states
@@ -61,12 +61,12 @@ def test_same_state_do_nothing(hub, loop):
 
     state1 = state2 = State(object='testobject', value='something interesting')
 
-    loop.run_until_complete(hub.send(state1))
+    loop.run_until_complete(hub.put(state1))
     ev1 = loop.run_until_complete(hub.events.get())
     assert ev1.type == EventType.created
     assert state1.key in hub.states
 
-    loop.run_until_complete(hub.send(state2))
+    loop.run_until_complete(hub.put(state2))
     assert hub.events.qsize() == 0
     assert state2.key in hub.states
 
@@ -77,14 +77,14 @@ def test_empty_state_means_deletion(hub, loop):
 
     state1 = State(object='testobject', value='something interesting')
 
-    loop.run_until_complete(hub.send(state1))
+    loop.run_until_complete(hub.put(state1))
     ev1 = loop.run_until_complete(hub.events.get())
     assert ev1.type == EventType.created
     assert state1.key in hub.states
 
     state2 = State(object='testobject')
 
-    loop.run_until_complete(hub.send(state2))
+    loop.run_until_complete(hub.put(state2))
     ev2 = loop.run_until_complete(hub.events.get())
     assert ev2.type == EventType.deleted
     assert not state2.key in hub.states
