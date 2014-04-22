@@ -10,3 +10,9 @@ def hub():
 def event():
     from geoffrey.event import Event
     return Event()
+
+
+@pytest.fixture
+def state():
+    from geoffrey.state import State
+    return State()
