@@ -1,9 +1,16 @@
 import pytest  # pragma: nocover
 
 @pytest.fixture  # pragma: nocover
+def loop():
+    import asyncio
+    loop = asyncio.get_event_loop()
+    return loop
+
+
+@pytest.fixture  # pragma: nocover
 def hub():
     from geoffrey.hub import EventHUB
-    return EventHUB()
+    return EventHUB(loop=loop())
 
 
 @pytest.fixture  # pragma: nocover
