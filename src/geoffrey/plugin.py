@@ -32,4 +32,6 @@ def get_plugins(config, *args, **kwargs):
     all_plugins = loader.produce(
         config, *args, **kwargs)
 
-    return PluginManager([plugin for plugin in all_plugins if plugin.is_enabled()])
+    return PluginManager([plugin
+                          for plugin in all_plugins
+                          if plugin.is_enabled()])
