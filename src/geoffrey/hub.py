@@ -19,10 +19,12 @@ class EventHUB:
                     if data.value != self.states[data.key]:
                         # Modified value
                         self.states[data.key] = data.value
-                        ev = Event(type=EventType.modified, key=data.key, value=data.value)
+                        ev = Event(type=EventType.modified, key=data.key,
+                                   value=data.value)
                         yield from self.send(ev)
                     else:
-                        # Same value. (It's covered but coverage does not detect it.)
+                        # Same value.
+                        # (It's covered but coverage does not detect it.)
                         pass  # pragma: nocover
                 else:
                     # No value means. Deletion.
@@ -32,7 +34,8 @@ class EventHUB:
             elif data.value:
                 # New value. Creation
                 self.states[data.key] = data.value
-                ev = Event(type=EventType.created, key=data.key, value=data.value)
+                ev = Event(type=EventType.created, key=data.key,
+                           value=data.value)
                 yield from self.send(ev)
             else:
                 # No value means. Deletion. But is an unknown key.
