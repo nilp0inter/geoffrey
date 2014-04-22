@@ -88,3 +88,21 @@ def test_empty_state_means_deletion(hub, loop):
     ev2 = loop.run_until_complete(hub.events.get())
     assert ev2.type == EventType.deleted
     assert not state2.key in hub.states
+
+
+def test_states_persistence(hub):
+    from tempfile import NamedTemporaryFile 
+    from geoffrey.state import State
+
+    state1 = State(object='object1', data='data')
+    hub.set_state(state1)
+    state2 = State(object='object2', data='data')
+    hub.set_state(state2)
+
+    with NamedTemporaryFile() as tf:
+        hub.save_states(tf.name)
+        hub.state = {}
+        hub.restore_states(tf.name)
+
+    assert state1.key in hub.states
+    assert state2.key in hub.states

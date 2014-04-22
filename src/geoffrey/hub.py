@@ -1,4 +1,5 @@
 import asyncio
+import pickle
 
 from .event import Event, EventType
 from .state import State
@@ -33,16 +34,22 @@ class EventHUB:
         yield from asyncio.wait(
             [self.publish()] + self.subscription_tasks())
 
+    def set_state(self, data):
+        self.states[data.key] = data.value
+
+    def del_state(self, data):
+        del self.states[data.key]
+
     @asyncio.coroutine
     def put(self, data):
         if isinstance(data, Event):
             yield from self.events.put(data)
         elif isinstance(data, State):
             if data.key in self.states:  # Key already exists.
-                if data.value:  
+                if data.value:
                     if data.value != self.states[data.key]:
                         # Modified value
-                        self.states[data.key] = data.value
+                        self.set_state(data)
                         ev = Event(type=EventType.modified, key=data.key,
                                    value=data.value)
                         yield from self.put(ev)
@@ -52,12 +59,12 @@ class EventHUB:
                         pass  # pragma: nocover
                 else:
                     # No value means. Deletion.
-                    del self.states[data.key]
+                    self.del_state(data)
                     ev = Event(type=EventType.deleted, key=data.key)
                     yield from self.put(ev)
             elif data.value:
                 # New value. Creation
-                self.states[data.key] = data.value
+                self.set_state(data)
                 ev = Event(type=EventType.created, key=data.key,
                            value=data.value)
                 yield from self.put(ev)
@@ -67,3 +74,11 @@ class EventHUB:
                 pass  # pragma: nocover
         else:
             raise TypeError("Unknown data type.")
+
+    def save_states(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(self.states, f)
+
+    def restore_states(self, filename):
+        with open(filename, 'rb') as f:
+            self.states = pickle.load(f)
