@@ -8,6 +8,30 @@ class EventHUB:
     def __init__(self, loop):
         self.events = asyncio.Queue(loop=loop)
         self.states = {}
+        self.subscriptions = []
+        self.active = True
+        self._run_once = False
+
+    def add_subscriptions(self, subscriptions):
+        self.subscriptions.extend(subscriptions)
+
+    def subscription_tasks(self):
+        return [s.run() for s in self.subscriptions]
+
+
+    @asyncio.coroutine
+    def publish(self):
+        while self.active:
+            data = yield from self.events.get()
+            for subscription in self.subscriptions:
+                yield from subscription.put(data)
+            if self._run_once:
+                break
+
+    @asyncio.coroutine
+    def run(self):
+        yield from asyncio.wait(
+            [self.publish()] + self.subscription_tasks())
 
     @asyncio.coroutine
     def put(self, data):

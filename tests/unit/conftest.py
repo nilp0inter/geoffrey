@@ -1,3 +1,4 @@
+import asyncio
 import pytest  # pragma: nocover
 
 @pytest.fixture  # pragma: nocover
@@ -29,3 +30,27 @@ def event():
 def state():
     from geoffrey.state import State
     return State()
+
+
+@pytest.fixture  # pragma: nocover
+def storeallplugin():
+    from geoffrey.plugin import GeoffreyPlugin
+    from geoffrey.subscription import Subscription, ANYTHING
+
+    class StoreAllPlugin(GeoffreyPlugin):
+        def __init__(self, *args, **kwargs):
+            self.events_received = []
+
+            s = Subscription(loop())
+            s.add_filter(ANYTHING)  # Allow all
+            s.add_callback(self.store_event)
+            s._run_once = True
+            self.subscriptions = [s]
+
+            super().__init__(*args, **kwargs)
+
+        def store_event(self, data):
+            self.events_received.append(data)
+
+    return StoreAllPlugin(None)
+
