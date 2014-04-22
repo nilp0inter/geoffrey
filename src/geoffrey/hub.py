@@ -1,4 +1,4 @@
-from asyncio import Queue, coroutine
+import asyncio
 
 from .event import Event, EventType
 from .state import State
@@ -6,10 +6,10 @@ from .state import State
 
 class EventHUB:
     def __init__(self, loop):
-        self.events = Queue(loop=loop)
+        self.events = asyncio.Queue(loop=loop)
         self.states = {}
 
-    @coroutine
+    @asyncio.coroutine
     def put(self, data):
         if isinstance(data, Event):
             yield from self.events.put(data)
