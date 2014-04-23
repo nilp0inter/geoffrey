@@ -40,10 +40,9 @@ class FileSystem(GeoffreyPlugin):
     def run(self):
         event_handler = GeoffreyFSHandler(asyncio.get_event_loop(), self.hubs)
         observer = Observer()
-        observer.schedule(
-            event_handler,
-            self.config.get(self._section_name, 'paths'),
-            recursive=True)
+        paths = self.config.get(self._section_name, 'paths').split(',')
+        for path in paths:
+            observer.schedule(event_handler, path, recursive=True)
         observer.start()
         while self.active:
             yield from asyncio.sleep(1)

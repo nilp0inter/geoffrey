@@ -8,7 +8,6 @@ class Subscription:
         self.allow_funcs = []
         self.callbacks = []
         self.queue = asyncio.Queue(loop=loop)
-        self._run_once = False
         self.loop = loop
 
     def add_filter(self, filter_func):
@@ -29,6 +28,3 @@ class Subscription:
             for callback in self.callbacks:
                 future = yield from self.loop.run_in_executor(
                     None, callback, data)
-
-            if self._run_once:  # pragma: no cover
-                break
