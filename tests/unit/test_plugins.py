@@ -19,6 +19,8 @@ def test_plugin_subscription(storeallplugin, hub, event, loop):
    loop.run_until_complete(hub.put(event))
    assert hub.events.qsize() == 1
 
-   hub._run_once = True
-   loop.run_until_complete(hub.run())
+   loop.run_until_complete(
+       asyncio.wait([hub.run(), asyncio.sleep(1)],
+                    return_when=asyncio.FIRST_COMPLETED))
+
    assert event in storeallplugin.events_received

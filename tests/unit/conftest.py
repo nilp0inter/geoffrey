@@ -43,7 +43,6 @@ def storeallplugin():
             s = Subscription(loop())
             s.add_filter(ANYTHING)  # Allow all
             s.add_callback(self.store_event)
-            s._run_once = True
             self.subscriptions = [s]
 
             super().__init__(*args, **kwargs)
