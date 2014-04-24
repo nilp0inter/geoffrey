@@ -6,6 +6,7 @@ import pytest
 import geoffrey
 
 
+@pytest.mark.wip
 def test_create_project():
     """Create a new project."""
     with TemporaryDirectory() as configdir:
@@ -19,6 +20,7 @@ def test_create_project():
         assert 'newproject' in server.projects
 
 
+@pytest.mark.wip
 def test_delete_project():
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -36,6 +38,7 @@ def test_delete_project():
         assert not os.path.exists(project_dir)
 
 
+@pytest.mark.wip
 def test_delete_unmanaged_project():
     """The server can't delete unamanged projects."""
     with TemporaryDirectory() as configdir:

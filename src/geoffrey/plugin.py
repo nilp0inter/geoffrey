@@ -9,8 +9,9 @@ class GeoffreyPlugin:
 
     """
 
-    def __init__(self, config):
+    def __init__(self, config, hub):
         self.config = config
+        self.hub = hub
 
     @property
     def name(self):

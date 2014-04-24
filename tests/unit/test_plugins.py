@@ -7,11 +7,12 @@ from geoffrey import plugin
 from geoffrey.plugins.dummy import DummyPlugin
 
 
-def test_plugin_load():
+def test_plugin_load(hub):
     config = configparser.ConfigParser()
     config.add_section('plugin:DummyPlugin')
-    plugin_list = plugin.get_plugins(config)
+    plugin_list = plugin.get_plugins(config, hub)
     assert any([isinstance(p, DummyPlugin) for p in plugin_list])
+
 
 @pytest.mark.wip
 def test_plugin_subscription(storeallplugin, hub, event, loop):
