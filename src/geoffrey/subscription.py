@@ -1,6 +1,10 @@
 import asyncio
+import logging
 
 ANYTHING = lambda x: True
+
+logger = logging.getLogger(__name__)
+
 
 class _Subscription(asyncio.Queue):
     """
@@ -16,7 +20,9 @@ class _Subscription(asyncio.Queue):
 
     @asyncio.coroutine
     def put(self, item):
+        logging.debug("Subscription %r received item %r", self, item)
         if self.filter_func(item):
+            logging.debug("Subscription %r accepted item %r", self, item)
             yield from super().put(item)
 
 def subscription(*args, filter_func=ANYTHING, **kwargs):

@@ -1,23 +1,29 @@
+import logging
 import asyncio
 import pickle
 
 from .event import Event, EventType
 from .state import State
 
+logger = logging.getLogger(__name__)
 
 class EventHUB:
     def __init__(self):
         self.events = asyncio.Queue()
         self.states = {}
         self.subscriptions = []
+        asyncio.Task(self.run())
 
     def add_subscriptions(self, subscriptions):
+        logger.debug("Adding subscriptions %r", subscriptions)
         self.subscriptions.extend(subscriptions)
 
     @asyncio.coroutine
     def run(self):
         while True:
             data = yield from self.events.get()
+            logger.debug("Dispatching new event: %r", data)
+            logger.debug("States: %r", self.states.keys())
             for subscription in self.subscriptions:
                 yield from subscription.put(data)
 
@@ -29,6 +35,7 @@ class EventHUB:
 
     @asyncio.coroutine
     def put(self, data):
+        logger.debug("Received item: %r", data)
         if isinstance(data, Event):
             yield from self.events.put(data)
         elif isinstance(data, State):
