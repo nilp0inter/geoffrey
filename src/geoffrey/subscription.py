@@ -3,28 +3,17 @@ import asyncio
 ANYTHING = lambda x: True
 
 
-class Subscription:
-    def __init__(self, loop):
-        self.allow_funcs = []
-        self.callbacks = []
-        self.queue = asyncio.Queue(loop=loop)
-        self.loop = loop
+class Subscription(asyncio.Queue):
+    """
+    Special type of `Queue` that only accepts data if match the filter
+    function.
 
-    def add_filter(self, filter_func):
-        self.allow_funcs.append(filter_func)
-
-    def add_callback(self, callback):
-        self.callbacks.append(callback)
+    """
+    def __init__(self, *args, filter_func=None, **kwargs):
+        self.filter_func = filter_func
+        super().__init__(*args, **kwargs)
 
     @asyncio.coroutine
-    def put(self, data):
-        if any(f(data) for f in self.allow_funcs):
-            yield from self.queue.put(data)
-
-    @asyncio.coroutine
-    def run(self):
-        while True:
-            data = yield from self.queue.get()
-            for callback in self.callbacks:
-                future = yield from self.loop.run_in_executor(
-                    None, callback, data)
+    def put(self, item):
+        if self.filter_func(item):
+            yield from super().put(item)

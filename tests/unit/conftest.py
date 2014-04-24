@@ -14,12 +14,6 @@ def hub():
 
 
 @pytest.fixture  # pragma: nocover
-def subscription():
-    from geoffrey.subscription import Subscription
-    return Subscription(loop=loop())
-
-
-@pytest.fixture  # pragma: nocover
 def event():
     from geoffrey.event import Event
     return Event()

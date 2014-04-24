@@ -3,13 +3,16 @@ import asyncio
 import configparser
 import logging
 import watchdog
+import pytest
 
 # logging.basicConfig(level = logging.DEBUG)
 
+@pytest.mark.wip
 def test_plugin_exist():
     from geoffrey.plugins.filesystem import FileSystem
     assert FileSystem
 
+@pytest.mark.wip
 def test_monitor_directory(loop, storeallplugin, hub):
     from geoffrey.plugins.filesystem import FileSystem
     from tempfile import TemporaryDirectory
@@ -38,6 +41,7 @@ def test_monitor_directory(loop, storeallplugin, hub):
     assert len(storeallplugin.events_received) == 1
 
 
+@pytest.mark.wip
 def test_monitor_multiple_path(loop, storeallplugin, hub):
     from geoffrey.plugins.filesystem import FileSystem
     from tempfile import TemporaryDirectory
