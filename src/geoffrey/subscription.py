@@ -9,7 +9,7 @@ class Subscription(asyncio.Queue):
     function.
 
     """
-    def __init__(self, *args, filter_func=None, **kwargs):
+    def __init__(self, *args, filter_func=lambda x: True, **kwargs):
         self.filter_func = filter_func
         super().__init__(*args, **kwargs)
 

@@ -14,21 +14,12 @@ class EventHUB:
     def add_subscriptions(self, subscriptions):
         self.subscriptions.extend(subscriptions)
 
-    def subscription_tasks(self):
-        return [s.run() for s in self.subscriptions]
-
-
     @asyncio.coroutine
-    def publish(self):
+    def run(self):
         while True:
             data = yield from self.events.get()
             for subscription in self.subscriptions:
                 yield from subscription.put(data)
-
-    @asyncio.coroutine
-    def run(self):
-        yield from asyncio.wait(
-            [self.publish()] + self.subscription_tasks())
 
     def set_state(self, data):
         self.states[data.key] = data.value
