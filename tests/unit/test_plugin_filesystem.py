@@ -7,15 +7,17 @@ import pytest
 
 # logging.basicConfig(level = logging.DEBUG)
 
-@pytest.mark.wip
+
 def test_plugin_exist():
     from geoffrey.plugins.filesystem import FileSystem
     assert FileSystem
 
-@pytest.mark.wip
+
 def test_monitor_directory(loop, storeallplugin, hub):
     from geoffrey.plugins.filesystem import FileSystem
     from tempfile import TemporaryDirectory
+
+    storeallplugin = storeallplugin(config=None, hub=hub)
 
     with TemporaryDirectory() as path:
         config = configparser.ConfigParser()
@@ -31,20 +33,20 @@ def test_monitor_directory(loop, storeallplugin, hub):
             plugin.active = False
             yield from asyncio.sleep(1)
 
-        plugin = FileSystem(config=config)
-        plugin.add_hub(hub)
+        plugin = FileSystem(config=config, hub=hub)
         hub.add_subscriptions(storeallplugin.subscriptions)
 
         loop.run_until_complete(
-            asyncio.wait([stop_after_3(plugin), plugin.run(), hub.run()],
+            asyncio.wait([stop_after_3(plugin), hub.run()],
                          return_when=asyncio.FIRST_COMPLETED))
     assert len(storeallplugin.events_received) == 1
 
 
-@pytest.mark.wip
 def test_monitor_multiple_path(loop, storeallplugin, hub):
     from geoffrey.plugins.filesystem import FileSystem
     from tempfile import TemporaryDirectory
+
+    storeallplugin = storeallplugin(config=None, hub=hub)
 
     with TemporaryDirectory() as path1:
         with TemporaryDirectory() as path2:
@@ -63,12 +65,10 @@ def test_monitor_multiple_path(loop, storeallplugin, hub):
                 plugin.active = False
                 yield from asyncio.sleep(1)
 
-            plugin = FileSystem(config=config)
-            plugin.add_hub(hub)
+            plugin = FileSystem(config=config, hub=hub)
             hub.add_subscriptions(storeallplugin.subscriptions)
-            hub._run_once = True
 
             loop.run_until_complete(
-                asyncio.wait([stop_after_3(plugin), plugin.run(), hub.run()],
+                asyncio.wait([stop_after_3(plugin), hub.run()],
                              return_when=asyncio.FIRST_COMPLETED))
     assert len(storeallplugin.events_received) == 2

@@ -15,7 +15,7 @@ def test_plugin_load(hub):
 
 
 def test_plugin_found_tasks():
-    class TestPlugin(plugin.GeoffreyPlugin):
+    class TestPlugin(plugin.GeoffreyPlugin):  # pragma: no cover
         def nothing_interesting(self):
             pass
 
@@ -38,7 +38,7 @@ def test_plugin_found_tasks():
 
 def test_plugin_found_subscriptions(hub):
     from geoffrey.subscription import subscription, _Subscription
-    sub = subscription(lambda x: True)
+    sub = subscription()
     class TestPlugin(plugin.GeoffreyPlugin):
         @asyncio.coroutine
         def task1(self, mydata: sub) -> plugin.Task:
@@ -75,9 +75,9 @@ def test_plugin_start_tasks_on_init(hub, loop, event):
     assert p.data == event
 
 
-@pytest.mark.wip
 def test_plugin_subscription(storeallplugin, hub, event, loop):
 
+   storeallplugin = storeallplugin(config=None, hub=hub)
    hub.add_subscriptions(storeallplugin.subscriptions)
 
    loop.run_until_complete(hub.put(event))

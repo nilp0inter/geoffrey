@@ -6,8 +6,8 @@ from .state import State
 
 
 class EventHUB:
-    def __init__(self, loop):
-        self.events = asyncio.Queue(loop=loop)
+    def __init__(self):
+        self.events = asyncio.Queue()
         self.states = {}
         self.subscriptions = []
 

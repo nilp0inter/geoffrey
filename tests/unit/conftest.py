@@ -10,7 +10,7 @@ def loop():
 @pytest.fixture  # pragma: nocover
 def hub():
     from geoffrey.hub import EventHUB
-    return EventHUB(loop=loop())
+    return EventHUB()
 
 
 @pytest.fixture  # pragma: nocover
@@ -27,22 +27,18 @@ def state():
 
 @pytest.fixture  # pragma: nocover
 def storeallplugin():
-    from geoffrey.plugin import GeoffreyPlugin
-    from geoffrey.subscription import Subscription, ANYTHING
+    import asyncio
+    from geoffrey import plugin
+    from geoffrey.subscription import subscription
 
-    class StoreAllPlugin(GeoffreyPlugin):
-        def __init__(self, *args, **kwargs):
-            self.events_received = []
+    class StoreAllPlugin(plugin.GeoffreyPlugin):
+        events_received = []
 
-            s = Subscription(loop())
-            s.add_filter(ANYTHING)  # Allow all
-            s.add_callback(self.store_event)
-            self.subscriptions = [s]
+        @asyncio.coroutine
+        def store_event(self, data: subscription()) -> plugin.Task:
+            while True:
+                item = yield from data.get()
+                self.events_received.append(item)
 
-            super().__init__(*args, **kwargs)
-
-        def store_event(self, data):
-            self.events_received.append(data)
-
-    return StoreAllPlugin(None)
+    return StoreAllPlugin
 

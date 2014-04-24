@@ -1,6 +1,22 @@
 def test_subscription():
     from geoffrey.subscription import _Subscription
-    return _Subscription(filter_func=lambda x: True)
+    assert _Subscription(filter_func=lambda x: True)  # pragma: nocover
+
+
+def test_empty_subscription_means_anything():
+    from geoffrey.subscription import _Subscription, ANYTHING
+    sub = _Subscription()
+    assert sub.filter_func is ANYTHING
+
+
+def test_anything():
+    from geoffrey.subscription import ANYTHING
+    assert ANYTHING(False)
+    assert ANYTHING(True)
+    assert ANYTHING(None)
+    assert ANYTHING("")
+    assert ANYTHING(0)
+    assert ANYTHING([])
 
 
 def test_subscription_put(loop):
@@ -22,7 +38,7 @@ def test_subscription_wrapper_generator():
     #subscription -> wrapper function
     #_Subscription -> The Subscription class
 
-    sub = subscription(filter_func=lambda x: True)
+    sub = subscription()
 
     sub1 = sub()
     sub2 = sub()

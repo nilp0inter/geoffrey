@@ -24,7 +24,6 @@ def test_autocreate_project_dir():
         assert os.path.isdir(os.path.join(configdir, 'projects'))
 
 
-@pytest.mark.wip
 def test_server_projects():
     """The server knows its active projects."""
 
@@ -72,7 +71,6 @@ def test_main_config_must_be_file():
             geoffrey.Server.read_main_config(configdir)
 
 
-@pytest.mark.wip
 def test_project_configuration():
     """A project can read its own configuration."""
     with TemporaryDirectory() as projectdir:
@@ -83,7 +81,6 @@ def test_project_configuration():
                                            config=project_config)
         assert 'project' in project.config.sections()
 
-@pytest.mark.wip
 def test_project_plugins():
     """The project know its active plugins."""
     from geoffrey.plugins.dummy import DummyPlugin1, DummyPlugin2
