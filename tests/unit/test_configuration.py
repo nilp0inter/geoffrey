@@ -81,7 +81,6 @@ def test_project_configuration():
                                            config=project_config)
         assert 'project' in project.config.sections()
 
-
 def test_project_plugins():
     """The project know its active plugins."""
     from geoffrey.plugins.dummy import DummyPlugin1, DummyPlugin2
@@ -103,5 +102,3 @@ def test_project_plugins():
         assert isinstance(plugins['DummyPlugin1'], DummyPlugin1)
         assert 'DummyPlugin2' in plugins
         assert isinstance(plugins['DummyPlugin2'], DummyPlugin2)
-
-

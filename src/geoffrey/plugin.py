@@ -1,6 +1,14 @@
+import asyncio
+import inspect
 
 from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
+from geoffrey.subscription import _Subscription
+
+
+class Task:
+    """Geoffrey plugin task marker."""
+    pass
 
 
 class GeoffreyPlugin:
@@ -9,8 +17,18 @@ class GeoffreyPlugin:
 
     """
 
-    def __init__(self, config):
+    def __init__(self, config, hub):
         self.config = config
+        self.hub = hub
+        self.subscriptions = []
+        for task in self.get_tasks():
+            kwargs = {}
+            for name, subscription in self.get_subscriptions(task):
+                sub = subscription()  # Instantiate this subscription class
+                self.subscriptions.append(sub)
+                kwargs[name] = sub
+            asyncio.Task(task(self, **kwargs))
+
 
     @property
     def name(self):
@@ -24,6 +42,32 @@ class GeoffreyPlugin:
         section_name = self._section_name
         return section_name in self.config.sections()
 
+    @classmethod
+    def get_tasks(cls):
+        """
+        Return the members of this class annotated with return Task.
+        """
+        def _get_tasks():
+            members = inspect.getmembers(cls,predicate=inspect.isfunction)
+            for name, member in members:
+                annotations = getattr(member, '__annotations__', {})
+                if annotations.get('return', None) == Task:
+                    yield member
+        return list(_get_tasks())
+
+    @staticmethod
+    def get_subscriptions(task):
+        annotations = getattr(task, '__annotations__', {})
+        def _get_subscriptions():
+            for key, value in annotations.items():
+                print(key, value)
+                inner_annotattion = getattr(value, '__annotations__', {})
+                print(inner_annotattion)
+                wrapper_return = inner_annotattion.get('return', None)
+                print(wrapper_return)
+                if wrapper_return == _Subscription:
+                    yield key, value
+        return list(_get_subscriptions())
 
 def get_plugins(config, *args, **kwargs):
     loader = load('geoffrey.plugins',
