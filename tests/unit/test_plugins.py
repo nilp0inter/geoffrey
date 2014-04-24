@@ -37,8 +37,8 @@ def test_plugin_found_tasks():
 
 
 def test_plugin_found_subscriptions(hub):
-    from geoffrey.subscription import Subscription
-    sub = Subscription(lambda x: True)
+    from geoffrey.subscription import subscription, _Subscription
+    sub = subscription(lambda x: True)
     class TestPlugin(plugin.GeoffreyPlugin):
         @asyncio.coroutine
         def task1(self, mydata: sub) -> plugin.Task:
@@ -47,13 +47,13 @@ def test_plugin_found_subscriptions(hub):
     p = TestPlugin(config=None, hub=hub)
 
     assert len(p.subscriptions) == 1
-    assert isinstance(p.subscriptions[0], Subscription)
+    assert isinstance(p.subscriptions[0], _Subscription)
 
 
 def test_plugin_start_tasks_on_init(hub, loop, event):
-    from geoffrey.subscription import Subscription
+    from geoffrey.subscription import subscription
 
-    sub = Subscription(filter_func = lambda x: True)
+    sub = subscription(filter_func = lambda x: True)
 
     class TestPlugin(plugin.GeoffreyPlugin):
 

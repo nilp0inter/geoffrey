@@ -3,7 +3,7 @@ import inspect
 
 from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
-from geoffrey.subscription import Subscription
+from geoffrey.subscription import _Subscription
 
 
 class Task:
@@ -24,8 +24,9 @@ class GeoffreyPlugin:
         for task in self.get_tasks():
             kwargs = {}
             for name, subscription in self.get_subscriptions(task):
-                self.subscriptions.append(subscription)
-                kwargs[name] = subscription
+                sub = subscription()  # Instantiate this subscription class
+                self.subscriptions.append(sub)
+                kwargs[name] = sub
             asyncio.Task(task(self, **kwargs))
 
 
@@ -59,7 +60,12 @@ class GeoffreyPlugin:
         annotations = getattr(task, '__annotations__', {})
         def _get_subscriptions():
             for key, value in annotations.items():
-                if isinstance(value, Subscription):
+                print(key, value)
+                inner_annotattion = getattr(value, '__annotations__', {})
+                print(inner_annotattion)
+                wrapper_return = inner_annotattion.get('return', None)
+                print(wrapper_return)
+                if wrapper_return == _Subscription:
                     yield key, value
         return list(_get_subscriptions())
 
