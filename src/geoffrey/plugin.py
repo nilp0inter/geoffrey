@@ -60,11 +60,8 @@ class GeoffreyPlugin:
         annotations = getattr(task, '__annotations__', {})
         def _get_subscriptions():
             for key, value in annotations.items():
-                print(key, value)
                 inner_annotattion = getattr(value, '__annotations__', {})
-                print(inner_annotattion)
                 wrapper_return = inner_annotattion.get('return', None)
-                print(wrapper_return)
                 if wrapper_return == _Subscription:
                     yield key, value
         return list(_get_subscriptions())
