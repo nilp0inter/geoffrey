@@ -20,7 +20,7 @@ POST /api/v1/consumer
 Unregister
 ~~~~~~~~~~
 
-DELETE /api/v1/consumer/ab37-3f47...
+DELETE /api/v1/consumer/<consumer_id>
 
 
 Project API
@@ -90,7 +90,7 @@ Subscription API
 Make subscriptions
 ~~~~~~~~~~~~~~~~~~
 
-POST /api/v1/subscription/ab37-3f47...
+POST /api/v1/subscription/<consumer_id>
 
 .. code-block:: javascript
 
