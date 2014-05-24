@@ -110,6 +110,43 @@ class Server:
 
         app = bottle()
 
+        # CONSUMER API
+        @app.route('/api/v1/consumer', method=['POST', 'DELETE'])
+        def consumer():
+            """ Register a consumer """
+
+            if app.request.method == POST:
+                # Magic to registe
+                return {'id': 'ab37-3f47...', 'ws': 'ws://127.0.0.1:8701'}
+            else:
+                # Magic to unregister
+                return None
+
+        # PROJECT API
+        @app.get('/api/v1/projects')
+        def get_projects():
+
+            return [{'id': 'project_a', 'name': 'Project A'}, {'id': 'project_b', 'name': 'Project B'}]
+
+        # PLUGIN API
+        @app.get('/api/v1/<project_id>/plugins')
+        def get_plugins(project_id):
+            return [{'id': 'pylint'}]
+
+        @app.get('/api/v1/<project_id>/<plugin_id>/source')
+        def plugin_source(project_id, plugin_id):
+
+            return '<script type="text/javascript">'
+
+        @app.get('/api/v1/<project_id>/<plugin_id>/state')
+        def plugin_state(project_id, plugin_id):
+            return [{},{}]
+
+        @app.post('/api/v1/subscription/<consumer_id>')
+        def subscribe(consumer_id):
+
+            return None
+
         @app.get('/')
         @jinja2_view('index.html')
         def index():
