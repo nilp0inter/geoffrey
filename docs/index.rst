@@ -11,11 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   architecture
-   protocol
    configuration
    geoffrey_conf
    project_conf
+   api
+   events
 
 Indices and tables
 ==================

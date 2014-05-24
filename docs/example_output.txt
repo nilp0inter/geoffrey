@@ -1,0 +1,121 @@
+W:  8, 0: Cannot decode using encoding "ascii", unexpected byte at position 37 (invalid-encoded-data)
+C:  1, 0: Missing module docstring (missing-docstring)
+
+
+message
+line
+character
+type
+
+---
+
+3 statements analysed.
+
+total: 3
+
+---
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |1      |1        |=          |
++-----------+-------+---------+-----------+
+|refactor   |0      |0        |=          |
++-----------+-------+---------+-----------+
+|warning    |1      |1        |=          |
++-----------+-------+---------+-----------+
+|error      |0      |0        |=          |
++-----------+-------+---------+-----------+
+
+type:
+number:
+
+---
+
++---------------------+------------+
+|message id           |occurrences |
++=====================+============+
+|missing-docstring    |1           |
++---------------------+------------+
+|invalid-encoded-data |1           |
++---------------------+------------+
+
+message:
+count:
+
+---
+
+Your code has been rated at 3.33/10 (previous run: 3.33/10, +0.00)
+
+score:
+
+---
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |1          |=          |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|method   |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|function |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+
+object_type:
+count:
+doc_count
+bad_name_count
+
+---
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |17     |62.96 |17       |=          |
++----------+-------+------+---------+-----------+
+|docstring |8      |29.63 |8        |=          |
++----------+-------+------+---------+-----------+
+|comment   |1      |3.70  |1        |=          |
++----------+-------+------+---------+-----------+
+|empty     |1      |3.70  |1        |=          |
++----------+-------+------+---------+-----------+
+
+type:
+count:
+percent:
+
+---
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |=          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+count_dup:
+percent_dup:
+
+---
+$ flake8 src/geoffrey/*.py       
+src/geoffrey/plugin.py:33:5: E303 too many blank lines (2)
+src/geoffrey/plugin.py:51:45: E231 missing whitespace after ','
+src/geoffrey/plugin.py:61:9: E301 expected 1 blank line, found 0
+src/geoffrey/plugin.py:72:1: E302 expected 2 blank lines, found 1
+src/geoffrey/server.py:146:9: F841 local variable 'err' is assigned to but never used
+src/geoffrey/state.py:6:1: E302 expected 2 blank lines, found 1
+src/geoffrey/subscription.py:5:1: E302 expected 2 blank lines, found 1
+src/geoffrey/subscription.py:22:1: E302 expected 2 blank lines, found 1
+
+filename:
+line:
+char:
+err_code:
+message:
+(
+expected:
+found:
+)
