@@ -29,6 +29,8 @@ class GeoffreyPlugin:
                 kwargs[name] = sub
             asyncio.Task(task(self, **kwargs))
 
+    def __repr__(self):
+        return self.name
 
     @property
     def name(self):
