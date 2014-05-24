@@ -25,3 +25,5 @@ su vagrant -c "virtualenv -p /usr/bin/python3.4 /home/vagrant"
 su vagrant -c "/home/vagrant/bin/pip install -e /vagrant"
 
 echo "source ~/bin/activate" >> /home/vagrant/.bashrc
+echo "export GEOFFREYDEBUG=1" >> /home/vagrant/.bashrc
+
