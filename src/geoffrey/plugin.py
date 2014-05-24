@@ -1,10 +1,13 @@
 import asyncio
+import logging
 import inspect
 
 from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
+from geoffrey.hub import EventHUB
 from geoffrey.subscription import _Subscription
 
+logger = logging.getLogger(__name__)
 
 class Task:
     """Geoffrey plugin task marker."""
@@ -17,22 +20,30 @@ class GeoffreyPlugin:
 
     """
 
-    def __init__(self, config, hub):
+    def __init__(self, config):
         self.config = config
-        self.hub = hub
+        self.hub = EventHUB()
         self.subscriptions = []
+        self.tasks = []
+        logging.debug("Starting plugin `%s`!", self.name)
         for task in self.get_tasks():
             kwargs = {}
             for name, subscription in self.get_subscriptions(task):
                 sub = subscription()  # Instantiate this subscription class
                 self.subscriptions.append(sub)
                 kwargs[name] = sub
-            asyncio.Task(task(self, **kwargs))
+            self.tasks.append(task(self, **kwargs))
 
+    def start(self):
+        for task in self.tasks:
+            asyncio.Task(task)
 
     @property
     def name(self):
         return self.__class__.__name__
+
+    def __repr__(self):
+        return self.name
 
     @property
     def _section_name(self):
@@ -60,11 +71,8 @@ class GeoffreyPlugin:
         annotations = getattr(task, '__annotations__', {})
         def _get_subscriptions():
             for key, value in annotations.items():
-                print(key, value)
                 inner_annotattion = getattr(value, '__annotations__', {})
-                print(inner_annotattion)
                 wrapper_return = inner_annotattion.get('return', None)
-                print(wrapper_return)
                 if wrapper_return == _Subscription:
                     yield key, value
         return list(_get_subscriptions())

@@ -6,16 +6,35 @@ from .state import State
 
 
 class EventHUB:
-    def __init__(self):
-        self.events = asyncio.Queue()
-        self.states = {}
-        self.subscriptions = []
+
+    instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = super().__new__(cls, *args, **kwargs)
+            cls.events = asyncio.Queue()
+            cls.subscriptions = []
+            cls.running = False
+            cls.states = {}
+
+        return cls.instance
+
+
+    @classmethod
+    def _drop(cls):
+        """Drop the singleton instance for testing purposes."""
+        cls.instance = None
 
     def add_subscriptions(self, subscriptions):
         self.subscriptions.extend(subscriptions)
 
     @asyncio.coroutine
     def run(self):
+        if not self.running:
+            self.running = True
+        else:
+            raise RuntimeError("HUB run method can't be exec twice.")
+
         while True:
             data = yield from self.events.get()
             for subscription in self.subscriptions:

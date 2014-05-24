@@ -7,10 +7,14 @@ def loop():
     return loop
 
 
-@pytest.fixture  # pragma: nocover
-def hub():
+@pytest.fixture(scope='function')  # pragma: nocover
+def hub(request):
     from geoffrey.hub import EventHUB
-    return EventHUB()
+    hub = EventHUB()
+    def fin():
+        hub._drop()
+    request.addfinalizer(fin)
+    return hub
 
 
 @pytest.fixture  # pragma: nocover

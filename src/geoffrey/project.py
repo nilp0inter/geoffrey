@@ -1,21 +1,27 @@
-import os
 import configparser
-from geoffrey import utils, defaults, plugin
-from geoffrey.hub import EventHUB
+import logging
+import os
 
+from geoffrey import utils, defaults, plugin
+
+logger = logging.getLogger(__name__)
 
 class Project:
     """Geoffrey project."""
     def __init__(self, name, config):
+        logger.info("Project found `%s`.", name)
         self.name = name
-        self.hub = EventHUB()
         self.configfile = config
         if not os.path.exists(config):
             utils.write_template(config, defaults.PROJECT_CONFIG_DEFAULT)
         self.config = configparser.ConfigParser()
         self.config.read(config)
         self.plugins = {p.name: p
-                        for p in plugin.get_plugins(self.config, self.hub)}
+                        for p in plugin.get_plugins(self.config)}
+        logger.info("Project: `%s`. Plugins found: %s",
+                    self.name, repr(list(self.plugins.values())))
+        for p in self.plugins.values():
+            p.start()
 
     def remove(self):
         """Remove this project from disk."""

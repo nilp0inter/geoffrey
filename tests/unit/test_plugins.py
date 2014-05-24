@@ -7,10 +7,10 @@ from geoffrey import plugin
 from geoffrey.plugins.dummy import DummyPlugin
 
 
-def test_plugin_load(hub):
+def test_plugin_load():
     config = configparser.ConfigParser()
     config.add_section('plugin:DummyPlugin')
-    plugin_list = plugin.get_plugins(config, hub)
+    plugin_list = plugin.get_plugins(config)
     assert any([isinstance(p, DummyPlugin) for p in plugin_list])
 
 
@@ -36,7 +36,7 @@ def test_plugin_found_tasks():
     assert len(tasks) == 2
 
 
-def test_plugin_found_subscriptions(hub):
+def test_plugin_found_subscriptions():
     from geoffrey.subscription import subscription, _Subscription
     sub = subscription()
     class TestPlugin(plugin.GeoffreyPlugin):
@@ -44,13 +44,13 @@ def test_plugin_found_subscriptions(hub):
         def task1(self, mydata: sub) -> plugin.Task:
             yield from asyncio.sleep(1)
 
-    p = TestPlugin(config=None, hub=hub)
+    p = TestPlugin(config=None)
 
     assert len(p.subscriptions) == 1
     assert isinstance(p.subscriptions[0], _Subscription)
 
 
-def test_plugin_start_tasks_on_init(hub, loop, event):
+def test_plugin_start_tasks_on_start(hub, loop, event):
     from geoffrey.subscription import subscription
 
     sub = subscription(filter_func = lambda x: True)
@@ -68,7 +68,8 @@ def test_plugin_start_tasks_on_init(hub, loop, event):
         yield from hub.put(event)
         yield from asyncio.sleep(1)
 
-    p = TestPlugin(config=None, hub=hub)
+    p = TestPlugin(config=None)
+    p.start()
     hub.add_subscriptions(p.subscriptions)
     loop.run_until_complete(asyncio.wait([hub.run(), queue_event()],
                                          return_when=asyncio.FIRST_COMPLETED))
@@ -77,11 +78,13 @@ def test_plugin_start_tasks_on_init(hub, loop, event):
 
 def test_plugin_subscription(storeallplugin, hub, event, loop):
 
-   storeallplugin = storeallplugin(config=None, hub=hub)
+   storeallplugin = storeallplugin(config=None)
+   storeallplugin.start()
    hub.add_subscriptions(storeallplugin.subscriptions)
 
    loop.run_until_complete(hub.put(event))
    assert hub.events.qsize() == 1
+
 
    loop.run_until_complete(
        asyncio.wait([hub.run(), asyncio.sleep(1)],
