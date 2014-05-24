@@ -30,3 +30,5 @@ python3.4 -m ensurepip
 
 # We need virtualenv for tox testing
 pip3.3 install virtualenv
+
+pip3.4 install -e /vagrant/

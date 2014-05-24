@@ -9,6 +9,7 @@ import websockets
 from geoffrey.deps.aiobottle import AsyncBottle
 from geoffrey import utils, defaults
 from .project import Project
+from .hub import EventHUB
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
 DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')
@@ -27,6 +28,7 @@ class Server:
 
         self.projects = self.get_projects()
         self.loop = asyncio.get_event_loop()
+        self.hub = EventHUB()
 
     @property
     def projects_root(self):

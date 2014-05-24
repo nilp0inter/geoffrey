@@ -106,3 +106,10 @@ def test_states_persistence(hub):
 
     assert state1.key in hub.states
     assert state2.key in hub.states
+
+
+def test_hub_is_singleton():
+    from geoffrey.hub import EventHUB
+    hub1 = EventHUB()
+    hub2 = EventHUB()
+    assert hub1 is hub2
