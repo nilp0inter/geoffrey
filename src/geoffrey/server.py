@@ -2,6 +2,7 @@ import asyncio
 import configparser
 import logging
 import os
+import json
 import signal
 
 import websockets
@@ -97,7 +98,7 @@ class Server:
 
     def get_webapp(self, bottle=AsyncBottle):
         """Return the bottle application of the server."""
-        from bottle import static_file, TEMPLATE_PATH, jinja2_view
+        from bottle import static_file, TEMPLATE_PATH, jinja2_view, request
 
         webbase = os.path.join(os.path.dirname(__file__), "web")
         TEMPLATE_PATH[:] = [webbase]
@@ -112,14 +113,15 @@ class Server:
 
         app = bottle()
 
+
         # CONSUMER API
         @app.route('/api/v1/consumer', method=['POST', 'DELETE'])
         def consumer():
             """ Register a consumer """
 
-            if app.request.method == POST:
+            if request.method == 'POST':
                 # Magic to registe
-                return {'id': 'ab37-3f47...', 'ws': 'ws://127.0.0.1:8701'}
+                return json.dumps({'id': 'ab37-3f47...', 'ws': 'ws://127.0.0.1:8701'})
             else:
                 # Magic to unregister
                 return None
@@ -128,12 +130,12 @@ class Server:
         @app.get('/api/v1/projects')
         def get_projects():
 
-            return [{'id': 'project_a', 'name': 'Project A'}, {'id': 'project_b', 'name': 'Project B'}]
+            return json.dumps([{'id': 'project_a', 'name': 'Project A'}, {'id': 'project_b', 'name': 'Project B'}])
 
         # PLUGIN API
         @app.get('/api/v1/<project_id>/plugins')
         def get_plugins(project_id):
-            return [{'id': 'pylint'}]
+            return json.dumps([{'id': 'pylint'}])
 
         @app.get('/api/v1/<project_id>/<plugin_id>/source')
         def plugin_source(project_id, plugin_id):
@@ -142,7 +144,7 @@ class Server:
 
         @app.get('/api/v1/<project_id>/<plugin_id>/state')
         def plugin_state(project_id, plugin_id):
-            return [{},{}]
+            return json.dumps([{},{}])
 
         @app.post('/api/v1/subscription/<consumer_id>')
         def subscribe(consumer_id):
@@ -161,7 +163,19 @@ class Server:
             """Serve static files under web/assets at /assets."""
             return static_file(filepath, root=os.path.join(webbase, 'assets'))
 
+        # Get web API definitions
+        @app.get('/api/v1')
+        def get_api():
+            from cgi import escape
+            routes = { escape(route.rule) for route in app.routes if route.rule.startswith('/api') }
+            html_list = '<ul>'
+            for route in routes:
+                html_list += '<li>{}</li>'.format(route)
+            return html_list
+            html_list += '</ul>'
+
         return app
+
 
     def start_webserver(self):
         """Run the internal webserver."""
