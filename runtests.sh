@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-pip install -r requirements/tests.txt
+pip3.4 install -r requirements/tests.txt
 coverage erase
 rm -Rf htmlcov
 tox
