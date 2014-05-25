@@ -11,15 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 class GeoffreyFSHandler(FileSystemEventHandler):
-    def __init__(self, loop, hub):
+    def __init__(self, loop, plugin):
         self.loop = loop
-        self.hub = hub
+        self.plugin = plugin
 
     def on_any_event(self, event):
         logger.debug("Received FS event %r", event)
-        gev = Event(type=event.event_type,
-                    key=event.src_path)
-        self.loop.call_soon_threadsafe(asyncio.async, self.hub.put(gev))
+        event = self.plugin.new_event(
+            key=event.src_path.decode('utf-8'), type=event.event_type)
+        self.loop.call_soon_threadsafe(
+            asyncio.async, self.plugin.hub.put(event))
 
 
 class FileSystem(plugin.GeoffreyPlugin):
@@ -33,7 +34,8 @@ class FileSystem(plugin.GeoffreyPlugin):
 
     @asyncio.coroutine
     def run(self) -> plugin.Task:
-        event_handler = GeoffreyFSHandler(asyncio.get_event_loop(), self.hub)
+        event_handler = GeoffreyFSHandler(asyncio.get_event_loop(),
+                                          plugin=self)
         observer = Observer()
         paths = self.config.get(self._section_name, 'paths').split(',')
         for path in paths:
