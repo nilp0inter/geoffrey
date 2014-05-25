@@ -1,7 +1,8 @@
 from collections import namedtuple
 
 
-StateKey = namedtuple('StateKey', ('object', 'project', 'namespace'))
+StateKey = namedtuple('StateKey', ('project', 'plugin', 'key'))
+
 
 class State:
     def __init__(self, **kwargs):

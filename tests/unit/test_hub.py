@@ -27,7 +27,7 @@ def test_new_state_created_event(hub, loop):
     from geoffrey.state import State
     from geoffrey.event import EventType
 
-    state = State(object='testobject', value='something interesting')
+    state = State(key='testobject', value='something interesting')
 
 
     loop.run_until_complete(hub.put(state))
@@ -40,14 +40,14 @@ def test_modified_state_modified_event(hub, loop):
     from geoffrey.state import State
     from geoffrey.event import EventType
 
-    state1 = State(object='testobject', value='something interesting')
+    state1 = State(key='testobject', value='something interesting')
 
     loop.run_until_complete(hub.put(state1))
     ev1 = hub.events.get_nowait()
     assert ev1.type == EventType.created
     assert state1.key in hub.states
 
-    state2 = State(object='testobject', value='different stuff')
+    state2 = State(key='testobject', value='different stuff')
 
     loop.run_until_complete(hub.put(state2))
     ev2 = hub.events.get_nowait()
@@ -59,7 +59,7 @@ def test_same_state_do_nothing(hub, loop):
     from geoffrey.state import State
     from geoffrey.event import EventType
 
-    state1 = state2 = State(object='testobject', value='something interesting')
+    state1 = state2 = State(key='testobject', value='something interesting')
 
     loop.run_until_complete(hub.put(state1))
     ev1 = hub.events.get_nowait()
@@ -75,14 +75,14 @@ def test_empty_state_means_deletion(hub, loop):
     from geoffrey.state import State
     from geoffrey.event import EventType
 
-    state1 = State(object='testobject', value='something interesting')
+    state1 = State(key='testobject', value='something interesting')
 
     loop.run_until_complete(hub.put(state1))
     ev1 = hub.events.get_nowait()
     assert ev1.type == EventType.created
     assert state1.key in hub.states
 
-    state2 = State(object='testobject')
+    state2 = State(key='testobject')
 
     loop.run_until_complete(hub.put(state2))
     ev2 = hub.events.get_nowait()
@@ -94,9 +94,9 @@ def test_states_persistence(hub):
     from tempfile import NamedTemporaryFile 
     from geoffrey.state import State
 
-    state1 = State(object='object1', data='data')
+    state1 = State(key='object1', data='data')
     hub.set_state(state1)
-    state2 = State(object='object2', data='data')
+    state2 = State(key='object2', data='data')
     hub.set_state(state2)
 
     with NamedTemporaryFile() as tf:
