@@ -6,6 +6,8 @@ from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
 from geoffrey.hub import EventHUB
 from geoffrey.subscription import _Subscription
+from geoffrey.state import State
+from geoffrey.event import Event
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +22,12 @@ class GeoffreyPlugin:
 
     """
 
-    def __init__(self, config):
+    def __init__(self, config, project=None):
         self.config = config
         self.hub = EventHUB()
         self.subscriptions = []
         self.tasks = []
+        self.project = project
         logging.debug("Starting plugin `%s`!", self.name)
         for task in self.get_tasks():
             kwargs = {}
@@ -76,6 +79,20 @@ class GeoffreyPlugin:
                 if wrapper_return == _Subscription:
                     yield key, value
         return list(_get_subscriptions())
+
+    @property
+    def _project_name(self):
+        if self.project is not None:
+            return self.project.name
+
+    def new_state(self, key, **kwargs):
+        return State(project=self._project_name,
+                     plugin=self.name, key=key, **kwargs)
+
+    def new_event(self, key, **kwargs):
+        state = self.new_state(key, **kwargs)
+        return Event(key=state.key, value=state.value)
+
 
 def get_plugins(config, *args, **kwargs):
     loader = load('geoffrey.plugins',

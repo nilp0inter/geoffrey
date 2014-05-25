@@ -1,3 +1,5 @@
+from tempfile import TemporaryDirectory
+import os
 import asyncio
 import configparser
 
@@ -91,3 +93,45 @@ def test_plugin_subscription(storeallplugin, hub, event, loop):
                     return_when=asyncio.FIRST_COMPLETED))
 
    assert event in storeallplugin.events_received
+
+
+def test_plugin_new_state(storeallplugin):
+    import geoffrey
+    from geoffrey.state import StateKey
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        server = geoffrey.Server(config=config_file)
+        server.create_project('newproject')
+
+        project = server.projects['newproject']
+        plugin = storeallplugin(config=None, project=project)
+
+        state = plugin.new_state('mykey', value='myvalue')
+
+        statekey = StateKey('newproject', 'StoreAllPlugin', 'mykey')
+
+        assert state.key == statekey
+        assert state.value == {'value': 'myvalue'}
+
+
+def test_plugin_new_event(storeallplugin):
+    import geoffrey
+    from geoffrey.event import EventType
+    from geoffrey.state import StateKey
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        server = geoffrey.Server(config=config_file)
+        server.create_project('newproject')
+
+        project = server.projects['newproject']
+        plugin = storeallplugin(config=None, project=project)
+
+        event = plugin.new_event('mykey', value='myvalue')
+
+        statekey = StateKey('newproject', 'StoreAllPlugin', 'mykey')
+
+        assert event.type == EventType.unknown
+        assert event.key == statekey
+        assert event.value == {'value': 'myvalue'}
