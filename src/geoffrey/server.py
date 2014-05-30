@@ -7,9 +7,10 @@ import signal
 
 import websockets
 
-from geoffrey.deps.aiobottle import AsyncBottle
 from geoffrey import utils, defaults
 from .project import Project
+
+from geoffrey.deps.aiobottle import AsyncBottle
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
 DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')

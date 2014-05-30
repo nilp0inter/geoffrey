@@ -17,10 +17,7 @@ class GeoffreyFSHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         logger.debug("Received FS event %r", event)
-        event = self.plugin.new_event(
-            key=event.src_path.decode('utf-8'), type=event.event_type)
-        self.loop.call_soon_threadsafe(
-            asyncio.async, self.plugin.hub.put(event))
+        self.loop.call_soon_threadsafe(self.plugin.queue_event, event)
 
 
 class FileSystem(plugin.GeoffreyPlugin):
@@ -32,8 +29,14 @@ class FileSystem(plugin.GeoffreyPlugin):
         super().__init__(*args, **kwargs)
         self.active = True
 
+    def queue_event(self, fsevent):
+        key = fsevent.src_path.decode('utf-8')
+        type_ = fsevent.event_type
+        event = self.new_event(key=key, type=type_)
+        self.hub.events.put_nowait(event)
+
     @asyncio.coroutine
-    def run(self) -> plugin.Task:
+    def capture_fs_events(self) -> plugin.Task:
         event_handler = GeoffreyFSHandler(asyncio.get_event_loop(),
                                           plugin=self)
         observer = Observer()

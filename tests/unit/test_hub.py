@@ -1,5 +1,6 @@
 import pytest
 
+
 def test_hub(hub):
     assert hub
 
@@ -108,8 +109,8 @@ def test_states_persistence(hub):
     assert state2.key in hub.states
 
 
-def test_hub_is_singleton():
-    from geoffrey.hub import EventHUB
-    hub1 = EventHUB()
-    hub2 = EventHUB()
+def test_hub_is_global():
+    from geoffrey.hub import get_hub
+    hub1 = get_hub()
+    hub2 = get_hub()
     assert hub1 is hub2

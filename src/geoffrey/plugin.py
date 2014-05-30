@@ -4,7 +4,7 @@ import inspect
 
 from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
-from geoffrey.hub import EventHUB
+from geoffrey.hub import get_hub
 from geoffrey.subscription import _Subscription
 from geoffrey.state import State
 from geoffrey.event import Event
@@ -24,7 +24,7 @@ class GeoffreyPlugin:
 
     def __init__(self, config, project=None):
         self.config = config
-        self.hub = EventHUB()
+        self.hub = get_hub()
         self.subscriptions = []
         self.tasks = []
         self.project = project

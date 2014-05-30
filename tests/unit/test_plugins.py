@@ -8,6 +8,9 @@ import pytest
 from geoffrey import plugin
 from geoffrey.plugins.dummy import DummyPlugin
 
+from conftest import setup_asyncio as setup_function
+from conftest import teardown_asyncio as teardown_function
+
 
 def test_plugin_load():
     config = configparser.ConfigParser()
@@ -68,31 +71,33 @@ def test_plugin_start_tasks_on_start(hub, loop, event):
     @asyncio.coroutine
     def queue_event():
         yield from hub.put(event)
-        yield from asyncio.sleep(1)
+        while True:
+            yield from asyncio.sleep(1)
 
     p = TestPlugin(config=None)
-    p.start()
+
+    assert p.data is None
+    assert hub.events.qsize() == 0
+
     hub.add_subscriptions(p.subscriptions)
-    loop.run_until_complete(asyncio.wait([hub.run(), queue_event()],
+    loop.run_until_complete(asyncio.wait(p.tasks + [hub.run(), queue_event()],
                                          return_when=asyncio.FIRST_COMPLETED))
     assert p.data == event
 
 
 def test_plugin_subscription(storeallplugin, hub, event, loop):
 
-   storeallplugin = storeallplugin(config=None)
-   storeallplugin.start()
-   hub.add_subscriptions(storeallplugin.subscriptions)
+   sa_plugin = storeallplugin(config=None)
+   hub.add_subscriptions(sa_plugin.subscriptions)
 
    loop.run_until_complete(hub.put(event))
    assert hub.events.qsize() == 1
 
-
    loop.run_until_complete(
-       asyncio.wait([hub.run(), asyncio.sleep(1)],
+       asyncio.wait(sa_plugin.tasks + [hub.run(), asyncio.sleep(1)],
                     return_when=asyncio.FIRST_COMPLETED))
 
-   assert event in storeallplugin.events_received
+   assert event in sa_plugin.events_received
 
 
 def test_plugin_new_state(storeallplugin):
@@ -135,3 +140,10 @@ def test_plugin_new_event(storeallplugin):
         assert event.type == EventType.unknown
         assert event.key == statekey
         assert event.value == {'value': 'myvalue'}
+
+
+def test_plugins_same_hub(storeallplugin, testplugin):
+    p1 = storeallplugin(config=None)
+    p2 = testplugin(config=None)
+
+    assert p1.hub is p2.hub

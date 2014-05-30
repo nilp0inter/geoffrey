@@ -4,26 +4,19 @@ import pickle
 from .event import Event, EventType
 from .state import State
 
+# Global, implicit hub
+_hub = None
+
 
 class EventHUB:
-
+    """The main data exchanger."""
     instance = None
 
-    def __new__(cls, *args, **kwargs):
-        if cls.instance is None:
-            cls.instance = super().__new__(cls, *args, **kwargs)
-            cls.events = asyncio.Queue()
-            cls.subscriptions = []
-            cls.running = False
-            cls.states = {}
-
-        return cls.instance
-
-
-    @classmethod
-    def _drop(cls):
-        """Drop the singleton instance for testing purposes."""
-        cls.instance = None
+    def __init__(self, *args, **kwargs):
+        self.events = asyncio.Queue()
+        self.subscriptions = []
+        self.running = False
+        self.states = {}
 
     def add_subscriptions(self, subscriptions):
         self.subscriptions.extend(subscriptions)
@@ -36,9 +29,18 @@ class EventHUB:
             raise RuntimeError("HUB run method can't be exec twice.")
 
         while True:
-            data = yield from self.events.get()
-            for subscription in self.subscriptions:
-                yield from subscription.put(data)
+            try:
+                data = self.events.get_nowait()
+            except:
+                yield from asyncio.sleep(1)
+            else:
+                for subscription in self.subscriptions:
+                    yield from subscription.put(data)
+
+    @asyncio.coroutine
+    def watch_queue(self):
+        while True:
+            yield from asyncio.sleep(1)
 
     def set_state(self, data):
         self.states[data.key] = data.value
@@ -88,3 +90,11 @@ class EventHUB:
     def restore_states(self, filename):
         with open(filename, 'rb') as f:
             self.states = pickle.load(f)
+
+
+def get_hub():
+    """Return the global event hub."""
+    global _hub
+    if _hub is None:
+        _hub = EventHUB()
+    return _hub

@@ -1,3 +1,6 @@
+from conftest import setup_asyncio as setup_function
+from conftest import teardown_asyncio as teardown_function
+
 def test_subscription():
     from geoffrey.subscription import _Subscription
     assert _Subscription(filter_func=lambda x: True)  # pragma: nocover
