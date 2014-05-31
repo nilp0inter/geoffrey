@@ -11,6 +11,4 @@ def write_template(filename, content):
 
 def slugify(text):
     slugified = alphanumeric.sub('_', text.lower().rstrip())
-    if not slugified:
-        slugified = str(uuid.uuid4())
     return slugified
