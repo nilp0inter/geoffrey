@@ -7,8 +7,10 @@ import signal
 
 import websockets
 
-from geoffrey import utils, defaults
 from .project import Project
+from geoffrey import defaults
+from geoffrey import hub
+from geoffrey import utils
 
 from geoffrey.deps.aiobottle import AsyncBottle
 
@@ -30,6 +32,11 @@ class Server:
 
         self.loop = asyncio.get_event_loop()
         self.projects = self.get_projects()
+        self.hub = hub.get_hub()
+
+        # Strong references to server tasks, prevent being garbage
+        # collected.
+        self.tasks = []
 
     @property
     def projects_root(self):
@@ -87,10 +94,18 @@ class Server:
 
         self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
 
+        # WEBSERVER
         self.start_webserver()
-        asyncio.Task(websockets.serve(self.websocket_server,
-                                      websocket_server_host,
-                                      websocket_server_port))
+
+        # WEBSOCKET SERVER
+        wss = asyncio.Task(
+            websockets.serve(self.websocket_server, websocket_server_host,
+                             websocket_server_port))
+        self.tasks.append(wss)
+
+        # HUB
+        hub = asyncio.Task(self.hub.run())
+        self.tasks.append(hub)
 
         logger.debug("Starting the main loop.")
         self.loop.run_forever()
