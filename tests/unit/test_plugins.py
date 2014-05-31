@@ -46,7 +46,7 @@ def test_plugin_found_subscriptions():
     sub = subscription()
     class TestPlugin(plugin.GeoffreyPlugin):
         @asyncio.coroutine
-        def task1(self, mydata: sub) -> plugin.Task:
+        def task1(self, mydata: sub) -> plugin.Task:  # pragma: no cover
             yield from asyncio.sleep(1)
 
     p = TestPlugin(config=None)

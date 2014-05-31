@@ -27,13 +27,17 @@ class FileSystem(plugin.GeoffreyPlugin):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.active = True
+        self._active = True
 
     def queue_event(self, fsevent):
         key = fsevent.src_path.decode('utf-8')
         type_ = fsevent.event_type
         event = self.new_event(key=key, type=type_)
         self.hub.events.put_nowait(event)
+
+    def stop(self):
+        """Stop the observer thread and exists."""
+        self._active = False
 
     @asyncio.coroutine
     def capture_fs_events(self) -> plugin.Task:
@@ -44,7 +48,7 @@ class FileSystem(plugin.GeoffreyPlugin):
         for path in paths:
             observer.schedule(event_handler, path, recursive=True)
         observer.start()
-        while self.active:
+        while self._active:  # pragma: no branch
             yield from asyncio.sleep(1)
         observer.stop()
         observer.join()

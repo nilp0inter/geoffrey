@@ -114,3 +114,19 @@ def test_hub_is_global():
     hub1 = get_hub()
     hub2 = get_hub()
     assert hub1 is hub2
+
+
+def test_hub_cant_run_twice(hub, loop):
+    import asyncio
+    tasks = asyncio.wait([hub.run(), hub.run()],
+                         return_when=asyncio.FIRST_COMPLETED)
+    done, pending = loop.run_until_complete(tasks)
+
+    tdone = list(done)
+    tpending = list(pending)
+
+    assert len(tdone) == 1
+    assert len(tpending) == 1
+
+    with pytest.raises(RuntimeError):
+        tdone[0].result()

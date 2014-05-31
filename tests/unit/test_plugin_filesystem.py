@@ -125,3 +125,27 @@ def test_event_data(loop, storeallplugin, hub):
         assert data['plugin'] == "FileSystem"
         assert data['key'] == newfile
         assert data['value'] == {'type': 'created'}
+
+
+def test_plugin_stop(loop, hub):
+    from geoffrey.plugins.filesystem import FileSystem
+
+    fs_config = configparser.ConfigParser()
+    fs_config.add_section('plugin:FileSystem')
+    fs_config.set('plugin:FileSystem', 'paths', '/tmp')
+
+    fs_plugin = FileSystem(config=fs_config)
+
+    @asyncio.coroutine
+    def stop_plugin(plugin):
+        yield from asyncio.sleep(1)
+        plugin.stop()
+        while True:
+            yield from asyncio.sleep(1)
+
+    done, pending = loop.run_until_complete(
+        asyncio.wait(fs_plugin.tasks + [stop_plugin(fs_plugin), hub.run()],
+                     return_when=asyncio.FIRST_COMPLETED))
+
+    tdone = list(done)
+    assert len(tdone) == 1

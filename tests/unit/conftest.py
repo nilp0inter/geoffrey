@@ -10,7 +10,7 @@ def teardown_asyncio(function):
     loop = asyncio.get_event_loop()
     try:
         loop.stop()
-    except:
+    except:  # pragma: no cover
         pass
     finally:
         for task in asyncio.Task.all_tasks():
@@ -76,7 +76,7 @@ def testplugin():
     from geoffrey import plugin
     from geoffrey.subscription import subscription
 
-    sub = subscription(filter_func = lambda x: True)
+    sub = subscription(filter_func = lambda x: True)  # pragma: no cover
 
     class TestPlugin(plugin.GeoffreyPlugin):
 
@@ -84,6 +84,6 @@ def testplugin():
 
         @asyncio.coroutine
         def task1(self, mydata: sub) -> plugin.Task:
-            self.data = yield from mydata.get()
+            self.data = yield from mydata.get()  # pragma: no cover
 
     return TestPlugin

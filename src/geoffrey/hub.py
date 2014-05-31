@@ -37,11 +37,6 @@ class EventHUB:
                 for subscription in self.subscriptions:
                     yield from subscription.put(data)
 
-    @asyncio.coroutine
-    def watch_queue(self):
-        while True:
-            yield from asyncio.sleep(1)
-
     def set_state(self, data):
         self.states[data.key] = data.value
 
