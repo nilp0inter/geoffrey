@@ -1,7 +1,11 @@
-from cgi import escape
+import os
+import json
+from tempfile import TemporaryDirectory
+
 from webtest import TestApp
 from bottle import Bottle
 from geoffrey.server import Server
+from geoffrey import utils
 
 
 def test_index():
@@ -30,17 +34,30 @@ def test_remove_consumer():
 
     server = Server()
     app = TestApp(server.get_webapp(bottle=Bottle))
-    consumer = app.delete('/api/v1/consumer')
+    consumer_created = app.post('/api/v1/consumer', {}).body.decode('utf-8')
+    consumer_data = json.loads(consumer_created)
+    consumer = app.delete('/api/v1/consumer/{}'.format(consumer_data['id']))
     assert consumer.status_code == 200
 
 
 def test_get_projects():
     """ Test get current projects with web interface """
 
-    server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
-    projects = app.get('/api/v1/projects')
-    assert projects.status_code == 200
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        server = Server(config=config_file)
+        project1 = 'newproject'
+        project2 = 'ìòúü?!¿ñ¡'
+        server.create_project(project1)
+        server.create_project(project2)
+        app = TestApp(server.get_webapp(bottle=Bottle))
+        projects = app.get('/api/v1/projects')
+        project_data = json.loads(projects.body.decode('utf-8'))
+        assert projects.status_code == 200
+        assert len(project_data) == 2
+        assert {'id': utils.slugify(project2),
+                'name': project2} in project_data
+
 
 def test_get_api():
     """ Test current API definition """
@@ -56,4 +73,3 @@ def test_get_api():
     assert b"/api/v1/consumer" in api.body
     assert b"/api/v1/projects" in api.body
     assert b"/api/v1/subscription/&lt;consumer_id&gt;" in api.body
-
