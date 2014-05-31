@@ -34,8 +34,8 @@ class Server:
         self.projects = self.get_projects()
         self.hub = hub.get_hub()
 
-        # Strong references to server tasks, prevent being garbage
-        # collected.
+        # Strong references of the server's tasks to prevent garbage
+        # collection.
         self.tasks = []
 
     @property
