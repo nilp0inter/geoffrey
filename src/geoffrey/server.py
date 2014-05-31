@@ -153,7 +153,6 @@ class Server:
                     removed_consumer = self.consumers.pop(consumer_id)
                 except KeyError:
                     raise HTTPError(404, 'Consumer not registerd')
-                return json.dumps(removed_consumer)
 
         # PROJECT API
         @app.get('/api/v1/projects')
