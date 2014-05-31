@@ -21,7 +21,6 @@ class GeoffreyPlugin:
     Base plugin.
 
     """
-
     def __init__(self, config, project=None):
         self.config = config
         self.hub = get_hub()

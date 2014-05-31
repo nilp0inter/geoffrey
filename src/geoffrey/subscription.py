@@ -2,6 +2,7 @@ import asyncio
 
 ANYTHING = lambda x: True
 
+
 class _Subscription(asyncio.Queue):
     """
     Special type of `Queue` that only accepts data if match the filter
@@ -18,6 +19,7 @@ class _Subscription(asyncio.Queue):
     def put(self, item):
         if self.filter_func(item):
             yield from super().put(item)
+
 
 def subscription(*args, filter_func=ANYTHING, **kwargs):
     """
