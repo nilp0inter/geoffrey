@@ -116,6 +116,7 @@ class Server:
     def get_webapp(self, bottle=AsyncBottle):
         """Return the bottle application of the server."""
         from bottle import static_file, TEMPLATE_PATH, jinja2_view, request
+        from bottle import HTTPError
 
         webbase = os.path.join(os.path.dirname(__file__), "web")
         TEMPLATE_PATH[:] = [webbase]
@@ -137,15 +138,15 @@ class Server:
             """ Register a consumer """
 
             if request.method == 'POST':
-                consumer_uuid = str(uuid.uuid4())  # Funcion para generar uuid
+                consumer_uuid = str(uuid.uuid4())
                 self.consumers[consumer_uuid] = None
                 return json.dumps({'id': consumer_uuid,
                                    'ws': 'ws://127.0.0.1:8701'})
             else:
                 try:
                     removed_consumer = self.consumers.pop(consumer_id)
-                except:
-                    removed_consumer = 'consumer not registered'
+                except KeyError:
+                    raise HTTPError(404, 'Consumer not registerd')
                 return json.dumps(removed_consumer)
 
         # PROJECT API
@@ -163,8 +164,8 @@ class Server:
         def get_plugins(project_id):
             return json.dumps([{'id': 'pylint'}])
 
-        @app.get('/api/v1/<project_id>/<plugin_id>/source')
-        def plugin_source(project_id, plugin_id):
+        @app.get('/api/v1/<project_id>/<plugin_id>/source/<language>')
+        def plugin_source(project_id, plugin_id, language):
 
             return '<script type="text/javascript">'
 
@@ -197,8 +198,9 @@ class Server:
             html_list = '<ul>'
             for route in routes:
                 html_list += '<li>{}</li>'.format(route)
-            return html_list
             html_list += '</ul>'
+            return html_list
+
 
         return app
 

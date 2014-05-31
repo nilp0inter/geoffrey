@@ -2,6 +2,7 @@ import os
 import json
 from tempfile import TemporaryDirectory
 
+import pytest
 from webtest import TestApp
 from bottle import Bottle
 from geoffrey.server import Server
@@ -40,6 +41,17 @@ def test_remove_consumer():
     assert consumer.status_code == 200
 
 
+def test_remove_nonexistant_consumer():
+    """ Test remove a non existant consumer for web interface """
+
+    server = Server()
+    app = TestApp(server.get_webapp(bottle=Bottle))
+    consumer_id = 'NONEXISTINGCONSUMER'
+    consumer = app.delete('/api/v1/consumer/{}'.format(consumer_id),
+                          expect_errors=404)
+    assert consumer.status_code == 404
+
+
 def test_get_projects():
     """ Test get current projects with web interface """
 
@@ -57,6 +69,86 @@ def test_get_projects():
         assert len(project_data) == 2
         assert {'id': utils.slugify(project2),
                 'name': project2} in project_data
+
+
+def test_get_plugins():
+    """ Test get plugin list for project """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        server = Server(config=config_file)
+        project1 = 'newproject'
+        server.create_project(project1)
+        app = TestApp(server.get_webapp(bottle=Bottle))
+        plugins = app.get('/api/v1/{}/plugins'.format(project1))
+        assert plugins.status_code == 200
+
+
+def test_plugin_source():
+    """ Test get plugin source """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'FileSystem'
+        plugin_language = 'js'
+        project_path = os.path.join(configdir, 'projects')
+        config = os.path.join(project_path, '{}.conf'.format(project))
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+
+        data_dir={project_path}
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        #server.create_project(project)
+        app = TestApp(server.get_webapp(bottle=Bottle))
+        plugin_s = app.get('/api/v1/{project_name}/'
+                           '{plugin_name}/source/'
+                           '{language}'.format(project_name=project,
+                                               plugin_name=plugin_name,
+                                               language=plugin_language))
+        assert plugin_s.status_code == 200
+
+
+def test_plugin_state():
+    """ Test get plugin state """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'FileSystem'
+        project_path = os.path.join(configdir, 'projects')
+        config = os.path.join(project_path, '{}.conf'.format(project))
+        os.makedirs(project_path)
+
+        content = """[project]
+
+        [plugin:{plugin_name}]
+
+        data_dir={project_path}
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        #server.create_project(project)
+        app = TestApp(server.get_webapp(bottle=Bottle))
+        plugin_s = app.get('/api/v1/{project_name}/'
+                           '{plugin}/state'.format(project_name=project,
+                                                   plugin=plugin_name))
+        assert plugin_s.status_code == 200
+
+
+def test_server_static():
+    """ Test get static file """
+    server = Server()
+    app = TestApp(server.get_webapp(bottle=Bottle))
+    static_file = 'geoffrey.jpg'
+    static = app.get('/assets/{}'.format(static_file))
+    assert static.status_code == 200
 
 
 def test_get_api():
