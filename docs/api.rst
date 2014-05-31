@@ -64,7 +64,7 @@ Example::
 Retrieve plugin source
 ~~~~~~~~~~~~~~~~~~~~~~
 
-GET /api/v1/<project_id>/<plugin_id>/source
+GET /api/v1/<project_id>/<plugin_id>/source/<language>
 
 .. code-block:: javascript
 
