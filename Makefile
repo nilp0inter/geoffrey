@@ -8,17 +8,17 @@ clean:
 develop:
 	pip install -q -r requirements/develop.txt
 	pip install -q -e .
-unittest: clean 
+unit-test: clean 
 	coverage run `which py.test` -m "not wip" --capture=no tests/unit
-unitwip: develop clean
+unit-wip: develop clean
 	coverage run `which py.test` -m wip --capture=no tests/unit
 cov-report:
 	coverage combine
 	coverage html
-testall: clean develop
+test-all: clean develop
 	tox
 	coverage combine
 	coverage html
-vagranttest:
+vagrant-test:
 	vagrant up
-	vagrant ssh -- "/bin/bash -c 'source /home/vagrant/bin/activate && cd /vagrant && make testall'"
+	vagrant ssh -- "/bin/bash -c 'source /home/vagrant/bin/activate && cd /vagrant && make test-all'"

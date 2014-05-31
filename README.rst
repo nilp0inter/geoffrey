@@ -21,14 +21,14 @@ We recommend to use Vagrant as testing environment.
 
 .. code-block:: bash
 
-   $ make vagranttest
+   $ make vagrant-test
 
 Another aproach is using a simple virtualenv (with python 3.3+), and
 executing:
 
 .. code-block:: bash
 
-   $ make testall
+   $ make test-all
 
 
 Status
