@@ -1,4 +1,3 @@
 pytest==2.5.2
 behave==1.2.4
-pytest-cov==1.6
 WebTest==2.0.14
