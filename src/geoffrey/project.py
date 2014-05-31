@@ -17,7 +17,7 @@ class Project:
         self.config = configparser.ConfigParser()
         self.config.read(config)
         self.plugins = {p.name: p
-                        for p in plugin.get_plugins(self.config)}
+                        for p in plugin.get_plugins(self.config, project=self)}
         logger.info("Project: `%s`. Plugins found: %s",
                     self.name, repr(list(self.plugins.values())))
         for p in self.plugins.values():
