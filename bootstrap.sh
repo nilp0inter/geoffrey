@@ -27,3 +27,5 @@ su vagrant -c "/home/vagrant/bin/pip install -e /vagrant"
 echo "source ~/bin/activate" >> /home/vagrant/.bashrc
 echo "export GEOFFREYDEBUG=1" >> /home/vagrant/.bashrc
 
+cd /vagrant
+make develop
