@@ -10,5 +10,5 @@ class State:
         self.value = {k: kwargs.get(k)
                       for k in kwargs if k not in StateKey._fields}
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return '{{{self.key}: {self.value}}}'.format(self=self)

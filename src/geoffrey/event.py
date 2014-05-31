@@ -26,5 +26,5 @@ class Event:
             'key': self.key.key,
             'value': self.value})
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return '[{self.type}]{{{self.key}: {self.value}}}'.format(self=self)
