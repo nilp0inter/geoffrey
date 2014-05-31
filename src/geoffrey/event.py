@@ -25,3 +25,6 @@ class Event:
             'plugin': self.key.plugin,
             'key': self.key.key,
             'value': self.value})
+
+    def __str__(self):
+        return '[{self.type}]{{{self.key}: {self.value}}}'.format(self=self)

@@ -9,3 +9,6 @@ class State:
         self.key = StateKey(*(kwargs.get(k, None) for k in StateKey._fields))
         self.value = {k: kwargs.get(k)
                       for k in kwargs if k not in StateKey._fields}
+
+    def __str__(self):
+        return '{{{self.key}: {self.value}}}'.format(self=self)

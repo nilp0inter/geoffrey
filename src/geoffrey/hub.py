@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import pickle
 
 from .event import Event, EventType
@@ -6,6 +7,8 @@ from .state import State
 
 # Global, implicit hub
 _hub = None
+
+logger = logging.getLogger(__name__)
 
 
 class EventHUB:
@@ -23,6 +26,7 @@ class EventHUB:
 
     @asyncio.coroutine
     def run(self):
+        logger.debug("Starting EventHUB!")
         if not self.running:
             self.running = True
         else:
@@ -46,8 +50,10 @@ class EventHUB:
     @asyncio.coroutine
     def put(self, data):
         if isinstance(data, Event):
+            logger.debug("Event received: %s", data)
             yield from self.events.put(data)
         elif isinstance(data, State):
+            logger.debug("State received: %s", data)
             if data.key in self.states:  # Key already exists.
                 if data.value:
                     if data.value != self.states[data.key]:
