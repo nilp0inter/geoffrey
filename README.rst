@@ -17,11 +17,18 @@ If you want to see a proof of concept checkout the tag `v0.0.1` and follow the R
 Running the tests
 -----------------
 
-It is recommended to run this inside of a new virtualenv.
+We recommend to use Vagrant as testing environment.
 
 .. code-block:: bash
 
-   $ sh ./runtests.sh
+   $ make vagranttest
+
+Another aproach is using a simple virtualenv (with python 3.3+), and
+executing:
+
+.. code-block:: bash
+
+   $ make testall
 
 
 Status
