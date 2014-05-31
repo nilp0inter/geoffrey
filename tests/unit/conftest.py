@@ -87,3 +87,9 @@ def testplugin():
             self.data = yield from mydata.get()  # pragma: no cover
 
     return TestPlugin
+
+
+@pytest.fixture
+def consumer():
+    from geoffrey.subscription import Consumer
+    return Consumer()

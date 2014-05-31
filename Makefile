@@ -10,8 +10,8 @@ develop:
 	pip install -q -e .
 unit-test: clean 
 	coverage run `which py.test` -m "not wip" --capture=no tests/unit
-unit-wip: develop clean
-	coverage run `which py.test` -m wip --capture=no tests/unit
+unit-wip: clean
+	coverage run `which py.test` -m wip --capture=no --pdb tests/unit
 cov-report:
 	coverage combine
 	coverage html

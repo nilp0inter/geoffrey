@@ -38,8 +38,11 @@ class EventHUB:
             except:
                 yield from asyncio.sleep(1)
             else:
+                logger.debug("Sending %s to %d subscriptions",
+                             data, len(self.subscriptions))
                 for subscription in self.subscriptions:
-                    yield from subscription.put(data)
+                    logger.debug("Sending %s to %s", data, subscription)
+                    subscription.put_nowait(data)
 
     def set_state(self, data):
         self.states[data.key] = data.value

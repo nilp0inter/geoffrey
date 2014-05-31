@@ -12,6 +12,7 @@ from .project import Project
 from geoffrey import defaults
 from geoffrey import hub
 from geoffrey import utils
+from geoffrey.subscription import Consumer
 
 from geoffrey.deps.aiobottle import AsyncBottle
 
@@ -139,7 +140,12 @@ class Server:
 
             if request.method == 'POST':
                 consumer_uuid = str(uuid.uuid4())
-                self.consumers[consumer_uuid] = None
+
+                new_consumer = Consumer()
+                new_consumer.criteria = [{}]
+                self.consumers[consumer_uuid] = new_consumer
+                self.hub.subscriptions.append(new_consumer)
+
                 return json.dumps({'id': consumer_uuid,
                                    'ws': 'ws://127.0.0.1:8701'})
             else:
@@ -221,10 +227,32 @@ class Server:
     @asyncio.coroutine
     def websocket_server(self, websocket, uri):
         """Websocket server for real-time data.  """
+
         try:
-            yield from websocket.send('{"data": "test"}')
-        except websockets.exceptions.InvalidState as err:
-            return False
+            rawpayload = yield from websocket.recv()
+            payload = json.loads(rawpayload)
+            consumer_id = payload.get('consumer_id', None)
+            if consumer_id is None:
+                raise ValueError(
+                    "`consumer_id` not provided in %s" % websocket)
+            if consumer_id not in self.consumers:
+                raise ValueError("Consumer %s is not registered" % consumer_id)
+        except:
+            logger.exception("Websocket communication error in handshake")
+        else:
+            logger.info("Consumer %s successfully connected!", consumer_id)
+            consumer = self.consumers[consumer_id]
+
+            while True:
+                event = yield from consumer.get()
+                rawevent = event.dumps()
+                try:
+                    logger.debug("Sending event %s to consumer %s",
+                                 rawevent, consumer_id)
+                    yield from websocket.send(rawevent)
+                except:
+                    logger.exception("Websocket error sending data: %s",
+                                     rawevent)
 
     def create_project(self, project_name):
         """Create a new project."""
