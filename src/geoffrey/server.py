@@ -4,6 +4,7 @@ import logging
 import os
 import json
 import signal
+import uuid
 
 import websockets
 
@@ -21,7 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 class Server:
+
     """The Geoffrey server."""
+
     def __init__(self, config=DEFAULT_CONFIG_FILENAME):
         logger.info("Starting Geoffrey server!")
         self.configfile = config
@@ -33,10 +36,10 @@ class Server:
         self.loop = asyncio.get_event_loop()
         self.projects = self.get_projects()
         self.hub = hub.get_hub()
-
         # Strong references of the server's tasks to prevent garbage
         # collection.
         self.tasks = []
+        self.consumers = {}
 
     @property
     def projects_root(self):
@@ -127,24 +130,33 @@ class Server:
 
         app = bottle()
 
-
         # CONSUMER API
-        @app.route('/api/v1/consumer', method=['POST', 'DELETE'])
-        def consumer():
+        @app.post('/api/v1/consumer')
+        @app.delete('/api/v1/consumer/<consumer_id>')
+        def consumer(consumer_id=None):
             """ Register a consumer """
 
             if request.method == 'POST':
-                # Magic to registe
-                return json.dumps({'id': 'ab37-3f47...', 'ws': 'ws://127.0.0.1:8701'})
+                consumer_uuid = str(uuid.uuid4())  # Funcion para generar uuid
+                self.consumers[consumer_uuid] = None
+                return json.dumps({'id': consumer_uuid,
+                                   'ws': 'ws://127.0.0.1:8701'})
             else:
-                # Magic to unregister
-                return None
+                try:
+                    removed_consumer = self.consumers.pop(consumer_id)
+                except:
+                    removed_consumer = 'consumer not registered'
+                return json.dumps(removed_consumer)
 
         # PROJECT API
         @app.get('/api/v1/projects')
         def get_projects():
 
-            return json.dumps([{'id': 'project_a', 'name': 'Project A'}, {'id': 'project_b', 'name': 'Project B'}])
+            projects = []
+            for project in self.get_projects():
+                projects.append({'id': utils.slugify(project),
+                                 'name': project})
+            return json.dumps(projects)
 
         # PLUGIN API
         @app.get('/api/v1/<project_id>/plugins')
@@ -158,7 +170,7 @@ class Server:
 
         @app.get('/api/v1/<project_id>/<plugin_id>/state')
         def plugin_state(project_id, plugin_id):
-            return json.dumps([{},{}])
+            return json.dumps([{}, {}])
 
         @app.post('/api/v1/subscription/<consumer_id>')
         def subscribe(consumer_id):
@@ -189,7 +201,6 @@ class Server:
             html_list += '</ul>'
 
         return app
-
 
     def start_webserver(self):
         """Run the internal webserver."""
