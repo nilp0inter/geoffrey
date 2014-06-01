@@ -24,7 +24,7 @@ We recommend to use Vagrant as testing environment.
    $ make vagrant-test
 
 Another aproach is using a simple virtualenv (with python 3.3+), and
-executing:
+execute:
 
 .. code-block:: bash
 
@@ -35,11 +35,11 @@ Status
 ------
 
 .. image:: https://coveralls.io/repos/nilp0inter/geoffrey/badge.png?branch=develop
-     :target: https://coveralls.io/r/nilp0inter/geoffrey?branch=develop
+   :target: https://coveralls.io/r/nilp0inter/geoffrey?branch=develop
 
 .. image:: https://travis-ci.org/nilp0inter/geoffrey.svg?branch=develop
-     :target: https://travis-ci.org/nilp0inter/geoffrey
+   :target: https://travis-ci.org/nilp0inter/geoffrey
 
 .. image:: https://badge.waffle.io/nilp0inter/geoffrey.png?label=wip&title=WIP
- :target: https://waffle.io/nilp0inter/geoffrey 
- :alt: 'Stories in WIP'
+   :target: https://waffle.io/nilp0inter/geoffrey 
+   :alt: 'Stories in WIP'
