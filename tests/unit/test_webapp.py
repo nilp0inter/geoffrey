@@ -116,30 +116,39 @@ def test_plugin_source():
 
 def test_plugin_state():
     """ Test get plugin state """
+    from geoffrey.state import State
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
-        plugin_name = 'FileSystem'
+        plugin_name = 'FakePlugin'
         project_path = os.path.join(configdir, 'projects')
         config = os.path.join(project_path, '{}.conf'.format(project))
         os.makedirs(project_path)
 
         content = """[project]
-
-        [plugin:{plugin_name}]
-
-        data_dir={project_path}
-        """.format(plugin_name=plugin_name, project_path=project_path)
+        """.format(plugin_name=plugin_name)
 
         utils.write_template(config, content)
         server = Server(config=config_file)
-        #server.create_project(project)
+
+        state1 = State(project=project, plugin=plugin_name, key='goodkey', value='something')
+        server.hub.set_state(state1)
+        state2 = State(project='badproject', plugin=plugin_name, key='goodkey', value='something')
+        server.hub.set_state(state2)
+
         app = TestApp(server.get_webapp(bottle=Bottle))
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin}/state'.format(project_name=project,
                                                    plugin=plugin_name))
+        states = json.loads(plugin_s.body.decode('utf-8'))
+
         assert plugin_s.status_code == 200
+        assert len(states) == 1
+        assert states[0]['project'] == state1.key.project
+        assert states[0]['plugin'] == state1.key.plugin
+        assert states[0]['key'] == state1.key.key
+        assert states[0]['value'] == state1.value
 
 
 def test_server_static():

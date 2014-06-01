@@ -24,6 +24,21 @@ class EventHUB:
     def add_subscriptions(self, subscriptions):
         self.subscriptions.extend(subscriptions)
 
+    def get_states(self, key_criteria):
+        """Generator with the matching states of the key_criteria."""
+        for key, value in self.states.items():
+            for field in key_criteria._fields:
+                expected = getattr(key_criteria, field)
+                if expected is None:  # expected=None means I don't care
+                    continue
+
+                current = getattr(key, field)
+                if current != expected:
+                    break
+            else:
+                # Everything right. <zeusvoice>RELEASE THE EVENT!!</zeusvoice>
+                yield Event(type=EventType.state, key=key, value=value)
+
     @asyncio.coroutine
     def run(self):
         logger.debug("Starting EventHUB!")

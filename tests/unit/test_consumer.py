@@ -25,7 +25,7 @@ def test_consumer_match_type(consumer):
     event1 = event.Event(type=event.EventType.modified)
     consumer.put_nowait(event1)
 
-    event2 = event.Event(type=event.EventType.unknown)
+    event2 = event.Event(type=event.EventType.custom)
     consumer.put_nowait(event2)
 
     assert consumer.qsize() == 1
