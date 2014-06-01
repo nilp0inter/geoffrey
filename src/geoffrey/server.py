@@ -142,7 +142,6 @@ class Server:
                 consumer_uuid = str(uuid.uuid4())
 
                 new_consumer = Consumer()
-                new_consumer.criteria = [{}]
                 self.consumers[consumer_uuid] = new_consumer
                 self.hub.subscriptions.append(new_consumer)
 
