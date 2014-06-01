@@ -21,17 +21,19 @@ class _Subscription(asyncio.Queue):
     @asyncio.coroutine
     def put(self, item):
         if self.filter_func(item):
-            logger.debug("Subscription %s allow event %s", id(self), item)
+            # logger.debug("Subscription %s allow event %s", id(self), item)
             yield from super().put(item)
         else:
-            logger.debug("Subscription %s reject event %s", id(self), item)
+            # logger.debug("Subscription %s reject event %s", id(self), item)
+            pass
 
     def put_nowait(self, item):
         if self.filter_func(item):
-            logger.debug("Subscription %s allow event %s", id(self), item)
+            # logger.debug("Subscription %s allow event %s", id(self), item)
             return super().put_nowait(item)
         else:
-            logger.debug("Subscription %s reject event %s", id(self), item)
+            # logger.debug("Subscription %s reject event %s", id(self), item)
+            pass
 
 
 class Consumer(_Subscription):
