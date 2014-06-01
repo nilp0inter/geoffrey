@@ -16,5 +16,9 @@ def main():
         loglevel = logging.INFO
 
     logging.basicConfig(level=loglevel, format=FORMAT)
+
+    asyncio_logger = logging.getLogger('asyncio')
+    asyncio_logger.setLevel(logging.WARNING)
+
     server = Server()
     server.run()
