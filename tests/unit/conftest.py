@@ -93,3 +93,65 @@ def testplugin():
 def consumer():
     from geoffrey.subscription import Consumer
     return Consumer()
+
+
+@pytest.fixture
+def wsserver():
+    from geoffrey.subscription import Consumer
+    from geoffrey.websocket import WebsocketServer
+    con = Consumer()
+    con.criteria = [{}]
+    return WebsocketServer(consumers={'consumer': con})
+
+
+@pytest.fixture
+def websocket():
+    def ws_factory(recv_data):
+        class Websocket:
+            """Mocket websocket"""
+            def __init__(self):
+                self._recv = asyncio.Queue()
+                for d in recv_data:
+                    self._recv.put_nowait(d)
+
+                self._send = asyncio.Queue()
+
+            @asyncio.coroutine
+            def recv(self):
+                return (yield from self._recv.get())
+
+            @asyncio.coroutine
+            def send(self, data):  # pragma: no cover
+                return (yield from self._send.put(data))
+
+        return Websocket
+
+    return ws_factory
+
+
+@pytest.fixture
+def websocket_ready():
+    import json
+    from geoffrey.subscription import Consumer
+    def ws_factory(recv_data):
+        class Websocket:
+            """Mocket websocket"""
+            def __init__(self):
+                self._recv = asyncio.Queue()
+                for d in recv_data:
+                    self._recv.put_nowait(d)
+
+                self._send = asyncio.Queue()
+
+            @asyncio.coroutine
+            def recv(self):
+                return (yield from self._recv.get())
+
+            @asyncio.coroutine
+            def send(self, data):
+                return (yield from self._send.put(data))
+
+        return Websocket
+    tosend = [json.dumps({'consumer_id': 'consumer'})]
+    ws = ws_factory(tosend)()
+    return ws

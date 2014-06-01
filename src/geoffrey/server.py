@@ -12,6 +12,7 @@ from .project import Project
 from geoffrey import defaults
 from geoffrey import hub
 from geoffrey import utils
+from geoffrey.websocket import WebsocketServer
 from geoffrey.subscription import Consumer
 
 from geoffrey.deps.aiobottle import AsyncBottle
@@ -102,14 +103,13 @@ class Server:
         self.start_webserver()
 
         # WEBSOCKET SERVER
-        wss = asyncio.Task(
-            websockets.serve(self.websocket_server, websocket_server_host,
-                             websocket_server_port))
-        self.tasks.append(wss)
+        wss = websockets.serve(WebsocketServer(self.consumers).server,
+                               websocket_server_host,
+                               websocket_server_port)
+        self.tasks.append(asyncio.Task(wss))
 
         # HUB
-        hub = asyncio.Task(self.hub.run())
-        self.tasks.append(hub)
+        self.tasks.append(asyncio.Task(self.hub.run()))
 
         logger.debug("Starting the main loop.")
         self.loop.run_forever()
@@ -199,13 +199,14 @@ class Server:
         @app.get('/api/v1')
         def get_api():
             from cgi import escape
-            routes = { escape(route.rule) for route in app.routes if route.rule.startswith('/api') }
+            routes = {escape(route.rule)
+                      for route in app.routes
+                      if route.rule.startswith('/api') }
             html_list = '<ul>'
             for route in routes:
                 html_list += '<li>{}</li>'.format(route)
             html_list += '</ul>'
             return html_list
-
 
         return app
 
@@ -222,36 +223,6 @@ class Server:
         app = self.get_webapp()
         run(app, host=http_server_host, port=http_server_port,
             server=AsyncServer, quiet=True, debug=False)
-
-    @asyncio.coroutine
-    def websocket_server(self, websocket, uri):
-        """Websocket server for real-time data.  """
-
-        try:
-            rawpayload = yield from websocket.recv()
-            payload = json.loads(rawpayload)
-            consumer_id = payload.get('consumer_id', None)
-            if consumer_id is None:
-                raise ValueError(
-                    "`consumer_id` not provided in %s" % websocket)
-            if consumer_id not in self.consumers:
-                raise ValueError("Consumer %s is not registered" % consumer_id)
-        except:
-            logger.exception("Websocket communication error in handshake")
-        else:
-            logger.info("Consumer %s successfully connected!", consumer_id)
-            consumer = self.consumers[consumer_id]
-
-            while True:
-                event = yield from consumer.get()
-                rawevent = event.dumps()
-                try:
-                    logger.debug("Sending event %s to consumer %s",
-                                 rawevent, consumer_id)
-                    yield from websocket.send(rawevent)
-                except:
-                    logger.exception("Websocket error sending data: %s",
-                                     rawevent)
 
     def create_project(self, project_name):
         """Create a new project."""
