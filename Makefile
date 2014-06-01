@@ -15,7 +15,8 @@ unit-wip: clean
 cov-report:
 	coverage combine
 	coverage html
-test-all: clean develop
+test-all: clean
+	pip install -q -r requirements/tests.txt
 	tox
 	coverage combine
 	coverage html
