@@ -41,8 +41,7 @@ class EventHUB:
                 logger.debug("Sending %s to %d subscriptions",
                              data, len(self.subscriptions))
                 for subscription in self.subscriptions:
-                    logger.debug("Sending %s to %s", data, subscription)
-                    subscription.put_nowait(data)
+                    yield from subscription.put(data)
 
     def set_state(self, data):
         self.states[data.key] = data.value
