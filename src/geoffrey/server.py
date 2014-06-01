@@ -153,7 +153,7 @@ class Server:
                 try:
                     removed_consumer = self.consumers.pop(consumer_id)
                 except KeyError:
-                    raise HTTPError(404, 'Consumer not registerd')
+                    raise HTTPError(404, 'Consumer not registered.')
 
         # PROJECT API
         @app.get('/api/v1/projects')
@@ -187,8 +187,15 @@ class Server:
 
         @app.post('/api/v1/subscription/<consumer_id>')
         def subscribe(consumer_id):
-
-            return None
+            try:
+                consumer = self.consumers[consumer_id]
+                criteria = json.loads(request.POST['criteria'])
+            except KeyError:
+                raise HTTPError(404, 'Consumer not registered.')
+            except:
+                raise HTTPError(400, 'Bad request.')
+            else:
+                consumer.criteria = criteria
 
         @app.get('/')
         @jinja2_view('index.html')

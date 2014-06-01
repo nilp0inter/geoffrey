@@ -174,3 +174,46 @@ def test_get_api():
     assert b"/api/v1/consumer" in api.body
     assert b"/api/v1/projects" in api.body
     assert b"/api/v1/subscription/&lt;consumer_id&gt;" in api.body
+
+
+def test_subscription_noconsumer():
+    """ Test modify subscription of a non existant consumer. """
+
+    server = Server()
+    app = TestApp(server.get_webapp(bottle=Bottle))
+    consumer_id = 'NONEXISTINGCONSUMER'
+    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
+                   {'criteria': json.dumps([{}])}, expect_errors=404)
+    assert res.status_code == 404
+
+
+def test_subscription_badrequest(consumer):
+    """ Test sending a bad payload in subscription request. """
+
+    server = Server()
+    consumer_id = 'goodconsumer'
+    server.consumers[consumer_id] = consumer
+
+    app = TestApp(server.get_webapp(bottle=Bottle))
+    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
+                   {'criteria': "badcriteria"},
+                   expect_errors=400)
+    assert res.status_code == 400
+
+
+def test_subscription_goodrequest(consumer):
+    """ Test change successfully a consumer subscription. """
+
+    server = Server()
+    consumer_id = 'goodconsumer'
+    server.consumers[consumer_id] = consumer
+    criteria = [{'goodcriteria': "yes"}]
+
+    assert consumer.criteria != criteria
+
+    app = TestApp(server.get_webapp(bottle=Bottle))
+    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
+                   {'criteria': json.dumps(criteria)})
+
+    assert res.status_code == 200
+    assert consumer.criteria == criteria
