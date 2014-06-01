@@ -49,11 +49,11 @@ class EventHUB:
     def del_state(self, data):
         del self.states[data.key]
 
-    @asyncio.coroutine
-    def put(self, data):
+    def _process_data(self, data):
+        """Return a tuple (isfinal, event) => (bool, Event)"""
         if isinstance(data, Event):
             logger.debug("Event received: %s", data)
-            yield from self.events.put(data)
+            return (True, data)
         elif isinstance(data, State):
             logger.debug("State received: %s", data)
             if data.key in self.states:  # Key already exists.
@@ -63,7 +63,7 @@ class EventHUB:
                         self.set_state(data)
                         ev = Event(type=EventType.modified, key=data.key,
                                    value=data.value)
-                        yield from self.put(ev)
+                        return (False, ev)
                     else:
                         # Same value.
                         # (It's covered but coverage does not detect it.)
@@ -72,19 +72,54 @@ class EventHUB:
                     # No value means. Deletion.
                     self.del_state(data)
                     ev = Event(type=EventType.deleted, key=data.key)
-                    yield from self.put(ev)
+                    return (False, ev)
             elif data.value:
                 # New value. Creation
                 self.set_state(data)
                 ev = Event(type=EventType.created, key=data.key,
                            value=data.value)
-                yield from self.put(ev)
+                return (False, ev)
             else:
                 # No value means. Deletion. But is an unknown key.
                 # (It's covered but coverage does not detect it.)
                 pass  # pragma: nocover
         else:
             raise TypeError("Unknown data type.")
+
+        return (None, None)
+
+    @asyncio.coroutine
+    def put(self, data):
+        """
+        Put a state or event in the hub.
+
+        This method is a coroutine, use::
+
+            yield from hub.put(data)
+
+        """
+        isfinal, event = self._process_data(data)
+        if event is not None:
+            if isfinal:
+                yield from self.events.put(event)
+            else:
+                yield from self.put(event)
+
+    def put_nowait(self, data):
+        """
+        Put a state or event in the hub.
+
+        This method is NOT a coroutine, use::
+
+            hub.put_nowait(data)
+
+        """
+        isfinal, event = self._process_data(data)
+        if event is not None:
+            if isfinal:
+                self.events.put_nowait(event)
+            else:
+                self.put_nowait(event)
 
     def save_states(self, filename):
         with open(filename, 'wb') as f:

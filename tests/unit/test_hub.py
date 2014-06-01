@@ -130,3 +130,30 @@ def test_hub_cant_run_twice(hub, loop):
 
     with pytest.raises(RuntimeError):
         tdone[0].result()
+
+
+def test_hub_put_nowait(hub, event):
+    assert hub.events.qsize() == 0
+    hub.put_nowait(event)
+    assert hub.events.qsize() == 1
+    ret_event = hub.events.get_nowait()
+    assert event == ret_event
+
+
+def test_put_nowait_state(hub, state, loop):
+    assert hub.events.qsize() == 0
+    hub.put_nowait(state)
+    assert hub.events.qsize() == 0
+
+
+def test_new_state_created_event_put_nowait(hub, loop):
+    from geoffrey.state import State
+    from geoffrey.event import EventType
+
+    state = State(key='testobject', value='something interesting')
+
+
+    hub.put_nowait(state)
+    event = hub.events.get_nowait()
+    assert event.type == EventType.created
+    assert state.key in hub.states
