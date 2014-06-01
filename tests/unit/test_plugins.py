@@ -103,12 +103,12 @@ def test_plugin_subscription(storeallplugin, hub, event, loop):
 
 
 def test_plugin_new_state(storeallplugin):
-    import geoffrey
+    from geoffrey.server import Server
     from geoffrey.state import StateKey
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
         server.create_project('newproject')
 
         project = server.projects['newproject']
@@ -123,13 +123,13 @@ def test_plugin_new_state(storeallplugin):
 
 
 def test_plugin_new_event(storeallplugin):
-    import geoffrey
+    from geoffrey.server import Server
     from geoffrey.event import EventType
     from geoffrey.state import StateKey
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
         server.create_project('newproject')
 
         project = server.projects['newproject']

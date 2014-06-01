@@ -5,7 +5,8 @@ import logging
 import json
 import watchdog
 import pytest
-import geoffrey
+
+from geoffrey.server import Server
 from conftest import setup_asyncio as setup_function
 from conftest import teardown_asyncio as teardown_function
 
@@ -89,7 +90,7 @@ def test_event_data(loop, storeallplugin, hub):
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
         server.create_project('newproject')
         project = server.projects['newproject']
 

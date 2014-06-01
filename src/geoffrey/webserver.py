@@ -26,6 +26,12 @@ class WebServer:
         self.websocket_server_port = self.config.getint('geoffrey',
                                                         'websocket_server_port',
                                                         fallback=8701)
+
+        self.host = self.config.get('geoffrey', 'http_server_host',
+                                    fallback='127.0.0.1')
+        self.port = self.config.getint('geoffrey', 'http_server_port',
+                                       fallback=8700)
+
         self.app = bottle()
         self.app.route('/', method='GET', callback=self.index)
         self.app.route('/assets/<filepath:path>',
@@ -145,14 +151,5 @@ class WebServer:
 
     def start(self):
         """Run the internal webserver."""
-
-        http_server_host = self.config.get('geoffrey',
-                                           'http_server_host',
-                                           fallback='127.0.0.1')
-
-        http_server_port = self.config.getint('geoffrey',
-                                              'http_server_port',
-                                              fallback=8700)
-
-        run(self.app, host=http_server_host, port=http_server_port,
-            server=AsyncServer, quiet=True, debug=False)
+        run(self.app, host=self.host, port=self.port, server=AsyncServer,
+            quiet=True, debug=False)

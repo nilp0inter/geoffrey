@@ -3,14 +3,14 @@ import os
 
 import pytest
 
-import geoffrey
+from geoffrey.server import Server
 
 
 def test_create_project():
     """Create a new project."""
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
         server.create_project('newproject')
         assert os.path.exists(os.path.join(configdir, 'projects',
                                            'newproject'))
@@ -28,7 +28,7 @@ def test_delete_project():
         with open(project_config, 'w') as f:
             f.write('[project]\n\n')
 
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
 
         server.delete_project('removemeproject')
 
@@ -40,7 +40,7 @@ def test_delete_unmanaged_project():
     """The server can't delete unamanged projects."""
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
 
         project_dir = os.path.join(configdir, 'projects', 'removemeproject')
         project_config = os.path.join(project_dir, 'removemeproject.conf')

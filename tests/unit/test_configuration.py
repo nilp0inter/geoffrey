@@ -3,7 +3,8 @@ import os
 
 import pytest
 
-import geoffrey
+from geoffrey.server import Server
+from geoffrey.project import Project
 
 
 def test_autocreate_conf():
@@ -11,7 +12,7 @@ def test_autocreate_conf():
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'doesnotexists', 'geoffrey.conf')
-        geoffrey.Server.read_main_config(config_file)
+        Server.read_main_config(config_file)
         assert os.path.isfile(config_file)
 
 
@@ -20,7 +21,7 @@ def test_autocreate_project_dir():
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
-        geoffrey.Server(config=config_file)
+        Server(config=config_file)
         assert os.path.isdir(os.path.join(configdir, 'projects'))
 
 
@@ -52,11 +53,11 @@ def test_server_projects():
             f.write('nothing')
 
         # Create the server, read the config and test project existence
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
         for project in fake_projects:
             assert project in server.projects
             assert isinstance(server.projects[project],
-                              geoffrey.project.Project)
+                              Project)
 
         # Weird cases
         assert 'project3' not in server.projects
@@ -68,7 +69,7 @@ def test_main_config_must_be_file():
 
     with TemporaryDirectory() as configdir:
         with pytest.raises(TypeError):
-            geoffrey.Server.read_main_config(configdir)
+            Server.read_main_config(configdir)
 
 
 def test_project_configuration():
@@ -77,7 +78,7 @@ def test_project_configuration():
         project_config = os.path.join(projectdir, 'projectname.conf')
         with open(project_config, 'w') as f:
             f.write('[project]\n\n')
-        project = geoffrey.project.Project(name='projectname',
+        project = Project(name='projectname',
                                            config=project_config)
         assert 'project' in project.config.sections()
 
@@ -96,7 +97,7 @@ def test_project_plugins():
                 [plugin:dummyplugin1]
                 [plugin:dummyplugin2]""")
 
-        server = geoffrey.Server(config=config_file)
+        server = Server(config=config_file)
         plugins = server.projects['project1'].plugins
         assert 'dummyplugin1' in plugins
         assert isinstance(plugins['dummyplugin1'], DummyPlugin1)
