@@ -38,7 +38,7 @@ class FileSystem(plugin.GeoffreyPlugin):
         yield from self.hub.put(event)
 
     def stop(self):
-        """Stop the observer thread and exists."""
+        """Stop the observer thread and exit."""
         self._active = False
 
     @asyncio.coroutine
