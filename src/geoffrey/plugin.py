@@ -37,9 +37,11 @@ class GeoffreyPlugin:
             self.tasks.append(task(self, **kwargs))
 
     def start(self):
-        logger.debug("Starting plugin `%s`!", self.name)
         for task in self.tasks:  # pragma: no cover
             self._running_tasks.append(asyncio.Task(task))
+        self.hub.add_subscriptions(self.subscriptions)
+        logger.info("Started plugin `%s` (%d task(s))",
+                    self.name, len(self._running_tasks))
 
     @property
     def name(self):
