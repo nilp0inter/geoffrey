@@ -170,7 +170,11 @@ class Server:
         @app.get('/api/v1/<project_id>/plugins')
         def get_plugins(project_id):
             response.content_type = 'application/json'
-            return json.dumps([{'id': 'pylint'}])
+            project_plugins = self.projects[project_id].plugins
+            plugins = []
+            for plugin in project_plugins.keys():
+                plugins.append({'id': plugin})
+            return json.dumps(plugins)
 
         @app.get('/api/v1/<project_id>/<plugin_id>/source/<language>')
         def plugin_source(project_id, plugin_id, language):

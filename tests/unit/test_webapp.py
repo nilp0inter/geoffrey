@@ -76,12 +76,22 @@ def test_get_plugins():
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'dummyplugin'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, '{}.conf'.format(project))
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
         server = Server(config=config_file)
-        project1 = 'newproject'
-        server.create_project(project1)
         app = TestApp(server.get_webapp(bottle=Bottle))
-        plugins = app.get('/api/v1/{}/plugins'.format(project1))
+        plugins = app.get('/api/v1/{}/plugins'.format(project))
         assert plugins.status_code == 200
+        assert plugins.json == [{'id': 'dummyplugin'}]
 
 
 def test_plugin_source():
@@ -90,21 +100,20 @@ def test_plugin_source():
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
-        plugin_name = 'FileSystem'
+        plugin_name = 'filesystem'
         plugin_language = 'js'
-        project_path = os.path.join(configdir, 'projects')
+        project_path = os.path.join(configdir, 'projects', project)
         config = os.path.join(project_path, '{}.conf'.format(project))
         os.makedirs(project_path)
         content = """[project]
 
         [plugin:{plugin_name}]
 
-        data_dir={project_path}
+        paths={project_path}
         """.format(plugin_name=plugin_name, project_path=project_path)
 
         utils.write_template(config, content)
         server = Server(config=config_file)
-        #server.create_project(project)
         app = TestApp(server.get_webapp(bottle=Bottle))
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
@@ -122,7 +131,7 @@ def test_plugin_state():
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
         plugin_name = 'FakePlugin'
-        project_path = os.path.join(configdir, 'projects')
+        project_path = os.path.join(configdir, 'projects', project)
         config = os.path.join(project_path, '{}.conf'.format(project))
         os.makedirs(project_path)
 
