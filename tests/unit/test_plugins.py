@@ -43,9 +43,8 @@ def test_plugin_found_tasks():
 
 
 def test_plugin_found_subscriptions():
-    from geoffrey.subscription import subscription, _Subscription
-    sub = subscription()
-
+    from geoffrey.subscription import subscription, _Subscription, ANYTHING
+    sub = subscription(ANYTHING)
     class TestPlugin(plugin.GeoffreyPlugin):
 
         @asyncio.coroutine

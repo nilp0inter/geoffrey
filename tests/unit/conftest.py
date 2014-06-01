@@ -47,7 +47,7 @@ def state():
 def storeallplugin():
     import asyncio
     from geoffrey import plugin
-    from geoffrey.subscription import subscription
+    from geoffrey.subscription import subscription, ANYTHING
 
     class StoreAllPlugin(plugin.GeoffreyPlugin):
         def __init__(self, *args, stop_after=None, **kwargs):
@@ -56,7 +56,7 @@ def storeallplugin():
             super().__init__(*args, **kwargs)
 
         @asyncio.coroutine
-        def store_events(self, data: subscription()) -> plugin.Task:
+        def store_events(self, data: subscription(ANYTHING)) -> plugin.Task:
             if self.stop_after is None:
                 from itertools import count
                 iterations = count()
@@ -76,7 +76,7 @@ def testplugin():
     from geoffrey import plugin
     from geoffrey.subscription import subscription
 
-    sub = subscription(filter_func = lambda x: True)  # pragma: no cover
+    sub = subscription(lambda x: True)  # pragma: no cover
 
     class TestPlugin(plugin.GeoffreyPlugin):
 

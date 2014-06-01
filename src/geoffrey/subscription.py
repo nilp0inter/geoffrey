@@ -12,9 +12,7 @@ class _Subscription(asyncio.Queue):
     function.
 
     """
-    def __init__(self, *args, filter_func=None, **kwargs):
-        if filter_func is None:
-            filter_func = ANYTHING
+    def __init__(self, filter_func, *args, **kwargs):
         self.filter_func = filter_func
         super().__init__(*args, **kwargs)
 
@@ -63,10 +61,10 @@ class Consumer(_Subscription):
                     match_or_fail('key', event.key.key)))
 
 
-def subscription(*args, filter_func=ANYTHING, **kwargs):
+def subscription(filter_func, *args, **kwargs):
     """
     Wrapper for _Subscription.
     """
     def wrapper() -> _Subscription:
-        return _Subscription(*args, filter_func=filter_func, **kwargs)
+        return _Subscription(filter_func, *args, **kwargs)
     return wrapper
