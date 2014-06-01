@@ -117,6 +117,7 @@ class Server:
     def get_webapp(self, bottle=AsyncBottle):
         """Return the bottle application of the server."""
         from bottle import static_file, TEMPLATE_PATH, jinja2_view, request
+        from bottle import response
         from bottle import HTTPError
 
         webbase = os.path.join(os.path.dirname(__file__), "web")
@@ -145,6 +146,7 @@ class Server:
                 self.consumers[consumer_uuid] = new_consumer
                 self.hub.subscriptions.append(new_consumer)
 
+                response.content_type = 'application/json'
                 return json.dumps({'id': consumer_uuid,
                                    'ws': 'ws://127.0.0.1:8701'})
             else:
@@ -161,11 +163,13 @@ class Server:
             for project in self.get_projects():
                 projects.append({'id': utils.slugify(project),
                                  'name': project})
+            response.content_type = 'application/json'
             return json.dumps(projects)
 
         # PLUGIN API
         @app.get('/api/v1/<project_id>/plugins')
         def get_plugins(project_id):
+            response.content_type = 'application/json'
             return json.dumps([{'id': 'pylint'}])
 
         @app.get('/api/v1/<project_id>/<plugin_id>/source/<language>')
@@ -175,7 +179,11 @@ class Server:
 
         @app.get('/api/v1/<project_id>/<plugin_id>/state')
         def plugin_state(project_id, plugin_id):
-            return json.dumps([{}, {}])
+            from geoffrey.state import StateKey
+            criteria = StateKey(project=project_id, plugin=plugin_id, key=None)
+            response.content_type = 'application/json'
+            return json.dumps([s.serializable()
+                               for s in self.hub.get_states(criteria)])
 
         @app.post('/api/v1/subscription/<consumer_id>')
         def subscribe(consumer_id):

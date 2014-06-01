@@ -152,8 +152,74 @@ def test_new_state_created_event_put_nowait(hub, loop):
 
     state = State(key='testobject', value='something interesting')
 
-
     hub.put_nowait(state)
     event = hub.events.get_nowait()
     assert event.type == EventType.created
     assert state.key in hub.states
+
+
+def test_get_states_nomatch(hub):
+    from geoffrey.state import State, StateKey
+
+    state1 = State(key='badkey', value='something')
+    hub.put_nowait(state1)
+
+    states = list(hub.get_states(StateKey(project=None,
+                                          plugin=None,
+                                          key='goodkey')))
+
+    assert states == []
+
+
+def test_get_states_match_single_field(hub):
+    from geoffrey.state import State, StateKey
+    from geoffrey.event import EventType
+
+    state1 = State(key='goodkey', value='something')
+    hub.put_nowait(state1)
+
+    states = list(hub.get_states(StateKey(project=None,
+                                          plugin=None,
+                                          key='goodkey')))
+
+    assert len(states) == 1
+    assert states[0].type == EventType.state
+    assert states[0].key == state1.key
+    assert states[0].value == state1.value
+
+
+def test_get_states_match_multiple_fields(hub):
+    from geoffrey.state import State, StateKey
+    from geoffrey.event import EventType
+
+    state1 = State(project='goodproject', key='goodkey', value='something')
+    hub.put_nowait(state1)
+
+    states = list(hub.get_states(StateKey(project='goodproject',
+                                          plugin=None,
+                                          key='goodkey')))
+
+    assert len(states) == 1
+    assert states[0].type == EventType.state
+    assert states[0].key == state1.key
+    assert states[0].value == state1.value
+
+
+def test_get_states_match_mixed(hub):
+    from geoffrey.state import State, StateKey
+    from geoffrey.event import EventType
+
+    state1 = State(project='goodproject', key='goodkey', value='something')
+    hub.put_nowait(state1)
+
+    state2 = State(project='badproject', key='goodkey', value='something')
+    hub.put_nowait(state2)
+
+    states = list(hub.get_states(StateKey(project='goodproject',
+                                          plugin=None,
+                                          key='goodkey')))
+
+    assert len(states) == 1
+    assert states[0].type == EventType.state
+    assert states[0].key == state1.key
+    assert states[0].value == state1.value
