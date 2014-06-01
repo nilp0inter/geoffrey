@@ -137,7 +137,7 @@ def test_plugin_new_event(storeallplugin):
 
         statekey = StateKey('newproject', 'StoreAllPlugin', 'mykey')
 
-        assert event.type == EventType.unknown
+        assert event.type == EventType.custom
         assert event.key == statekey
         assert event.value == {'value': 'myvalue'}
 
