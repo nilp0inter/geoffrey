@@ -9,7 +9,7 @@ develop:
 	pip install -q -r requirements/develop.txt
 	pip install -q -e .
 unit-test: clean 
-	coverage run `which py.test` -m "not wip" --capture=no tests/unit
+	coverage run `which py.test` -m "not wip" tests/unit
 unit-wip: clean
 	coverage run `which py.test` -m wip --capture=no --pdb tests/unit
 cov-report:
