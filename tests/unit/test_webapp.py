@@ -6,6 +6,7 @@ import pytest
 from webtest import TestApp
 from bottle import Bottle
 from geoffrey.server import Server
+from geoffrey.webserver import WebServer
 from geoffrey import utils
 
 
@@ -13,7 +14,7 @@ def test_index():
     """ Test webserver index page """
 
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     index = app.get('/')
     assert index.status_code == 200
     assert b'<title>Geoffrey' in index.body
@@ -23,7 +24,7 @@ def test_add_consumer():
     """ Test add consumer for web interface """
 
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     consumer = app.post('/api/v1/consumer', {})
     assert consumer.status_code == 200
     assert b'"id":' in consumer.body
@@ -34,7 +35,7 @@ def test_remove_consumer():
     """ Test remove consumer for web interface """
 
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     consumer_created = app.post('/api/v1/consumer', {}).body.decode('utf-8')
     consumer_data = json.loads(consumer_created)
     consumer = app.delete('/api/v1/consumer/{}'.format(consumer_data['id']))
@@ -45,7 +46,7 @@ def test_remove_nonexistant_consumer():
     """ Test remove a non existant consumer for web interface """
 
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     consumer_id = 'NONEXISTINGCONSUMER'
     consumer = app.delete('/api/v1/consumer/{}'.format(consumer_id),
                           expect_errors=404)
@@ -62,7 +63,7 @@ def test_get_projects():
         project2 = 'ìòúü?!¿ñ¡'
         server.create_project(project1)
         server.create_project(project2)
-        app = TestApp(server.get_webapp(bottle=Bottle))
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
         projects = app.get('/api/v1/projects')
         project_data = json.loads(projects.body.decode('utf-8'))
         assert projects.status_code == 200
@@ -76,12 +77,22 @@ def test_get_plugins():
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'dummyplugin'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, '{}.conf'.format(project))
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
         server = Server(config=config_file)
-        project1 = 'newproject'
-        server.create_project(project1)
-        app = TestApp(server.get_webapp(bottle=Bottle))
-        plugins = app.get('/api/v1/{}/plugins'.format(project1))
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        plugins = app.get('/api/v1/{}/plugins'.format(project))
         assert plugins.status_code == 200
+        assert plugins.json == [{'id': 'dummyplugin'}]
 
 
 def test_plugin_source():
@@ -90,22 +101,21 @@ def test_plugin_source():
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
-        plugin_name = 'FileSystem'
+        plugin_name = 'filesystem'
         plugin_language = 'js'
-        project_path = os.path.join(configdir, 'projects')
+        project_path = os.path.join(configdir, 'projects', project)
         config = os.path.join(project_path, '{}.conf'.format(project))
         os.makedirs(project_path)
         content = """[project]
 
         [plugin:{plugin_name}]
 
-        data_dir={project_path}
+        paths={project_path}
         """.format(plugin_name=plugin_name, project_path=project_path)
 
         utils.write_template(config, content)
         server = Server(config=config_file)
-        #server.create_project(project)
-        app = TestApp(server.get_webapp(bottle=Bottle))
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
                            '{language}'.format(project_name=project,
@@ -122,7 +132,7 @@ def test_plugin_state():
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
         plugin_name = 'FakePlugin'
-        project_path = os.path.join(configdir, 'projects')
+        project_path = os.path.join(configdir, 'projects', project)
         config = os.path.join(project_path, '{}.conf'.format(project))
         os.makedirs(project_path)
 
@@ -137,7 +147,7 @@ def test_plugin_state():
         state2 = State(project='badproject', plugin=plugin_name, key='goodkey', value='something')
         server.hub.set_state(state2)
 
-        app = TestApp(server.get_webapp(bottle=Bottle))
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin}/state'.format(project_name=project,
                                                    plugin=plugin_name))
@@ -154,7 +164,7 @@ def test_plugin_state():
 def test_server_static():
     """ Test get static file """
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     static_file = 'geoffrey.jpg'
     static = app.get('/assets/{}'.format(static_file))
     assert static.status_code == 200
@@ -164,7 +174,7 @@ def test_get_api():
     """ Test current API definition """
 
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     api = app.get('/api/v1')
     assert api.status_code == 200
     assert b"/api/v1" in api.body
@@ -180,7 +190,7 @@ def test_subscription_noconsumer():
     """ Test modify subscription of a non existant consumer. """
 
     server = Server()
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     consumer_id = 'NONEXISTINGCONSUMER'
     res = app.post('/api/v1/subscription/{}'.format(consumer_id),
                    {'criteria': json.dumps([{}])}, expect_errors=404)
@@ -194,7 +204,7 @@ def test_subscription_badrequest(consumer):
     consumer_id = 'goodconsumer'
     server.consumers[consumer_id] = consumer
 
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     res = app.post('/api/v1/subscription/{}'.format(consumer_id),
                    {'criteria': "badcriteria"},
                    expect_errors=400)
@@ -211,7 +221,7 @@ def test_subscription_goodrequest(consumer):
 
     assert consumer.criteria != criteria
 
-    app = TestApp(server.get_webapp(bottle=Bottle))
+    app = TestApp(WebServer(server=server, bottle=Bottle).app)
     res = app.post('/api/v1/subscription/{}'.format(consumer_id),
                    {'criteria': json.dumps(criteria)})
 

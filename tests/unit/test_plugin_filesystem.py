@@ -27,8 +27,8 @@ def test_monitor_directory(loop, storeallplugin, hub):
 
     with TemporaryDirectory() as path:
         config = configparser.ConfigParser()
-        config.add_section('plugin:FileSystem')
-        config.set('plugin:FileSystem', 'paths', path)
+        config.add_section('plugin:filesystem')
+        config.set('plugin:filesystem', 'paths', path)
 
         @asyncio.coroutine
         def create_file():
@@ -58,8 +58,8 @@ def test_monitor_multiple_path(loop, storeallplugin, hub):
     with TemporaryDirectory() as path1:
         with TemporaryDirectory() as path2:
             config = configparser.ConfigParser()
-            config.add_section('plugin:FileSystem')
-            config.set('plugin:FileSystem', 'paths', ','.join((path1, path2)))
+            config.add_section('plugin:filesystem')
+            config.set('plugin:filesystem', 'paths', ','.join((path1, path2)))
 
             @asyncio.coroutine
             def create_files():
@@ -107,8 +107,8 @@ def test_event_data(loop, storeallplugin, hub):
                 yield from asyncio.sleep(1)
 
         fs_config = configparser.ConfigParser()
-        fs_config.add_section('plugin:FileSystem')
-        fs_config.set('plugin:FileSystem', 'paths', configdir)
+        fs_config.add_section('plugin:filesystem')
+        fs_config.set('plugin:filesystem', 'paths', configdir)
 
         fs_plugin = FileSystem(config=fs_config, project=project)
         hub.add_subscriptions(sa_plugin.subscriptions)
@@ -122,7 +122,7 @@ def test_event_data(loop, storeallplugin, hub):
         data = json.loads(event.dumps())
 
         assert data['project'] == "newproject"
-        assert data['plugin'] == "FileSystem"
+        assert data['plugin'] == "filesystem"
         assert data['key'] == newfile
         assert data['value'] == {'type': 'created'}
 
@@ -131,8 +131,8 @@ def test_plugin_stop(loop, hub):
     from geoffrey.plugins.filesystem import FileSystem
 
     fs_config = configparser.ConfigParser()
-    fs_config.add_section('plugin:FileSystem')
-    fs_config.set('plugin:FileSystem', 'paths', '/tmp')
+    fs_config.add_section('plugin:filesystem')
+    fs_config.set('plugin:filesystem', 'paths', '/tmp')
 
     fs_plugin = FileSystem(config=fs_config)
 
