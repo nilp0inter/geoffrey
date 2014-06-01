@@ -17,12 +17,12 @@ setup(name='geoffrey',
           'enum34',
           'watchdog>=0.7.1',
       ],
-      packages=find_packages('src'),
-      namespace_package=['geoffrey.plugins'],
+      packages=['geoffrey', 'geoffrey.plugins'],
+      namespace_packages=['geoffrey', 'geoffrey.plugins'],
       package_dir={'': 'src'},
       include_package_data=True,
       package_data={'geoffrey': ['web/*.*', 'web/assets/*.*']},
       entry_points={
-          "console_scripts": ["geoffrey = geoffrey:main"]
+          "console_scripts": ["geoffrey = geoffrey.main:main"]
       },
-      )
+)
