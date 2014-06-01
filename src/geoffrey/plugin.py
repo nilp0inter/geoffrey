@@ -8,6 +8,7 @@ from geoffrey.hub import get_hub
 from geoffrey.subscription import _Subscription
 from geoffrey.state import State
 from geoffrey.event import Event
+from geoffrey.utils import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class GeoffreyPlugin:
 
     @property
     def name(self):
-        return self.__class__.__name__
+        return slugify(self.__class__.__name__)
 
     def __repr__(self):
         return self.name

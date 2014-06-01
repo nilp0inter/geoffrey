@@ -93,12 +93,12 @@ def test_project_plugins():
         with open(fake_project_config, 'w') as f:
             f.write("""
                 [project]
-                [plugin:DummyPlugin1]
-                [plugin:DummyPlugin2]""")
+                [plugin:dummyplugin1]
+                [plugin:dummyplugin2]""")
 
         server = geoffrey.Server(config=config_file)
         plugins = server.projects['project1'].plugins
-        assert 'DummyPlugin1' in plugins
-        assert isinstance(plugins['DummyPlugin1'], DummyPlugin1)
-        assert 'DummyPlugin2' in plugins
-        assert isinstance(plugins['DummyPlugin2'], DummyPlugin2)
+        assert 'dummyplugin1' in plugins
+        assert isinstance(plugins['dummyplugin1'], DummyPlugin1)
+        assert 'dummyplugin2' in plugins
+        assert isinstance(plugins['dummyplugin2'], DummyPlugin2)

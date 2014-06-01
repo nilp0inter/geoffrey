@@ -14,13 +14,14 @@ from conftest import teardown_asyncio as teardown_function
 
 def test_plugin_load():
     config = configparser.ConfigParser()
-    config.add_section('plugin:DummyPlugin')
+    config.add_section('plugin:dummyplugin')
     plugin_list = plugin.get_plugins(config)
     assert any([isinstance(p, DummyPlugin) for p in plugin_list])
 
 
 def test_plugin_found_tasks():
     class TestPlugin(plugin.GeoffreyPlugin):  # pragma: no cover
+
         def nothing_interesting(self):
             pass
 
@@ -44,7 +45,9 @@ def test_plugin_found_tasks():
 def test_plugin_found_subscriptions():
     from geoffrey.subscription import subscription, _Subscription
     sub = subscription()
+
     class TestPlugin(plugin.GeoffreyPlugin):
+
         @asyncio.coroutine
         def task1(self, mydata: sub) -> plugin.Task:  # pragma: no cover
             yield from asyncio.sleep(1)
@@ -58,7 +61,7 @@ def test_plugin_found_subscriptions():
 def test_plugin_start_tasks_on_start(hub, loop, event):
     from geoffrey.subscription import subscription
 
-    sub = subscription(filter_func = lambda x: True)
+    sub = subscription(filter_func=lambda x: True)
 
     class TestPlugin(plugin.GeoffreyPlugin):
 
@@ -87,17 +90,17 @@ def test_plugin_start_tasks_on_start(hub, loop, event):
 
 def test_plugin_subscription(storeallplugin, hub, event, loop):
 
-   sa_plugin = storeallplugin(config=None)
-   hub.add_subscriptions(sa_plugin.subscriptions)
+    sa_plugin = storeallplugin(config=None)
+    hub.add_subscriptions(sa_plugin.subscriptions)
 
-   loop.run_until_complete(hub.put(event))
-   assert hub.events.qsize() == 1
+    loop.run_until_complete(hub.put(event))
+    assert hub.events.qsize() == 1
 
-   loop.run_until_complete(
-       asyncio.wait(sa_plugin.tasks + [hub.run(), asyncio.sleep(1)],
-                    return_when=asyncio.FIRST_COMPLETED))
+    loop.run_until_complete(
+        asyncio.wait(sa_plugin.tasks + [hub.run(), asyncio.sleep(1)],
+                     return_when=asyncio.FIRST_COMPLETED))
 
-   assert event in sa_plugin.events_received
+    assert event in sa_plugin.events_received
 
 
 def test_plugin_new_state(storeallplugin):
@@ -114,7 +117,7 @@ def test_plugin_new_state(storeallplugin):
 
         state = plugin.new_state('mykey', value='myvalue')
 
-        statekey = StateKey('newproject', 'StoreAllPlugin', 'mykey')
+        statekey = StateKey('newproject', 'storeallplugin', 'mykey')
 
         assert state.key == statekey
         assert state.value == {'value': 'myvalue'}
@@ -135,7 +138,7 @@ def test_plugin_new_event(storeallplugin):
 
         event = plugin.new_event('mykey', value='myvalue')
 
-        statekey = StateKey('newproject', 'StoreAllPlugin', 'mykey')
+        statekey = StateKey('newproject', 'storeallplugin', 'mykey')
 
         assert event.type == EventType.custom
         assert event.key == statekey
