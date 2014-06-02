@@ -4,6 +4,8 @@ import json
 from .state import StateKey
 
 class EventType(enum.Enum):
+    """The possible types of an event."""
+
     #: A custom event.
     custom = None
 
@@ -24,6 +26,7 @@ _empty_key = StateKey(None, None, None)
 
 
 class Event:
+    """Geoffrey event definition."""
     def __init__(self, type=EventType.custom, key=_empty_key, value=None):
         self.type = type
         self.key = key
@@ -39,4 +42,5 @@ class Event:
         return json.dumps(self.serializable())
 
     def __str__(self):  # pragma: no cover
-        return '[{self.type}]{{{self.key}: {self.value}}}'.format(self=self)
+        return '[{self.type}]{{{self.key}: {self.value}}}'.format(
+            self=self)

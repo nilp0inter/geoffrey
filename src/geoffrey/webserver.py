@@ -16,26 +16,41 @@ from geoffrey.subscription import Consumer
 
 
 class WebServer:
+    """
+    The Webserver of Geoffrey.
 
+    Support the API and web resources.
+    At this time this does not handle the websocket; is handled by the
+    Websocket class.
+
+    """
     def __init__(self, server, bottle=AsyncBottle):
         self.server = server
         self.webbase = os.path.join(os.path.dirname(__file__), "web")
         TEMPLATE_PATH[:] = [self.webbase]
         self.config = server.config
 
-        self.websocket_server_port = self.config.getint('geoffrey',
-                                                        'websocket_server_port',
-                                                        fallback=8701)
+        # Websocket address
+        self.websocket_server_port = self.config.getint(
+            'geoffrey', 'websocket_server_port', fallback=8701)
 
-        self.host = self.config.get('geoffrey', 'http_server_host',
-                                    fallback='127.0.0.1')
-        self.port = self.config.getint('geoffrey', 'http_server_port',
-                                       fallback=8700)
+        # Webserver address
+        self.host = self.config.get(
+            'geoffrey', 'http_server_host', fallback='127.0.0.1')
+        self.port = self.config.getint(
+            'geoffrey', 'http_server_port', fallback=8700)
 
+        #
+        # Bottle `app` definition
+        #
         self.app = bottle()
+
         self.app.route('/', method='GET', callback=self.index)
         self.app.route('/assets/<filepath:path>',
                        method='GET', callback=self.server_static)
+
+        # API self description
+        self.app.route('/api/v1', method='GET', callback=self.get_api)
 
         # Consumer API
         self.app.route('/api/v1/consumer',
@@ -59,13 +74,8 @@ class WebServer:
         self.app.route('/api/v1/subscription/<consumer_id>',
                        method='POST', callback=self.subscribe)
 
-
-        #API API
-        self.app.route('/api/v1', method='GET', callback=self.get_api)
-
     def consumer(self, consumer_id=None):
-        """ Register a consumer """
-
+        """ Register a consumer. """
         if request.method == 'POST':
             consumer_uuid = str(uuid.uuid4())
 
@@ -88,7 +98,7 @@ class WebServer:
                 raise HTTPError(404, 'Consumer not registered.')
 
     def get_projects(self):
-
+        """ Return the current projects. """
         projects = []
         for project in self.server.get_projects():
             projects.append({'id': utils.slugify(project),
@@ -98,6 +108,7 @@ class WebServer:
 
     # PLUGIN API
     def get_plugins(self, project_id):
+        """ Return the active plugins of `project_id`. """
         response.content_type = 'application/json'
         project_plugins = self.server.projects[project_id].plugins
         plugins = []
@@ -106,10 +117,15 @@ class WebServer:
         return json.dumps(plugins)
 
     def plugin_source(self, project_id, plugin_id, language):
+        """
+        Return the `main` plugin source of this plugin for the given
+        language.
 
+        """
         return '<script type="text/javascript">'
 
     def plugin_state(self, project_id, plugin_id):
+        """ Return the list of states of this plugin. """
         from geoffrey.state import StateKey
         criteria = StateKey(project=project_id, plugin=plugin_id, key=None)
         response.content_type = 'application/json'
@@ -117,6 +133,7 @@ class WebServer:
                            for s in self.server.hub.get_states(criteria)])
 
     def subscribe(self, consumer_id):
+        """ Change the subscription criteria of this consumer. """
         try:
             consumer = self.server.consumers[consumer_id]
             criteria = json.loads(request.POST['criteria'])
@@ -129,27 +146,28 @@ class WebServer:
 
     @jinja2_view('index.html')
     def index(self):
-        """Serve index.html redered with jinja2."""
+        """ Serve index.html redered with jinja2. """
         return {}
 
     def server_static(self, filepath):
-        """Serve static files under web/assets at /assets."""
-        return static_file(filepath, root=os.path.join(self.webbase,
-                                                       'assets'))
+        """ Serve static files under web/assets at /assets. """
+        root = os.path.join(self.webbase, 'assets')
+        return static_file(filepath, root=root)
 
     # Get web API definitions
     def get_api(self):
+        """ Return a list of endpoints for documentation. """
         from cgi import escape
         routes = {escape(route.rule)
                   for route in self.app.routes
                   if route.rule.startswith('/api')}
         html_list = '<ul>'
-        for route in routes:
+        for route in sorted(routes):
             html_list += '<li>{}</li>'.format(route)
         html_list += '</ul>'
         return html_list
 
     def start(self):
-        """Run the internal webserver."""
+        """ Run the internal webserver. """
         run(self.app, host=self.host, port=self.port, server=AsyncServer,
             quiet=True, debug=False)

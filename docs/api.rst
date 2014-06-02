@@ -4,24 +4,58 @@ API v1
 Consumer API
 ------------
 
-Register
-~~~~~~~~
+Register a new consumer
+~~~~~~~~~~~~~~~~~~~~~~~
 
-POST /api/v1/consumer
+.. http:post:: /api/v1/consumer
 
-.. code-block:: javascript
+   :statuscode 200: no error
 
-   {
-     'id': 'ab37-3f47...',
-     'ws': 'ws://127.0.0.1:8701',
-   }
+   **Example request**:
+
+   .. sourcecode:: http
+
+      POST /api/v1/consumer HTTP/1.1
+      Host: localhost
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode :: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+   
+      {
+        "id": "84928d40-ea5a-11e3-9b27-0002a5d5c51b",
+        "ws": "ws://127.0.0.1:8701"
+      }
 
 
-Unregister
-~~~~~~~~~~
+Unregister a consumer
+~~~~~~~~~~~~~~~~~~~~~
 
-DELETE /api/v1/consumer/<consumer_id>
+.. http:delete:: /api/v1/consumer/(str:consumer_id)
 
+   :param consumer_id: the unique identifier of the consumer given in the registration step
+   :statuscode 200: no error
+   :statuscode 404: consumer not found
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      POST /api/v1/consumer/84928d40-ea5a-11e3-9b27-0002a5d5c51b HTTP/1.1
+      Host: localhost
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode :: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+   
 
 Project API
 -----------
@@ -29,76 +63,180 @@ Project API
 Retrieve the project list
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GET /api/v1/projects
+.. http:get:: /api/v1/projects
 
-.. code-block:: javascript
+   :statuscode 200: no error
 
-   [
-     {'id': 'project_a',
-      'name': 'Project A'},
-     {'id': 'project_b',
-      'name': 'Project B'}
-   ]
+   **Example request**:
+
+   .. sourcecode:: http
+
+      POST /api/v1/projects HTTP/1.1
+      Host: localhost
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode :: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [
+        {
+          "id": "project_a",
+          "name": "Project A"
+        },
+        {
+          "id": "project_b",
+          "name": "Project B"
+        }
+      ]
 
 
 Plugin API
 ----------
 
-Retrieve plugin list
-~~~~~~~~~~~~~~~~~~~~
+Retrieve the plugin list of specific project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GET /api/v1/<project_id>/plugins
+.. http:get:: /api/v1/(str:project_id)/plugins
 
-.. code-block:: javascript
+   :param project_id: the project identifier
+   :statuscode 200: no error
+   :statuscode 404: project does not exist
 
-   [
-     {'id': 'pylint'}
-   ]
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /api/v1/project_a/plugins HTTP/1.1
+      Host: localhost
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode :: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [
+        {
+          "id": "pylint"
+        },
+        {
+          "id": "filesystem"
+        }
+      ]
 
 
-Example::
+Retrieve the plugin source for the given language
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   GET /api/v1/project_a/plugins
+.. http:get:: /api/v1/(str:project_id)/(str:plugin_id)/source/(str:language)
+
+   :param project_id: the project identifier   
+   :param plugin_id: the plugin identifier
+   :param language: the extension of the file with the sources for this language
+   :statuscode 200: no error
+   :statuscode 404: project, plugin or language not found
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /api/v1/project_a/pylint/source/js HTTP/1.1
+      Host: localhost
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode :: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+   
+      [javascript plugin source]
 
 
-Retrieve plugin source
-~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the plugin states for the given project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GET /api/v1/<project_id>/<plugin_id>/source/<language>
+.. http:get:: /api/v1/(str:project_id)/(str:plugin_id)/state
 
-.. code-block:: javascript
+   :param project_id: the project identifier   
+   :param plugin_id: the plugin identifier
+   :statuscode 200: no error
+   :statuscode 404: project and plugin combination not found
 
-   [javascript plugin source]
+   **Example request**:
 
+   .. sourcecode:: http
 
-Retrieve plugin state
-~~~~~~~~~~~~~~~~~~~~~
+      GET /api/v1/project_a/pylint/state HTTP/1.1
+      Host: localhost
+      Accept: application/json
 
-GET /api/v1/<project_id>/<plugin_id>/state
+   **Example response**:
 
-.. code-block:: javascript
+   .. sourcecode :: http
 
-   [
-     {...},
-     {...},
-   ]
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+   
+      [
+        {
+          "project": "test",
+          "key": "geoffrey/testspace/test.py",
+          "plugin": "pylint",
+          "value": {
+            "exitcode": 16,
+            "stdout": "No config ..."
+          }
+        }
+      ]
 
 
 Subscription API
 ----------------
 
-Make subscriptions
-~~~~~~~~~~~~~~~~~~
+Modify the consumer subscription list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-POST /api/v1/subscription/<consumer_id>
+.. http:post:: /api/v1/subscription/(str:consumer_id)
 
-.. code-block:: javascript
+   :param consumer_id: the consumer identifier   
+   :statuscode 200: no error
+   :statuscode 404: consumer not found
 
-   [
-     {<plugin_1_subscription_data>},
-     {<plugin_2_subscription_data>},
-     {<plugin_3_subscription_data>},
-   ]
+   **Example request**:
 
-Consecutive requests will override the subscription list for this
-consumer.
+   .. sourcecode:: http
+
+      POST /api/v1/subscription/84928d40-ea5a-11e3-9b27-0002a5d5c51b HTTP/1.1
+      Host: localhost
+      Accept: application/json
+
+      [
+        {
+          "project": "project_a",
+          "plugin": "pylint"
+        },
+        {
+          "project": "project_b",
+          "plugin": "filesystem"
+        }
+      ]
+
+   **Example response**:
+
+   .. sourcecode :: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+
+.. note:: 
+   Consecutive requests will override the subscription list for this
+   consumer.

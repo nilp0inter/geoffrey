@@ -7,23 +7,25 @@ Server configuration
 Configuration structure
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Geoffrey mantiene toda su configuración en ficheros de tipo .ini.
-Existe una configuración global del servidor y además una configuración
-específica por proyecto.
+Geoffrey maintains all its configuration in ini-style files.
 
-La localización por defecto del fichero de configuración del servidor es:
+There is a global server configuration and a per project configuration.
 
-~/.geoffrey/geoffrey.conf
+The default location of the server configuration is::
 
-Donde ~ significa el directorio HOME del usuario.
+  ~/.geoffrey/geoffrey.conf
 
-Los ficheros de configuración se dividen en secciones del tipo:
+The symbol `~` is replaced with the location of the HOME directory of the user running Geoffrey.
 
-[section name]
+The configuration files are divided in sections with this sintax::
 
-Que contienen pares clave valor del tipo:
+  [section name]
 
-key = value
+Each section contains key-value pairs::
+
+  key = value
+
+This is an example configuration structure.
 
 .. code-block:: bash
 
@@ -33,8 +35,8 @@ key = value
         ├── project_1
         │   ├── data/
         │   │   └── [...]
-        │   └── project_1.conf
+        │   └── project.conf
         └── project_2/
             ├── data/
             │   └── [...]
-            └── project_2.conf
+            └── project.conf

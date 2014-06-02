@@ -1,3 +1,7 @@
+"""
+The EventHUB and related functions..
+
+"""
 import asyncio
 import logging
 import pickle
@@ -41,6 +45,7 @@ class EventHUB:
 
     @asyncio.coroutine
     def run(self):
+        """Infite loop that send events to the subscribers."""
         logger.debug("Starting EventHUB!")
         if not self.running:
             self.running = True
@@ -59,13 +64,20 @@ class EventHUB:
                     yield from subscription.put(data)
 
     def set_state(self, data):
+        """Set a state in the hub state table."""
         self.states[data.key] = data.value
 
     def del_state(self, data):
+        """Delete a state of the hub state table."""
         del self.states[data.key]
 
     def _process_data(self, data):
-        """Return a tuple (isfinal, event) => (bool, Event)"""
+        """
+        Process the data received by the hub.
+
+        Return a tuple (isfinal, event) => (bool, Event).
+
+        """
         if isinstance(data, Event):
             logger.debug("Event received: %s", data)
             return (True, data)
@@ -137,10 +149,12 @@ class EventHUB:
                 self.put_nowait(event)
 
     def save_states(self, filename):
+        """Save the state table to disk."""
         with open(filename, 'wb') as f:
             pickle.dump(self.states, f)
 
     def restore_states(self, filename):
+        """Load the state table from disk."""
         with open(filename, 'rb') as f:
             self.states = pickle.load(f)
 

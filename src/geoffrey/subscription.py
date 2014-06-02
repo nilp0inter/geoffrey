@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 class _Subscription(asyncio.Queue):
     """
-    Special type of `Queue` that only accepts data if match the filter
-    function.
+    Special type of `Queue` that only accepts data if match the
+    `filter_func` function.
 
     """
     def __init__(self, filter_func, *args, **kwargs):
@@ -63,7 +63,14 @@ class Consumer(_Subscription):
 
 def subscription(filter_func, *args, **kwargs):
     """
-    Wrapper for _Subscription.
+    Wrapper for _Subscription can be used as decorator.
+
+    .. code-block::
+        @subscription
+        def my_filter(self, event):
+            \"\"\" bool(), `True` if event is accepted. \"\"\"
+            return True
+
     """
     def wrapper() -> _Subscription:
         return _Subscription(filter_func, *args, **kwargs)

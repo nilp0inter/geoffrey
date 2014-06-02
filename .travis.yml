@@ -3,6 +3,7 @@ python: 3.3
 env:
   - TOX_ENV=py33
   - TOX_ENV=py34
+  - TOX_ENV=docs
 install:
   - pip install -r requirements/tests.txt
   - pip install coveralls

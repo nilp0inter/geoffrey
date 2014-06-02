@@ -19,7 +19,27 @@ class Task:
 
 class GeoffreyPlugin:
     """
-    Base plugin.
+    Base Geoffrey plugin.
+
+    Uses introspection as a tool to define the desired behavior.
+
+    The methods annotated with result geoffrey.plugin.Task will be
+    runned as tasks when the plugin is loaded.
+
+    The methods decored with @geoffrey.subscription can be used as an
+    annotation of the Task's parameters as an incomming queue.
+
+    Example:
+
+    .. code-block:: python
+
+        @asyncio.coroutine
+        def example(self, events: in_data) -> plugin.Task:
+            event = yield from in_data.get()
+
+            # ... some stuff generating states or events ...
+
+            yield from self.hub.put(mystate)  # Put this on the hub
 
     """
     def __init__(self, config, project=None):
@@ -38,6 +58,11 @@ class GeoffreyPlugin:
             self.tasks.append(task(self, **kwargs))
 
     def start(self):
+        """
+        Start the tasks of this plugin and add its subscriptions to
+        the hub.
+
+        """
         for task in self.tasks:  # pragma: no cover
             self._running_tasks.append(asyncio.Task(task))
         self.hub.add_subscriptions(self.subscriptions)
@@ -53,6 +78,7 @@ class GeoffreyPlugin:
 
     @property
     def _section_name(self):
+        """The section name of this plugin in the config file."""
         return 'plugin:' + self.name
 
     def is_enabled(self):
@@ -63,6 +89,7 @@ class GeoffreyPlugin:
     def get_tasks(cls):
         """
         Return the members of this class annotated with return Task.
+
         """
         def _get_tasks():
             members = inspect.getmembers(cls,predicate=inspect.isfunction)
@@ -74,6 +101,10 @@ class GeoffreyPlugin:
 
     @staticmethod
     def get_subscriptions(task):
+        """
+        The subscriptions defined as annotations in the tasks methods.
+
+        """
         annotations = getattr(task, '__annotations__', {})
         def _get_subscriptions():
             for key, value in annotations.items():
@@ -89,15 +120,29 @@ class GeoffreyPlugin:
             return self.project.name
 
     def new_state(self, key, **kwargs):
+        """
+        Handy method that for creates a new state prefilled with the
+        information of this plugin.
+
+        """
         return State(project=self._project_name,
                      plugin=self.name, key=key, **kwargs)
 
     def new_event(self, key, **kwargs):
+        """
+        Handy method that for creates a new event prefilled with the
+        information of this plugin.
+
+        """
         state = self.new_state(key, **kwargs)
         return Event(key=state.key, value=state.value)
 
 
 def get_plugins(config, *args, **kwargs):
+    """
+    Returns PluginManager with all available plugins in the system.
+
+    """
     loader = load('geoffrey.plugins',
                   subclasses=GeoffreyPlugin)
 

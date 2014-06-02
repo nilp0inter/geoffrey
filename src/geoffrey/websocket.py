@@ -2,6 +2,8 @@ import asyncio
 import logging
 import json
 
+from websockets.exceptions import InvalidState
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,9 @@ class WebsocketServer:
             rawevent = event.dumps()
             try:
                 yield from websocket.send(rawevent)
-            except:  # pragma: no cover
+            except InvalidState:  # pragma: no cover
+                return
+            except:
                 logger.exception("Websocket error sending data: %s",
                                  rawevent)
 
@@ -49,3 +53,4 @@ class WebsocketServer:
             logger.exception("Websocket communication error in handshake")
         else:
             yield from self.communicate(websocket, consumer)
+        logger.info("Websocket closed.")

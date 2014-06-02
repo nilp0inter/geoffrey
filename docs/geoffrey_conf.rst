@@ -1,19 +1,19 @@
 geoffrey.conf
 =============
 
-Fichero de configuración principal.
+Main configuration file of geoffrey server.
 
 ``[geoffrey]`` Section Settings
 -------------------------------
 
-Contiene la configuración global del servidor.
+This section contains the global configuration of the server.
 
 ``[geoffrey]`` Section Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``http_server_host``
 
-  La dirección de red donde el servidor web de geoffrey escuchará.
+  Web server bind address.
 
   *Default*: ``127.0.0.1``
 
@@ -23,7 +23,7 @@ Contiene la configuración global del servidor.
 
 ``http_server_port``
 
-  El puerto TCP donde el servidor web de geoffrey escuchará.
+  Web server TCP port.
 
   *Default*: ``8700``
 
@@ -34,7 +34,7 @@ Contiene la configuración global del servidor.
 
 ``websocket_server_host``
 
-  La dirección de red donde el servidor de websockets de geoffrey escuchará.
+  Websocket bind address.
 
   *Default*: ``127.0.0.1``
 
@@ -44,7 +44,7 @@ Contiene la configuración global del servidor.
 
 ``websocket_server_port``
 
-  El puerto TCP donde el servidor de websockets de geoffrey escuchará.
+  Websocket TCP port.
 
   *Default*: ``8701``
 
@@ -55,14 +55,14 @@ Contiene la configuración global del servidor.
 ``[projects]`` Section Settings
 -------------------------------
 
-Configuración global de proyectos.
+Projects global configuration section.
 
 ``[projects]`` Section Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``root``
 
-  Raíz del directorio de proyectos de geoffrey.
+  Root of the projects directory.
 
   *Default*: ``~/.geoffrey/projects``
 
