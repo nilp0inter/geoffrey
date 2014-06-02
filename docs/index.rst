@@ -1,12 +1,8 @@
-.. Geoffrey documentation master file, created by
-   sphinx-quickstart on Mon Mar 17 11:38:46 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Geoffrey: A Local Continuous Integration Server
+===============================================
 
-Welcome to Geoffrey's documentation!
-====================================
-
-Contents:
+User documentation
+==================
 
 .. toctree::
    :maxdepth: 2
@@ -14,8 +10,45 @@ Contents:
    configuration
    geoffrey_conf
    project_conf
-   api
    events
+   development
+
+
+REST API Documentation
+======================
+
+.. toctree::
+   :maxdepth: 3
+
+   api
+
+
+Plugins
+=======
+
+.. toctree::
+   :maxdepth: 2
+
+   plugins
+
+
+Code documentation
+==================
+
+.. toctree::
+   :maxdepth: 2
+
+   code
+
+
+Release History
+===============
+
+.. toctree::
+   :maxdepth: 2
+
+   changes
+
 
 Indices and tables
 ==================
