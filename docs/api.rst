@@ -237,6 +237,6 @@ Modify the consumer subscription list
       Content-Type: application/json
 
 
-.. note:: 
-   Consecutive requests will override the subscription list for this
-   consumer.
+   .. note:: 
+      Consecutive requests will override the subscription list for this
+      consumer.
