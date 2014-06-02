@@ -222,8 +222,8 @@ def test_subscription_goodrequest(consumer):
     assert consumer.criteria != criteria
 
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': json.dumps(criteria)})
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        criteria)
 
     assert res.status_code == 200
     assert consumer.criteria == criteria
