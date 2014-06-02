@@ -1,2 +1,1 @@
-0.0.1
-=====
+.. include:: ../CHANGELOG.txt

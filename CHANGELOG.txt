@@ -3,36 +3,36 @@
 
 Initial development using TDD.
 
-* Testing infrastructure: https://github.com/nilp0inter/geoffrey/issues/5
-  * Create tox configuration
-  * py.test for unit testing
-  * Integrate behave
-  * Coverage integration
-  * Vagrant integration
-  * Use TravisCI
-* Server process: https://github.com/nilp0inter/geoffrey/issues/1
-  * Main function
-  * Main entry_point
-  * Exit on Ctrl-C
-* Configuration structure.
-  * Define configuration structure in the documentation
-  * The server can read the main configuration
-  * The server knows its active projects
-  * A project can read its own configuration
-  * The project know its active plugins
-* Server can manage projects.
-  * Create a new project.
-  * Delete project.
-* Project cleanup.
-* Add logging to the server.
-* Add websocket server.
-* Add webserver.
-  * Integrate bottle into server
-  * Serve index.html
-  * Serve static files.
+- Testing infrastructure: https://github.com/nilp0inter/geoffrey/issues/5
+    - Create tox configuration
+    - py.test for unit testing
+    - Integrate behave
+    - Coverage integration
+    - Vagrant integration
+    - Use TravisCI
+- Server process: https://github.com/nilp0inter/geoffrey/issues/1
+    - Main function
+    - Main entry_point
+    - Exit on Ctrl-C
+- Configuration structure.
+    - Define configuration structure in the documentation
+    - The server can read the main configuration
+    - The server knows its active projects
+    - A project can read its own configuration
+    - The project know its active plugins
+- Server can manage projects.
+    - Create a new project.
+    - Delete project.
+- Project cleanup.
+- Add logging to the server.
+- Add websocket server.
+- Add webserver.
+    - Integrate bottle into server
+    - Serve index.html
+    - Serve static files.
 
 
 0.0.1
 -----
 
-* PoC
+- PoC

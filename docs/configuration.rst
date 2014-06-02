@@ -35,8 +35,8 @@ This is an example configuration structure.
         ├── project_1
         │   ├── data/
         │   │   └── [...]
-        │   └── project_1.conf
+        │   └── project.conf
         └── project_2/
             ├── data/
             │   └── [...]
-            └── project_2.conf
+            └── project.conf

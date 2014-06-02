@@ -1,7 +1,3 @@
-"""
-The Geoffrey server is a standalone process with ...
-
-"""
 import asyncio
 import configparser
 import logging

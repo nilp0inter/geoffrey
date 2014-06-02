@@ -1,16 +1,18 @@
-Geoffrey: A Local Continuous Integration Server
-===============================================
+Geoffrey: A Real Time Continuous Integration Server
+===================================================
 
-User documentation
-==================
+
+Narrative documentation
+=======================
 
 .. toctree::
    :maxdepth: 2
 
+   installation
    configuration
+   usage
    geoffrey_conf
    project_conf
-   events
    development
 
 
@@ -39,6 +41,7 @@ Code documentation
    :maxdepth: 2
 
    code
+   events
 
 
 Release History

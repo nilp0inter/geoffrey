@@ -1,22 +1,21 @@
-project_name.conf
-=================
+project.conf
+============
 
-Fichero de configuración específico del proyecto (cada proyecto tendrá
-uno propio).
+Project configuration file (each project has one).
 
 ``[project]`` Section Settings
 ------------------------------
 
-Configuración global del proyecto.
+Project global configuration.
 
 ``[project]`` Section Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``data``
+``name``
 
-  Directorio donde se almacenarán los datos internos del proyecto.
+  Project verbose name.
 
-  *Default*: ``~/.geoffrey/projects/project_name/data``
+  *Default*: The project identifier.
 
   *Required*: No.
 
@@ -26,9 +25,7 @@ Configuración global del proyecto.
 ``[plugin:x]`` Section Settings
 -------------------------------
 
-El fichero de configuración del proyecto debe contener una o más
-secciones ``plugin`` para que el servidor de geoffrey pueda obtener
-datos del proyecto.
+The project configuration may contain multiple ``plugin`` sections.
 
 ``[plugin:x]`` Section Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
