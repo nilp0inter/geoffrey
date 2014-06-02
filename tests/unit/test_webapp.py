@@ -80,7 +80,7 @@ def test_get_plugins():
         project = 'newproject'
         plugin_name = 'dummyplugin'
         project_path = os.path.join(configdir, 'projects', project)
-        config = os.path.join(project_path, '{}.conf'.format(project))
+        config = os.path.join(project_path, 'project.conf')
         os.makedirs(project_path)
         content = """[project]
 

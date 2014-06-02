@@ -12,10 +12,11 @@ def test_create_project():
         config_file = os.path.join(configdir, 'geoffrey.conf')
         server = Server(config=config_file)
         server.create_project('newproject')
-        assert os.path.exists(os.path.join(configdir, 'projects',
-                                           'newproject'))
-        assert os.path.exists(os.path.join(configdir, 'projects', 'newproject',
-                                           'newproject.conf'))
+
+        project_dir = os.path.join(configdir, 'projects', 'newproject')
+
+        assert os.path.exists(project_dir)
+        assert os.path.exists(os.path.join(project_dir, 'project.conf'))
         assert 'newproject' in server.projects
 
 
@@ -23,7 +24,7 @@ def test_delete_project():
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project_dir = os.path.join(configdir, 'projects', 'removemeproject')
-        project_config = os.path.join(project_dir, 'removemeproject.conf')
+        project_config = os.path.join(project_dir, 'project.conf')
         os.makedirs(project_dir)
         with open(project_config, 'w') as f:
             f.write('[project]\n\n')
@@ -43,7 +44,7 @@ def test_delete_unmanaged_project():
         server = Server(config=config_file)
 
         project_dir = os.path.join(configdir, 'projects', 'removemeproject')
-        project_config = os.path.join(project_dir, 'removemeproject.conf')
+        project_config = os.path.join(project_dir, 'project.conf')
         os.makedirs(project_dir)
         with open(project_config, 'w') as f:
             f.write('[project]\n\n')

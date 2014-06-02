@@ -56,8 +56,7 @@ class Server:
         for name in os.listdir(self.projects_root):
             project_root = os.path.join(self.projects_root, name)
             if os.path.isdir(project_root):
-                project_config = os.path.join(project_root,
-                                              '{}.conf'.format(name))
+                project_config = os.path.join(project_root, 'project.conf')
                 if os.path.isfile(project_config):
                     projects[name] = Project(name=name, config=project_config)
 
@@ -118,8 +117,7 @@ class Server:
         """Create a new project."""
         project_root = os.path.join(self.projects_root, project_name)
         os.makedirs(project_root)
-        project_config = os.path.join(project_root,
-                                      '{}.conf'.format(project_name))
+        project_config = os.path.join(project_root, 'project.conf')
         self.projects[project_name] = Project(name=project_name,
                                               config=project_config)
 

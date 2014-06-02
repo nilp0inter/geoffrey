@@ -39,14 +39,13 @@ def test_server_projects():
         for project in fake_projects:
             fake_project_dir = os.path.join(configdir, 'projects', project)
             os.makedirs(fake_project_dir)
-            with open(os.path.join(fake_project_dir,
-                                   '{}.conf'.format(project)), 'w') as f:
+            with open(os.path.join(fake_project_dir, 'project.conf'), 'w') as f:
                 f.write('[project]\n\n')
 
         # Weird cases:
         # 1. Project config is a dir instead of a file
         os.makedirs(os.path.join(configdir, 'projects',
-                                 'project3', 'project3.conf'))
+                                 'project3', 'project.conf'))
 
         # 2. Files inside `projects` dir.
         with open(os.path.join(configdir, 'projects', 'project4'), 'w') as f:
@@ -75,7 +74,7 @@ def test_main_config_must_be_file():
 def test_project_configuration():
     """A project can read its own configuration."""
     with TemporaryDirectory() as projectdir:
-        project_config = os.path.join(projectdir, 'projectname.conf')
+        project_config = os.path.join(projectdir, 'project.conf')
         with open(project_config, 'w') as f:
             f.write('[project]\n\n')
         project = Project(name='projectname',
@@ -90,7 +89,7 @@ def test_project_plugins():
         config_file = os.path.join(configdir, 'geoffrey.conf')
         fake_project_dir = os.path.join(configdir, 'projects', 'project1')
         os.makedirs(fake_project_dir)
-        fake_project_config = os.path.join(fake_project_dir, 'project1.conf')
+        fake_project_config = os.path.join(fake_project_dir, 'project.conf')
         with open(fake_project_config, 'w') as f:
             f.write("""
                 [project]
