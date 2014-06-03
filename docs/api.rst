@@ -1,11 +1,8 @@
-API v1
-======
-
 Consumer API
-------------
+============
 
 Register a new consumer
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 .. http:post:: /api/v1/consumer
 
@@ -33,7 +30,7 @@ Register a new consumer
 
 
 Unregister a consumer
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 .. http:delete:: /api/v1/consumer/(str:consumer_id)
 
@@ -58,10 +55,10 @@ Unregister a consumer
    
 
 Project API
------------
+===========
 
 Retrieve the project list
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 .. http:get:: /api/v1/projects
 
@@ -95,10 +92,10 @@ Retrieve the project list
 
 
 Plugin API
-----------
+==========
 
 Retrieve the plugin list of specific project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------
 
 .. http:get:: /api/v1/(str:project_id)/plugins
 
@@ -132,7 +129,7 @@ Retrieve the plugin list of specific project
 
 
 Retrieve the plugin source for the given language
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------------
 
 .. http:get:: /api/v1/(str:project_id)/(str:plugin_id)/source/(str:language)
 
@@ -161,7 +158,7 @@ Retrieve the plugin source for the given language
 
 
 Retrieve the plugin states for the given project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------
 
 .. http:get:: /api/v1/(str:project_id)/(str:plugin_id)/state
 
@@ -199,10 +196,10 @@ Retrieve the plugin states for the given project
 
 
 Subscription API
-----------------
+================
 
 Modify the consumer subscription list
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 .. http:post:: /api/v1/subscription/(str:consumer_id)
 
