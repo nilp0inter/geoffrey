@@ -39,9 +39,9 @@ class WebsocketServer:
             rawevent = event.dumps()
             try:
                 yield from websocket.send(rawevent)
-            except InvalidState:  # pragma: no cover
+            except InvalidState:
                 return
-            except:
+            except:  # pragma: no cover
                 logger.exception("Websocket error sending data: %s",
                                  rawevent)
 
