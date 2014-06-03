@@ -1,6 +1,7 @@
 import asyncio
-import logging
 import inspect
+import logging
+import os
 
 from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
@@ -137,10 +138,66 @@ class GeoffreyPlugin:
         state = self.new_state(key, **kwargs)
         return Event(key=state.key, value=state.value)
 
+    @property
+    def static(self):
+        """
+        Root directory of static files.
+
+        Where the client sources and the assets directory lives.
+
+        """
+        import inspect
+
+        classfile = inspect.getfile(self.__class__)
+        root = os.path.join(os.path.dirname(classfile), self.name)
+
+        if not os.path.isdir(root):
+            return None
+
+        return root
+
+    @property
+    def assets(self):
+        """
+        Root directory of asset files.
+
+        """
+        static = self.static
+        if static is None:
+            return None
+
+        assets = os.path.join(static, 'assets')
+        if not os.path.isdir(assets):
+            return None
+
+        return assets
+
+    def client_plugin_source(self, language):
+        """
+        Return the filename of the source code for the client side of this
+        plugin in the given language.
+
+        """
+
+        static = self.static
+        if static is None:
+            return None
+
+        filename = os.path.join(static, "main." + language)
+        realfilename = os.path.realpath(filename)
+
+        if not realfilename.startswith(self.static):
+            raise RuntimeError("Invalid language `%s`" % language)
+
+        if not os.path.isfile(realfilename):
+            return None
+
+        return realfilename
+
 
 def get_plugins(config, *args, **kwargs):
     """
-    Returns PluginManager with all available plugins in the system.
+    Returns PluginManager with all available plugins for this config.
 
     """
     loader = load('geoffrey.plugins',
@@ -152,3 +209,16 @@ def get_plugins(config, *args, **kwargs):
     return PluginManager([plugin
                           for plugin in all_plugins
                           if plugin.is_enabled()])
+
+def get_all_plugins(config, *args, **kwargs):
+    """
+    Returns PluginManager with all available plugins in the system.
+
+    """
+    loader = load('geoffrey.plugins',
+                  subclasses=GeoffreyPlugin)
+
+    all_plugins = loader.produce(
+        config, *args, **kwargs)
+
+    return PluginManager([plugin for plugin in all_plugins])
