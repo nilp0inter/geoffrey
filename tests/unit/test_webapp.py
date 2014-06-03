@@ -217,7 +217,7 @@ def test_subscription_goodrequest(consumer):
     server = Server()
     consumer_id = 'goodconsumer'
     server.consumers[consumer_id] = consumer
-    criteria = [{'goodcriteria': "yes"}]
+    criteria = {"criteria": [{'goodcriteria': "yes"}]}
 
     assert consumer.criteria != criteria
 

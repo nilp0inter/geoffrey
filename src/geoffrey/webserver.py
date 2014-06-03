@@ -137,6 +137,15 @@ class WebServer:
         try:
             consumer = self.server.consumers[consumer_id]
             criteria = json.loads(request.POST['criteria'])
+            if not isinstance(criteria, list):
+                raise ValueError("criteria must be a list")
+            for c in criteria:
+                if not isinstance(c, dict):
+                    raise ValueError("criteria elements must be dictionaries")
+                for key, value in c:
+                    if not isinstance(key, basestring) or \
+                            not isinstance(value, basestring):
+                        raise ValueError("invalid data type")
         except KeyError:
             raise HTTPError(404, 'Consumer not registered.')
         except:
