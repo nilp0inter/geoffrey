@@ -85,7 +85,7 @@ class WebServer:
             websocket_port = self.server.config.getint('geoffrey',
                                                        'websocket_server_port',
                                                        fallback=8701)
-            websocket_address = request.get_header('host')
+            websocket_address = request.get_header('host').split(':', 1)[0]
             ws = 'ws://{address}:{port}'.format(address=websocket_address,
                                                 port=websocket_port)
             response.content_type = 'application/json'

@@ -29,6 +29,8 @@ def test_add_consumer():
     assert consumer.status_code == 200
     assert b'"id":' in consumer.body
     assert b'"ws":' in consumer.body
+    assert ((b'"ws://127.0.0.1:8701"' in consumer.body) or
+            (b'"ws://localhost:8701"' in consumer.body))
 
 
 def test_remove_consumer():
