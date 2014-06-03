@@ -218,16 +218,18 @@ Modify the consumer subscription list
       Host: localhost
       Accept: application/json
 
-      [
-        {
-          "project": "project_a",
-          "plugin": "pylint"
-        },
-        {
-          "project": "project_b",
-          "plugin": "filesystem"
-        }
-      ]
+      {
+        "criteria": [
+          {
+            "plugin": "pylint",
+            "project": "project_a"
+          },
+          {
+            "plugin": "filesystem",
+            "project": "project_b"
+          }
+        ]
+      }
 
    **Example response**:
 
