@@ -192,8 +192,8 @@ def test_subscription_noconsumer():
     server = Server()
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
     consumer_id = 'NONEXISTINGCONSUMER'
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': json.dumps([{}])}, expect_errors=404)
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': [{}]}, expect_errors=404)
     assert res.status_code == 404
 
 
@@ -205,9 +205,21 @@ def test_subscription_badrequest(consumer):
     server.consumers[consumer_id] = consumer
 
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': "badcriteria"},
-                   expect_errors=400)
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'nocriteria': [{}]}, expect_errors=400)
+    assert res.status_code == 400
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': "badcriteria"}, expect_errors=400)
+    assert res.status_code == 400
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': [3]}, expect_errors=400)
+    assert res.status_code == 400
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': [{"abc": 3}]}, expect_errors=400)
     assert res.status_code == 400
 
 
@@ -217,13 +229,13 @@ def test_subscription_goodrequest(consumer):
     server = Server()
     consumer_id = 'goodconsumer'
     server.consumers[consumer_id] = consumer
-    criteria = [{'goodcriteria': "yes"}]
+    criteria = [{"plugin": "goodplugin"}]
 
     assert consumer.criteria != criteria
 
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': json.dumps(criteria)})
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {"criteria": criteria})
 
     assert res.status_code == 200
     assert consumer.criteria == criteria
