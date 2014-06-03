@@ -136,22 +136,29 @@ class WebServer:
         """ Change the subscription criteria of this consumer. """
         try:
             consumer = self.server.consumers[consumer_id]
-            criteria = request.json
-            if not isinstance(criteria, list):
-                raise ValueError("criteria must be a list")
-            for c in criteria:
-                if not isinstance(c, dict):
-                    raise ValueError("criteria elements must be dictionaries")
-                for key, value in c:
-                    if not isinstance(key, basestring) or \
-                            not isinstance(value, basestring):
-                        raise ValueError("invalid data type")
         except KeyError:
             raise HTTPError(404, 'Consumer not registered.')
-        except:
-            raise HTTPError(400, 'Bad request.')
         else:
-            consumer.criteria = criteria
+            try:
+                if not "criteria" in request.json:
+                    raise ValueError("'criteria' key is mandatory.")
+
+                criteria = request.json["criteria"]
+
+                if not isinstance(criteria, list):
+                    raise ValueError("criteria must be a list")
+
+                for c in criteria:
+                    if not isinstance(c, dict):
+                        raise ValueError("criteria elements must be dictionaries")
+                    for key, value in c.items():
+                        if not isinstance(key, str) or \
+                                not isinstance(value, str):
+                            raise ValueError("invalid data type")
+            except Exception as err:
+                raise HTTPError(400, err)
+            else:
+                consumer.criteria = criteria
 
     @jinja2_view('index.html')
     def index(self):
