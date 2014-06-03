@@ -19,16 +19,17 @@ def main():
 
     if os.environ.get('GEOFFREYDEBUG', '0') == '1':
         loglevel = logging.DEBUG
+        _print_tasks = asyncio.Task(print_tasks())
     else:
         loglevel = logging.INFO
 
     logging.basicConfig(level=loglevel, format=FORMAT)
 
-    if os.environ.get('PYTHONASYNCIODEBUG', '0') == '0':
-        asyncio_logger = logging.getLogger('asyncio')
-        asyncio_logger.setLevel(logging.WARNING)
-    else:
-        _print_tasks = asyncio.Task(print_tasks())
+    if 'PYTHONASYNCIODEBUG' in os.environ:
+        logger.critical((
+            "Please unset the environment variable PYTHONASYNCIODEBUG."
+            "http://bugs.python.org/issue21209"))
+        return 1
 
     server = Server()
     server.run()
