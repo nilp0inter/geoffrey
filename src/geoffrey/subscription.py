@@ -56,9 +56,9 @@ class Consumer(_Subscription):
             return True
 
         return all((match_or_fail('type', event.type.name),
-                    match_or_fail('project', event.key.project),
-                    match_or_fail('plugin', event.key.plugin),
-                    match_or_fail('key', event.key.key)))
+                    match_or_fail('project', event.project),
+                    match_or_fail('plugin', event.plugin),
+                    match_or_fail('key', event.key)))
 
 
 def subscription(filter_func, *args, **kwargs):

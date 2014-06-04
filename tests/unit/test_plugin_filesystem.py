@@ -125,7 +125,7 @@ def test_event_data(loop, storeallplugin, hub):
         assert data['project'] == "newproject"
         assert data['plugin'] == "filesystem"
         assert data['key'] == newfile
-        assert data['value'] == {'type': 'created'}
+        assert data['value'] == {'fs_event': 'created'}
 
 
 def test_plugin_stop(loop, hub):

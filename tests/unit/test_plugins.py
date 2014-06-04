@@ -104,7 +104,7 @@ def test_plugin_subscription(storeallplugin, hub, event, loop):
 
 def test_plugin_new_state(storeallplugin):
     from geoffrey.server import Server
-    from geoffrey.state import StateKey
+    from geoffrey.data import DataKey
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -116,16 +116,16 @@ def test_plugin_new_state(storeallplugin):
 
         state = plugin.new_state('mykey', value='myvalue')
 
-        statekey = StateKey('newproject', 'storeallplugin', 'mykey')
-
-        assert state.key == statekey
-        assert state.value == {'value': 'myvalue'}
+        assert state.project == 'newproject'
+        assert state.plugin == 'storeallplugin'
+        assert state.key == 'mykey'
+        assert state.value == 'myvalue'
 
 
 def test_plugin_new_event(storeallplugin):
     from geoffrey.server import Server
-    from geoffrey.event import EventType
-    from geoffrey.state import StateKey
+    from geoffrey.data import EventType
+    from geoffrey.data import DataKey
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -135,13 +135,13 @@ def test_plugin_new_event(storeallplugin):
         project = server.projects['newproject']
         plugin = storeallplugin(config=None, project=project)
 
-        event = plugin.new_event('mykey', value='myvalue')
-
-        statekey = StateKey('newproject', 'storeallplugin', 'mykey')
+        event = plugin.new_event(key='mykey', value='myvalue')
 
         assert event.type == EventType.custom
-        assert event.key == statekey
-        assert event.value == {'value': 'myvalue'}
+        assert event.project == 'newproject'
+        assert event.plugin == 'storeallplugin'
+        assert event.key == 'mykey'
+        assert event.value == 'myvalue'
 
 
 def test_plugins_same_hub(storeallplugin, testplugin):

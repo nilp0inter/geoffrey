@@ -18,14 +18,14 @@ def test_consumer_match_all(consumer, event):
 
 
 def test_consumer_match_type(consumer):
-    from geoffrey import event
+    from geoffrey import data
 
     consumer.criteria = [{'type': 'modified'}]
 
-    event1 = event.Event(type=event.EventType.modified)
+    event1 = data.Event(type=data.EventType.modified)
     consumer.put_nowait(event1)
 
-    event2 = event.Event(type=event.EventType.custom)
+    event2 = data.Event(type=data.EventType.custom)
     consumer.put_nowait(event2)
 
     assert consumer.qsize() == 1
@@ -33,18 +33,14 @@ def test_consumer_match_type(consumer):
 
 
 def test_consumer_match_project(consumer):
-    from geoffrey import event
+    from geoffrey import data
 
     consumer.criteria = [{'project': 'goodproject'}]
 
-    event1 = event.Event(key=event.StateKey(plugin=None,
-                                            project="goodproject",
-                                            key=None))
+    event1 = data.Event(plugin=None, project="goodproject", key=None)
     consumer.put_nowait(event1)
 
-    event2 = event.Event(key=event.StateKey(plugin=None,
-                                            project="badproject",
-                                            key=None))
+    event2 = data.Event(plugin=None, project="badproject", key=None)
     consumer.put_nowait(event2)
 
     assert consumer.qsize() == 1
@@ -52,18 +48,14 @@ def test_consumer_match_project(consumer):
 
 
 def test_consumer_match_plugin(consumer):
-    from geoffrey import event
+    from geoffrey import data
 
     consumer.criteria = [{'plugin': 'goodplugin'}]
 
-    event1 = event.Event(key=event.StateKey(plugin="goodplugin",
-                                            project=None,
-                                            key=None))
+    event1 = data.Event(plugin="goodplugin", project=None, key=None)
     consumer.put_nowait(event1)
 
-    event2 = event.Event(key=event.StateKey(plugin="badplugin",
-                                            project=None,
-                                            key=None))
+    event2 = data.Event(plugin="badplugin", project=None, key=None)
     consumer.put_nowait(event2)
 
     assert consumer.qsize() == 1
@@ -71,18 +63,14 @@ def test_consumer_match_plugin(consumer):
 
 
 def test_consumer_match_key(consumer):
-    from geoffrey import event
+    from geoffrey import data
 
     consumer.criteria = [{'key': 'goodkey'}]
 
-    event1 = event.Event(key=event.StateKey(plugin=None,
-                                            project=None,
-                                            key="goodkey"))
+    event1 = data.Event(plugin=None, project=None, key="goodkey")
     consumer.put_nowait(event1)
 
-    event2 = event.Event(key=event.StateKey(plugin=None,
-                                            project=None,
-                                            key="badkey"))
+    event2 = data.Event(plugin=None, project=None, key="badkey")
     consumer.put_nowait(event2)
 
     assert consumer.qsize() == 1
@@ -90,23 +78,17 @@ def test_consumer_match_key(consumer):
 
 
 def test_consumer_composed_criteria(consumer):
-    from geoffrey import event
+    from geoffrey import data
 
     consumer.criteria = [{'project': 'goodproject', 'key': 'goodkey'}]
 
-    event1 = event.Event(key=event.StateKey(plugin=None,
-                                            project="goodproject",
-                                            key="goodkey"))
+    event1 = data.Event(plugin=None, project="goodproject", key="goodkey")
     consumer.put_nowait(event1)
 
-    event2 = event.Event(key=event.StateKey(plugin=None,
-                                            project="goodproject",
-                                            key="badkey"))
+    event2 = data.Event(plugin=None, project="goodproject", key="badkey")
     consumer.put_nowait(event2)
 
-    event3 = event.Event(key=event.StateKey(plugin=None,
-                                            project="badproject",
-                                            key="goodkey"))
+    event3 = data.Event(plugin=None, project="badproject", key="goodkey")
     consumer.put_nowait(event3)
 
     assert consumer.qsize() == 1
@@ -114,29 +96,21 @@ def test_consumer_composed_criteria(consumer):
 
 
 def test_consumer_multiple_criteria(consumer):
-    from geoffrey import event
+    from geoffrey import data
 
     consumer.criteria = [{'plugin': 'goodplugin'},
                          {'project': 'goodproject'}]
 
-    event1 = event.Event(key=event.StateKey(plugin="goodplugin",
-                                            project="goodproject",
-                                            key=None))
+    event1 = data.Event(plugin="goodplugin", project="goodproject", key=None)
     consumer.put_nowait(event1)
 
-    event2 = event.Event(key=event.StateKey(plugin="badplugin",
-                                            project="goodproject",
-                                            key=None))
+    event2 = data.Event(plugin="badplugin", project="goodproject", key=None)
     consumer.put_nowait(event2)
 
-    event3 = event.Event(key=event.StateKey(plugin="goodplugin",
-                                            project="badproject",
-                                            key=None))
+    event3 = data.Event(plugin="goodplugin", project="badproject", key=None)
     consumer.put_nowait(event3)
 
-    event4 = event.Event(key=event.StateKey(plugin="badplugin",
-                                            project="badproject",
-                                            key=None))
+    event4 = data.Event(plugin="badplugin", project="badproject", key=None)
     consumer.put_nowait(event4)
 
     assert consumer.qsize() == 3

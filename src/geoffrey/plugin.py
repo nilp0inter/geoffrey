@@ -6,8 +6,7 @@ from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
 from geoffrey.hub import get_hub
 from geoffrey.subscription import _Subscription
-from geoffrey.state import State
-from geoffrey.event import Event
+from geoffrey.data import State, Event
 from geoffrey.utils import slugify
 
 logger = logging.getLogger(__name__)
@@ -134,8 +133,8 @@ class GeoffreyPlugin:
         information of this plugin.
 
         """
-        state = self.new_state(key, **kwargs)
-        return Event(key=state.key, value=state.value)
+        return Event(project=self._project_name,
+                     plugin=self.name, key=key, **kwargs)
 
 
 def get_plugins(config, *args, **kwargs):

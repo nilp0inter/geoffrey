@@ -97,6 +97,7 @@ def test_get_plugins():
         assert plugins.json == [{'id': 'dummyplugin'}]
 
 
+@pytest.mark.wip
 def test_plugin_source():
     """ Test get plugin source """
 
@@ -128,7 +129,7 @@ def test_plugin_source():
 
 def test_plugin_state():
     """ Test get plugin state """
-    from geoffrey.state import State
+    from geoffrey.data import State
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -157,10 +158,10 @@ def test_plugin_state():
 
         assert plugin_s.status_code == 200
         assert len(states) == 1
-        assert states[0]['project'] == state1.key.project
-        assert states[0]['plugin'] == state1.key.plugin
-        assert states[0]['key'] == state1.key.key
-        assert states[0]['value'] == state1.value
+        assert states[0]['project'] == state1.project
+        assert states[0]['plugin'] == state1.plugin
+        assert states[0]['key'] == state1.key
+        assert states[0]['value'] == state1._value
 
 
 def test_server_static():

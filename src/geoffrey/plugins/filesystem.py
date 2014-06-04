@@ -5,7 +5,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from geoffrey import plugin
-from geoffrey.event import Event, EventType
+from geoffrey.data import Event, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class FileSystem(plugin.GeoffreyPlugin):
     def queue_event(self, fsevent):
         key = fsevent.src_path.decode('utf-8')
         type_ = fsevent.event_type
-        event = self.new_event(key=key, type=type_)
+        event = self.new_event(key=key, fs_event=type_)
         yield from self.hub.put(event)
 
     def stop(self):
