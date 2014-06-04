@@ -33,13 +33,13 @@ def hub(request):
 
 @pytest.fixture  # pragma: nocover
 def event():
-    from geoffrey.event import Event
+    from geoffrey.data import Event
     return Event()
 
 
 @pytest.fixture  # pragma: nocover
 def state():
-    from geoffrey.state import State
+    from geoffrey.data import State
     return State()
 
 

@@ -13,6 +13,12 @@ def print_tasks():
     while True:
         yield from asyncio.sleep(3)
         logger.debug("Tasks: %s", asyncio.Task.all_tasks())
+        for task in asyncio.Task.all_tasks():
+            if task.done():
+                try:
+                    logger.info("Task %s done: %s", task, task.result())
+                except:
+                    logger.exception("Task %s failed: %s", task)
 
 def main():
     """Function used by the main console entry_point."""
