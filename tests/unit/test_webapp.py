@@ -97,16 +97,16 @@ def test_get_plugins():
         assert plugins.json == [{'id': 'dummyplugin'}]
 
 
-def test_plugin_source():
-    """ Test get plugin source """
+def test_plugin_no_datafiles(testplugin1):
+    """ Test get plugin source. No exists """
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
-        plugin_name = 'filesystem'
+        plugin_name = 'testplugin1'
         plugin_language = 'js'
         project_path = os.path.join(configdir, 'projects', project)
-        config = os.path.join(project_path, '{}.conf'.format(project))
+        config = os.path.join(project_path, 'project.conf')
         os.makedirs(project_path)
         content = """[project]
 
@@ -117,6 +117,40 @@ def test_plugin_source():
 
         utils.write_template(config, content)
         server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin1(config=config)
+
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        plugin_s = app.get('/api/v1/{project_name}/'
+                           '{plugin_name}/source/'
+                           '{language}'.format(project_name=project,
+                                               plugin_name=plugin_name,
+                                               language=plugin_language),
+                           expect_errors=True)
+        assert plugin_s.status_code == 404
+
+
+def test_plugin_source(testplugin2):
+    """ Test get plugin source. File exists. """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'testplugin2'
+        plugin_language = 'js'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, 'project.conf')
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+
+        paths={project_path}
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin2(config=None)
+
         app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
@@ -124,6 +158,39 @@ def test_plugin_source():
                                                plugin_name=plugin_name,
                                                language=plugin_language))
         assert plugin_s.status_code == 200
+        assert plugin_s.body == b'javascript'
+
+
+def test_plugin_source_invalid_language(testplugin2):
+    """ Test get plugin source. Language no exists """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'testplugin2'
+        plugin_language = 'py'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, 'project.conf')
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+
+        paths={project_path}
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin2(config=None)
+
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        plugin_s = app.get('/api/v1/{project_name}/'
+                           '{plugin_name}/source/'
+                           '{language}'.format(project_name=project,
+                                               plugin_name=plugin_name,
+                                               language=plugin_language),
+                           expect_errors=True)
+        assert plugin_s.status_code == 404
 
 
 def test_plugin_state():

@@ -185,7 +185,7 @@ class GeoffreyPlugin:
         filename = os.path.join(static, "main." + language)
         realfilename = os.path.realpath(filename)
 
-        if not realfilename.startswith(self.static):
+        if not realfilename.startswith(self.static + '/'):  # pragma: no cover
             raise RuntimeError("Invalid language `%s`" % language)
 
         if not os.path.isfile(realfilename):
