@@ -62,16 +62,6 @@ class EventHUB:
                 for subscription in self.subscriptions:
                     yield from subscription.put(data)
 
-    def set_state(self, data):
-        """Set a state in the hub state table."""
-        key, value = data.to_keyvalue()
-        self.states[key] = value
-
-    def del_state(self, data):
-        """Delete a state of the hub state table."""
-        key, value = data.to_keyvalue()
-        del self.states[key]
-
     def _process_data(self, data):
         """
         Process the data received by the hub.

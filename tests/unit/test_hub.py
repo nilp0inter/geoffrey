@@ -96,9 +96,9 @@ def test_states_persistence(hub):
     from geoffrey.data import State
 
     state1 = State(key='object1', data='data')
-    hub.set_state(state1)
+    hub.states[state1._key] = state1._value
     state2 = State(key='object2', data='data')
-    hub.set_state(state2)
+    hub.states[state2._key] = state2._value
 
     with NamedTemporaryFile() as tf:
         hub.save_states(tf.name)
