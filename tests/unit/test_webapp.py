@@ -97,7 +97,6 @@ def test_get_plugins():
         assert plugins.json == [{'id': 'dummyplugin'}]
 
 
-@pytest.mark.wip
 def test_plugin_source():
     """ Test get plugin source """
 
@@ -146,9 +145,9 @@ def test_plugin_state():
         server = Server(config=config_file)
 
         state1 = State(project=project, plugin=plugin_name, key='goodkey', value='something')
-        server.hub.set_state(state1)
+        server.hub.states[state1._key] = state1._value
         state2 = State(project='badproject', plugin=plugin_name, key='goodkey', value='something')
-        server.hub.set_state(state2)
+        server.hub.states[state2._key] = state2._value
 
         app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_s = app.get('/api/v1/{project_name}/'
