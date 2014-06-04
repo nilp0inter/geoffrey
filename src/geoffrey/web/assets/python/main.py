@@ -221,7 +221,7 @@ def on_consumer_complete(req):
         req2.bind('complete', on_subscription_complete)
         req2.open('POST', url, True)
         req2.set_header('content-type','application/json')
-        req2.send({"criteria": """[{'plugin': 'testpylint'}]"""})
+        req2.send({"criteria": [{}]})
     else:
         alert("Error registering consumer")
 
