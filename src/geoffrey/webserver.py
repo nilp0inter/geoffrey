@@ -13,6 +13,7 @@ from geoffrey.deps.aiobottle import AsyncServer
 
 from geoffrey import utils
 from geoffrey.subscription import Consumer
+from geoffrey.plugin import get_all_plugins
 
 
 class WebServer:
@@ -48,6 +49,8 @@ class WebServer:
         self.app.route('/', method='GET', callback=self.index)
         self.app.route('/assets/<filepath:path>',
                        method='GET', callback=self.server_static)
+        self.app.route('/plugins/<filepath:path>',
+                       method='GET', callback=self.server_plugin_static)
 
         # API self description
         self.app.route('/api/v1', method='GET', callback=self.get_api)
@@ -122,7 +125,19 @@ class WebServer:
         language.
 
         """
-        return '<script type="text/javascript">'
+        try:
+            project = self.server.projects[project_id]
+            plugin = project.plugins[plugin_id]
+            fullpath = plugin.client_plugin_source(language)
+        except KeyError:
+            raise HTTPError(404)
+        else:
+            if fullpath is None:
+                raise HTTPError(404)
+            else:
+                root = os.path.dirname(fullpath)
+                filename = os.path.basename(fullpath)
+                return static_file(filename, root=root)
 
     def plugin_state(self, project_id, plugin_id):
         """ Return the list of states of this plugin. """
@@ -169,6 +184,26 @@ class WebServer:
         """ Serve static files under web/assets at /assets. """
         root = os.path.join(self.webbase, 'assets')
         return static_file(filepath, root=root)
+
+    def server_plugin_static(self, filepath):
+        """ Serve static files under pluginname/assets. """
+        try:
+            pluginname, filename = filepath.split('/', 1)
+        except:
+            raise HTTPError(404, "invalid plugin name")
+
+        plugins = get_all_plugins(self.config, project=None)
+        for plugin in plugins:
+            if plugin.name == pluginname:
+                root = plugin.assets
+                if root is not None:
+                    return static_file(filename, root=root)
+                else:
+                    raise HTTPError(404, "no assets for this plugin")
+        plugins = get_all_plugins(self.config, project=None)
+
+        raise HTTPError(404, "plugin not found" + pluginname + str([plugin.name for plugin in plugins]))
+
 
     # Get web API definitions
     def get_api(self):
