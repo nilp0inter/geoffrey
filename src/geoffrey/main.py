@@ -2,7 +2,8 @@ import asyncio
 import logging
 import os
 
-from .server import Server
+from geoffrey.server import Server
+from geoffrey.utils import GeoffreyLoggingHandler
 
 FORMAT = '%(asctime)-15s [%(levelname)-8s] %(name)s: %(message)s'
 
