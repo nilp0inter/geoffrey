@@ -2,7 +2,8 @@ import asyncio
 import logging
 import os
 
-from .server import Server
+from geoffrey.server import Server
+from geoffrey.utils import GeoffreyLoggingHandler
 
 FORMAT = '%(asctime)-15s [%(levelname)-8s] %(name)s: %(message)s'
 
@@ -36,6 +37,10 @@ def main():
             "Please unset the environment variable PYTHONASYNCIODEBUG."
             "http://bugs.python.org/issue21209"))
         return 1
+
+    hub_handler = GeoffreyLoggingHandler()
+    hub_handler.setLevel(logging.DEBUG)
+    logger.addHandler(hub_handler)
 
     server = Server()
     server.run()
