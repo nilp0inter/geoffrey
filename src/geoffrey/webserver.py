@@ -129,7 +129,7 @@ class WebServer:
             project = self.server.projects[project_id]
             plugin = project.plugins[plugin_id]
             fullpath = plugin.client_plugin_source(language)
-        except KeyError:
+        except (KeyError, ValueError):
             raise HTTPError(404)
         else:
             if fullpath is None:

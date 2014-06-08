@@ -153,7 +153,7 @@ class GeoffreyPlugin:
         if not os.path.isdir(root):
             return None
 
-        return root
+        return os.path.realpath(root)
 
     @property
     def assets(self):
@@ -186,7 +186,7 @@ class GeoffreyPlugin:
         realfilename = os.path.realpath(filename)
 
         if not realfilename.startswith(self.static + '/'):  # pragma: no cover
-            raise RuntimeError("Invalid language `%s`" % language)
+            raise ValueError("Invalid language `%s`" % language)
 
         if not os.path.isfile(realfilename):
             return None

@@ -151,7 +151,8 @@ def test_plugin_source(testplugin2):
         server = Server(config=config_file)
         server.projects[project].plugins[plugin_name] = testplugin2(config=None)
 
-        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        ws = WebServer(server=server, bottle=Bottle)
+        app = TestApp(ws.app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
                            '{language}'.format(project_name=project,
@@ -162,7 +163,7 @@ def test_plugin_source(testplugin2):
 
 
 def test_plugin_source_invalid_language(testplugin2):
-    """ Test get plugin source. Language no exists """
+    """ Test get plugin source. Language does no exists """
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -190,6 +191,7 @@ def test_plugin_source_invalid_language(testplugin2):
                                                plugin_name=plugin_name,
                                                language=plugin_language),
                            expect_errors=True)
+
         assert plugin_s.status_code == 404
 
 
