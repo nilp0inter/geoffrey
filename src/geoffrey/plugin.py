@@ -8,9 +8,32 @@ from geoffrey.deps.straight.plugin.manager import PluginManager
 from geoffrey.hub import get_hub
 from geoffrey.subscription import _Subscription
 from geoffrey.data import State, Event
-from geoffrey.utils import slugify
+from geoffrey.utils import slugify, GeoffreyLoggingHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(GeoffreyLoggingHandler())
+
+class DefaultContextLogger:
+    def __init__(self, logger, project, plugin):
+        self.logger = logger
+        self.project = project
+        self.plugin = plugin
+
+    def _log(self, level, *args, **kwargs):
+        extra = kwargs.get('extra', dict())
+
+        extra.setdefault('project', self.project)
+        extra.setdefault('plugin', self.plugin)
+
+        kwargs['extra'] = extra
+
+        getattr(self.logger, level)(*args, **kwargs)
+
+    def __getattr__(self, name):
+        def wrapper(*args, **kwargs):
+            return self._log(name, *args, **kwargs)
+        return wrapper
+
 
 class Task:
     """Geoffrey plugin task marker."""
@@ -57,6 +80,8 @@ class GeoffreyPlugin:
                 kwargs[name] = sub
             self.tasks.append(task(self, **kwargs))
 
+        self.log = DefaultContextLogger(logger, project, self.name)
+
     def start(self):
         """
         Start the tasks of this plugin and add its subscriptions to
@@ -66,8 +91,8 @@ class GeoffreyPlugin:
         for task in self.tasks:  # pragma: no cover
             self._running_tasks.append(asyncio.Task(task))
         self.hub.add_subscriptions(self.subscriptions)
-        logger.info("Started plugin `%s` (%d task(s))",
-                    self.name, len(self._running_tasks))
+        self.log.info("Started plugin `%s` (%d task(s))",
+                      self.name, len(self._running_tasks))
 
     @property
     def name(self):

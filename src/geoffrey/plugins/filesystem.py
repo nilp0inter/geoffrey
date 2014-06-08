@@ -16,7 +16,7 @@ class GeoffreyFSHandler(FileSystemEventHandler):
         self.plugin = plugin
 
     def on_any_event(self, event):
-        logger.debug("Received FS event %r", event)
+        self.plugin.log.debug("Received FS event %r", event)
         self.loop.call_soon_threadsafe(asyncio.async,
                                        self.plugin.queue_event(event))
 
