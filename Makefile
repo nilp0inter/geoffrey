@@ -12,6 +12,10 @@ unit-test: clean
 	coverage run `which py.test` -m "not wip" tests/unit
 unit-wip: clean
 	coverage run `which py.test` -m wip --capture=no --pdb tests/unit
+behaviour-test: clean
+	coverage run `which behave` --tags ~@wip tests/behave/features
+behaviour-wip: clean
+	coverage run `which behave` --tags @wip --no-capture tests/behave/features
 cov-report:
 	coverage combine
 	coverage html

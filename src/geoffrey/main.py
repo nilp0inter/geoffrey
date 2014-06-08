@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import logging
 import os
@@ -23,6 +24,8 @@ def print_tasks():
 
 def main():
     """Function used by the main console entry_point."""
+    parser = argparse.ArgumentParser()
+    args = parser.parse_args()
 
     if os.environ.get('GEOFFREYDEBUG', '0') == '1':
         loglevel = logging.DEBUG
