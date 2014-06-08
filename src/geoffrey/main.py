@@ -38,9 +38,5 @@ def main():
             "http://bugs.python.org/issue21209"))
         return 1
 
-    hub_handler = GeoffreyLoggingHandler()
-    hub_handler.setLevel(logging.DEBUG)
-    logger.addHandler(hub_handler)
-
     server = Server()
     server.run()
