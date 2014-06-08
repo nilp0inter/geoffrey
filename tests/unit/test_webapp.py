@@ -29,6 +29,8 @@ def test_add_consumer():
     assert consumer.status_code == 200
     assert b'"id":' in consumer.body
     assert b'"ws":' in consumer.body
+    assert ((b'"ws://127.0.0.1:8701"' in consumer.body) or
+            (b'"ws://localhost:8701"' in consumer.body))
 
 
 def test_remove_consumer():
@@ -95,16 +97,16 @@ def test_get_plugins():
         assert plugins.json == [{'id': 'dummyplugin'}]
 
 
-def test_plugin_source():
-    """ Test get plugin source """
+def test_plugin_no_datafiles(testplugin1):
+    """ Test get plugin source. No exists """
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         project = 'newproject'
-        plugin_name = 'filesystem'
+        plugin_name = 'testplugin1'
         plugin_language = 'js'
         project_path = os.path.join(configdir, 'projects', project)
-        config = os.path.join(project_path, '{}.conf'.format(project))
+        config = os.path.join(project_path, 'project.conf')
         os.makedirs(project_path)
         content = """[project]
 
@@ -115,6 +117,40 @@ def test_plugin_source():
 
         utils.write_template(config, content)
         server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin1(config=config)
+
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        plugin_s = app.get('/api/v1/{project_name}/'
+                           '{plugin_name}/source/'
+                           '{language}'.format(project_name=project,
+                                               plugin_name=plugin_name,
+                                               language=plugin_language),
+                           expect_errors=True)
+        assert plugin_s.status_code == 404
+
+
+def test_plugin_source(testplugin2):
+    """ Test get plugin source. File exists. """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'testplugin2'
+        plugin_language = 'js'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, 'project.conf')
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+
+        paths={project_path}
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin2(config=None)
+
         app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
@@ -122,11 +158,44 @@ def test_plugin_source():
                                                plugin_name=plugin_name,
                                                language=plugin_language))
         assert plugin_s.status_code == 200
+        assert plugin_s.body == b'javascript'
+
+
+def test_plugin_source_invalid_language(testplugin2):
+    """ Test get plugin source. Language no exists """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'testplugin2'
+        plugin_language = 'py'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, 'project.conf')
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+
+        paths={project_path}
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin2(config=None)
+
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        plugin_s = app.get('/api/v1/{project_name}/'
+                           '{plugin_name}/source/'
+                           '{language}'.format(project_name=project,
+                                               plugin_name=plugin_name,
+                                               language=plugin_language),
+                           expect_errors=True)
+        assert plugin_s.status_code == 404
 
 
 def test_plugin_state():
     """ Test get plugin state """
-    from geoffrey.state import State
+    from geoffrey.data import State
 
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
@@ -143,9 +212,9 @@ def test_plugin_state():
         server = Server(config=config_file)
 
         state1 = State(project=project, plugin=plugin_name, key='goodkey', value='something')
-        server.hub.set_state(state1)
+        server.hub.states[state1._key] = state1._value
         state2 = State(project='badproject', plugin=plugin_name, key='goodkey', value='something')
-        server.hub.set_state(state2)
+        server.hub.states[state2._key] = state2._value
 
         app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_s = app.get('/api/v1/{project_name}/'
@@ -155,10 +224,10 @@ def test_plugin_state():
 
         assert plugin_s.status_code == 200
         assert len(states) == 1
-        assert states[0]['project'] == state1.key.project
-        assert states[0]['plugin'] == state1.key.plugin
-        assert states[0]['key'] == state1.key.key
-        assert states[0]['value'] == state1.value
+        assert states[0]['project'] == state1.project
+        assert states[0]['plugin'] == state1.plugin
+        assert states[0]['key'] == state1.key
+        assert states[0]['value'] == state1._value
 
 
 def test_server_static():
@@ -192,8 +261,8 @@ def test_subscription_noconsumer():
     server = Server()
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
     consumer_id = 'NONEXISTINGCONSUMER'
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': json.dumps([{}])}, expect_errors=404)
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': [{}]}, expect_errors=404)
     assert res.status_code == 404
 
 
@@ -205,9 +274,21 @@ def test_subscription_badrequest(consumer):
     server.consumers[consumer_id] = consumer
 
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': "badcriteria"},
-                   expect_errors=400)
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'nocriteria': [{}]}, expect_errors=400)
+    assert res.status_code == 400
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': "badcriteria"}, expect_errors=400)
+    assert res.status_code == 400
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': [3]}, expect_errors=400)
+    assert res.status_code == 400
+
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {'criteria': [{"abc": 3}]}, expect_errors=400)
     assert res.status_code == 400
 
 
@@ -217,13 +298,13 @@ def test_subscription_goodrequest(consumer):
     server = Server()
     consumer_id = 'goodconsumer'
     server.consumers[consumer_id] = consumer
-    criteria = {"criteria": [{'goodcriteria': "yes"}]}
+    criteria = [{"plugin": "goodplugin"}]
 
     assert consumer.criteria != criteria
 
     app = TestApp(WebServer(server=server, bottle=Bottle).app)
-    res = app.post('/api/v1/subscription/{}'.format(consumer_id),
-                   {'criteria': json.dumps(criteria)})
+    res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
+                        {"criteria": criteria})
 
     assert res.status_code == 200
     assert consumer.criteria == criteria

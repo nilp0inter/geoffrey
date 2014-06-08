@@ -1,5 +1,12 @@
 import asyncio
+import os
+import sys
+
 import pytest  # pragma: nocover
+
+BASE = os.path.dirname(__file__)
+PLUGINS = os.path.join(BASE, "..", "fixtures", "plugins")
+
 
 def setup_asyncio(function):
     asyncio.set_event_loop(None)
@@ -33,13 +40,13 @@ def hub(request):
 
 @pytest.fixture  # pragma: nocover
 def event():
-    from geoffrey.event import Event
+    from geoffrey.data import Event
     return Event()
 
 
 @pytest.fixture  # pragma: nocover
 def state():
-    from geoffrey.state import State
+    from geoffrey.data import State
     return State()
 
 
@@ -155,3 +162,27 @@ def websocket_ready():
     tosend = [json.dumps({'consumer_id': 'consumer'})]
     ws = ws_factory(tosend)()
     return ws
+
+
+@pytest.fixture
+def testplugin1():
+    sys.path.append(os.path.join(PLUGINS, "testplugin1"))
+    from testplugin1 import TestPlugin1
+    sys.path.pop()
+    return TestPlugin1
+
+
+@pytest.fixture
+def testplugin2():
+    sys.path.append(os.path.join(PLUGINS, "testplugin2"))
+    from testplugin2 import TestPlugin2
+    sys.path.pop()
+    return TestPlugin2
+
+
+@pytest.fixture
+def testplugin3():
+    sys.path.append(os.path.join(PLUGINS, "testplugin3"))
+    from testplugin3 import TestPlugin3
+    sys.path.pop()
+    return TestPlugin3

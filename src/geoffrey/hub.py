@@ -6,8 +6,7 @@ import asyncio
 import logging
 import pickle
 
-from .event import Event, EventType
-from .state import State
+from geoffrey.data import State, Event, EventType
 
 # Global, implicit hub
 _hub = None
@@ -40,8 +39,8 @@ class EventHUB:
                 if current != expected:
                     break
             else:
-                # Everything right. <zeusvoice>RELEASE THE EVENT!!</zeusvoice>
-                yield Event(type=EventType.state, key=key, value=value)
+                # Everything right. <zeusvoice>RELEASE THE STATE!!</zeusvoice>
+                yield State.from_keyvalue(key, value)
 
     @asyncio.coroutine
     def run(self):
@@ -63,14 +62,6 @@ class EventHUB:
                 for subscription in self.subscriptions:
                     yield from subscription.put(data)
 
-    def set_state(self, data):
-        """Set a state in the hub state table."""
-        self.states[data.key] = data.value
-
-    def del_state(self, data):
-        """Delete a state of the hub state table."""
-        del self.states[data.key]
-
     def _process_data(self, data):
         """
         Process the data received by the hub.
@@ -83,28 +74,28 @@ class EventHUB:
             return (True, data)
         elif isinstance(data, State):
             logger.debug("State received: %s", data)
-            if data.key in self.states:  # Key already exists.
-                if data.value:
-                    if data.value != self.states[data.key]:
+            key, value = data.to_keyvalue()
+            if key in self.states:  # Key already exists.
+                if value:
+                    if value != self.states[key]:
                         # Modified value
-                        self.set_state(data)
-                        ev = Event(type=EventType.modified, key=data.key,
-                                   value=data.value)
+                        self.states[key] = value
+                        ev = data.to_event(EventType.modified)
                         return (False, ev)
                     else:
                         # Same value.
                         # (It's covered but coverage does not detect it.)
                         pass  # pragma: nocover
                 else:
-                    # No value means. Deletion.
-                    self.del_state(data)
-                    ev = Event(type=EventType.deleted, key=data.key)
+                    # No value means deletion.
+                    del self.states[key]
+                    ev = Event.from_keyvalue(key, None,
+                                             type=EventType.deleted)
                     return (False, ev)
-            elif data.value:
+            elif value:
                 # New value. Creation
-                self.set_state(data)
-                ev = Event(type=EventType.created, key=data.key,
-                           value=data.value)
+                self.states[key] = value
+                ev = data.to_event(type=EventType.created)
                 return (False, ev)
             else:
                 # No value means. Deletion. But is an unknown key.

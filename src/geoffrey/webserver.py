@@ -13,6 +13,7 @@ from geoffrey.deps.aiobottle import AsyncServer
 
 from geoffrey import utils
 from geoffrey.subscription import Consumer
+from geoffrey.plugin import get_all_plugins
 
 
 class WebServer:
@@ -48,6 +49,8 @@ class WebServer:
         self.app.route('/', method='GET', callback=self.index)
         self.app.route('/assets/<filepath:path>',
                        method='GET', callback=self.server_static)
+        self.app.route('/plugins/<filepath:path>',
+                       method='GET', callback=self.server_plugin_static)
 
         # API self description
         self.app.route('/api/v1', method='GET', callback=self.get_api)
@@ -85,7 +88,7 @@ class WebServer:
             websocket_port = self.server.config.getint('geoffrey',
                                                        'websocket_server_port',
                                                        fallback=8701)
-            websocket_address = request.get_header('host')
+            websocket_address = request.get_header('host').split(':', 1)[0]
             ws = 'ws://{address}:{port}'.format(address=websocket_address,
                                                 port=websocket_port)
             response.content_type = 'application/json'
@@ -122,12 +125,24 @@ class WebServer:
         language.
 
         """
-        return '<script type="text/javascript">'
+        try:
+            project = self.server.projects[project_id]
+            plugin = project.plugins[plugin_id]
+            fullpath = plugin.client_plugin_source(language)
+        except KeyError:
+            raise HTTPError(404)
+        else:
+            if fullpath is None:
+                raise HTTPError(404)
+            else:
+                root = os.path.dirname(fullpath)
+                filename = os.path.basename(fullpath)
+                return static_file(filename, root=root)
 
     def plugin_state(self, project_id, plugin_id):
         """ Return the list of states of this plugin. """
-        from geoffrey.state import StateKey
-        criteria = StateKey(project=project_id, plugin=plugin_id, key=None)
+        from geoffrey.data import DataKey
+        criteria = DataKey(project=project_id, plugin=plugin_id, key=None)
         response.content_type = 'application/json'
         return json.dumps([s.serializable()
                            for s in self.server.hub.get_states(criteria)])
@@ -136,22 +151,29 @@ class WebServer:
         """ Change the subscription criteria of this consumer. """
         try:
             consumer = self.server.consumers[consumer_id]
-            criteria = json.loads(request.POST['criteria'])
-            if not isinstance(criteria, list):
-                raise ValueError("criteria must be a list")
-            for c in criteria:
-                if not isinstance(c, dict):
-                    raise ValueError("criteria elements must be dictionaries")
-                for key, value in c:
-                    if not isinstance(key, basestring) or \
-                            not isinstance(value, basestring):
-                        raise ValueError("invalid data type")
         except KeyError:
             raise HTTPError(404, 'Consumer not registered.')
-        except:
-            raise HTTPError(400, 'Bad request.')
         else:
-            consumer.criteria = criteria
+            try:
+                if not "criteria" in request.json:
+                    raise ValueError("'criteria' key is mandatory.")
+
+                criteria = request.json["criteria"]
+
+                if not isinstance(criteria, list):
+                    raise ValueError("criteria must be a list")
+
+                for c in criteria:
+                    if not isinstance(c, dict):
+                        raise ValueError("criteria elements must be dictionaries")
+                    for key, value in c.items():
+                        if not isinstance(key, str) or \
+                                not isinstance(value, str):
+                            raise ValueError("invalid data type")
+            except Exception as err:
+                raise HTTPError(400, err)
+            else:
+                consumer.criteria = criteria
 
     @jinja2_view('index.html')
     def index(self):
@@ -162,6 +184,26 @@ class WebServer:
         """ Serve static files under web/assets at /assets. """
         root = os.path.join(self.webbase, 'assets')
         return static_file(filepath, root=root)
+
+    def server_plugin_static(self, filepath):
+        """ Serve static files under pluginname/assets. """
+        try:
+            pluginname, filename = filepath.split('/', 1)
+        except:
+            raise HTTPError(404, "invalid plugin name")
+
+        plugins = get_all_plugins(self.config, project=None)
+        for plugin in plugins:
+            if plugin.name == pluginname:
+                root = plugin.assets
+                if root is not None:
+                    return static_file(filename, root=root)
+                else:
+                    raise HTTPError(404, "no assets for this plugin")
+        plugins = get_all_plugins(self.config, project=None)
+
+        raise HTTPError(404, "plugin not found" + pluginname + str([plugin.name for plugin in plugins]))
+
 
     # Get web API definitions
     def get_api(self):
