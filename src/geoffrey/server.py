@@ -35,7 +35,7 @@ class Server:
             os.makedirs(self.projects_root)
 
         self.loop = asyncio.get_event_loop()
-        self.projects = self.get_projects()
+        self.projects = self._get_projects()
         self.hub = hub.get_hub()
         # Strong references of the server's tasks to prevent garbage
         # collection.
@@ -50,7 +50,7 @@ class Server:
             fallback=os.path.join(os.path.dirname(self.configfile),
                                   'projects'))
 
-    def get_projects(self):
+    def _get_projects(self):
         """Gets all the projects."""
         projects = {}
         for name in os.listdir(self.projects_root):

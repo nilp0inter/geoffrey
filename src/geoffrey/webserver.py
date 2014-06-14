@@ -103,7 +103,7 @@ class WebServer:
     def get_projects(self):
         """ Return the current projects. """
         projects = []
-        for project in self.server.get_projects():
+        for project in self.server.projects:
             projects.append({'id': utils.slugify(project),
                              'name': project})
         response.content_type = 'application/json'
