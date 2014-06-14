@@ -7,6 +7,10 @@ import pytest  # pragma: nocover
 BASE = os.path.dirname(__file__)
 PLUGINS = os.path.join(BASE, "..", "fixtures", "plugins")
 
+@pytest.fixture(scope="session", autouse=True)
+def setup_tests(request):
+    import logging
+    logging.basicConfig(level=logging.CRITICAL + 1)
 
 def setup_asyncio(function):
     asyncio.set_event_loop(None)

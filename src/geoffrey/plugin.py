@@ -21,8 +21,7 @@ class DefaultContextLogger:
 
     def _log(self, level, *args, **kwargs):
         extra = kwargs.get('extra', dict())
-
-        extra.setdefault('project', self.project)
+        extra.setdefault('project', getattr(self.project, 'name', None))
         extra.setdefault('plugin', self.plugin)
 
         kwargs['extra'] = extra
