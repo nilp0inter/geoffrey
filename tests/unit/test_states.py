@@ -16,5 +16,4 @@ def test_data_getattr():
 
     assert state.key == "key"
     assert state.other == "other"
-    with pytest.raises(AttributeError):
-        state.unknown
+    assert state.unknown is None
