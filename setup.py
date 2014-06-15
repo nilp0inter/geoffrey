@@ -21,14 +21,6 @@ setuptools.setup(
     description=meta["__summary__"],
     long_description=long_description,
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Information Technology",
-        "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
-        "Natural Language :: English",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7"
     ],
     keywords=meta["__keywords__"],
     author=meta["__author__"],
@@ -45,6 +37,7 @@ setuptools.setup(
         'websockets==2.0',
         'enum34',
         'watchdog>=0.7.1',
+        'filemagic==1.6',
     ],
     entry_points={
         "console_scripts": ["geoffrey = geoffrey.main:main"]

@@ -42,19 +42,16 @@ class Data:
         else:
             if name in self._value:
                 return self._value[name]
-
-        raise AttributeError(
-            "'%s' object has no attribute '%s'" % (
-                self.__class__.__name__, name))
+            else:
+                return None
 
     def __str__(self):  # pragma: no cover
         return '{{{self._key}: {self._value}}}'.format(self=self)
 
     def serializable(self):
-        return {'project': self.project,
-                'plugin': self.plugin,
-                'key': self.key,
-                'value': self._value}
+        dump = {k:getattr(self, k) for k in DataKey._fields}
+        dump['value'] = self._value
+        return dump
 
     def dumps(self):
         return json.dumps(self.serializable(), indent=2)
@@ -86,11 +83,9 @@ class Event(Data):
             self=self)
 
     def serializable(self):
-        return {'project': self.project,
-                'plugin': self.plugin,
-                'key': self.key,
-                'type': self.type.name,
-                'value': self._value}
+        dump = super().serializable()
+        dump['type'] = self.type.name
+        return dump
 
     @classmethod
     def from_data(cls, data, type):

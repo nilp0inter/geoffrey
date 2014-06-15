@@ -31,7 +31,8 @@ $(function() {
     initialize: function() {
       this.subscription = new Subscription();
       this.subscription.consumer = this;
-      this.on('change', this.updateSubscription, this);
+      this.set("connected", false);
+      this.on('change:ws', this.updateSubscription, this);
 
       this.socket = null;
 
@@ -40,7 +41,6 @@ $(function() {
     },
 
     start: function() {
-        console.log("soy consumer");
     },
 
     updateSubscription: function() {
@@ -48,16 +48,44 @@ $(function() {
       if(!this.socket) {
         this.socket = new WebSocket(this.get("ws"));
         var consumer_id = this.get("id");
+        var this_ = this;
 
-        this.socket.onopen = function(e) {
-          this.send(JSON.stringify({'consumer_id': consumer_id}));
+        this.socket.onopen = function(evt) {
+          this.send(JSON.stringify({'consumer_id': this_.get("id")}));
+          this_.set("connected", true);
         }
-        this.socket.onmessage = function(msg){
+        this.socket.onmessage = function(evt){
+        }
+        this.socket.onclose = function(evt) {
+          this_.set("connected", false);
+        }
+        this.socket.onerror = function(evt) {
+          this_.set("connected", false);
         }
       }
     }
 
   });
+
+  // Consumer View
+  // -------------
+  // 
+  // Render the connection icon under the geoffrey logo.
+  var ConsumerView = Backbone.View.extend({
+    el: "#connection-info",
+
+    template: _.template($('#connect-info-template').html()),
+
+    initialize: function() {
+        this.listenTo(this.model, "change:connected", this.render);
+    },
+
+    render: function() {
+      this.$el.html(this.template(this.model.toJSON()));
+      return this;
+    }
+  });
+
 
   // Plugin Model
   // ------------
@@ -113,7 +141,6 @@ $(function() {
         }
       }
     ]          
-  
   });
 
 
@@ -135,7 +162,6 @@ $(function() {
       var projects = this.get("projects");
       this.consumer = null;
       this.deferred = projects.fetch();
- //     this.deferred.done(function(){ this.start(); })
     },
 
     start: function() {
@@ -144,6 +170,7 @@ $(function() {
       
       if(!this.consumer){
         this.consumer = new Consumer();
+        var CView = new ConsumerView({model: this.consumer});
       }
     },
     
