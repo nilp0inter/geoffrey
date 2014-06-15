@@ -40,7 +40,6 @@ $(function() {
     },
 
     start: function() {
-        console.log("soy consumer");
     },
 
     updateSubscription: function() {
