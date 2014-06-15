@@ -12,6 +12,11 @@ def setup_tests(request):
     import logging
     logging.basicConfig(level=logging.CRITICAL + 1)
 
+    # Don't use AsyncBottle for testing
+    from geoffrey import webserver
+    from bottle import Bottle
+    webserver.Bottle = Bottle
+
 def setup_asyncio(function):
     asyncio.set_event_loop(None)
     loop = asyncio.new_event_loop()
@@ -190,3 +195,10 @@ def testplugin3():
     from testplugin3 import TestPlugin3
     sys.path.pop()
     return TestPlugin3
+
+@pytest.fixture
+def testplugin4():
+    sys.path.append(os.path.join(PLUGINS, "testplugin4"))
+    from testplugin4 import TestPlugin4
+    sys.path.pop()
+    return TestPlugin4
