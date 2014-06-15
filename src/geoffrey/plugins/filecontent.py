@@ -31,9 +31,17 @@ class FileContent(plugin.GeoffreyPlugin):
 
     @asyncio.coroutine
     def read_modified_files(self, events: modified_files) -> plugin.Task:
+        try:
+            exclude_exp = self.config.get(self._section_name,
+                                          'exclude').split(',')
+        except:
+            exclude_exp = ""
 
-        exclude_exp = config.get(self._section_name, 'exclude', "").split(',')
-        include_exp = config.get(self._section_name, 'include', "").split(',')
+        try:
+            include_exp = self.config.get(self._section_name,
+                                          'include').split(',')
+        except:
+            include_exp = ""
 
         with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
             with magic.Magic(flags=magic.MAGIC_MIME_ENCODING) as encoding:
