@@ -9,19 +9,18 @@ A Geoffrey can define its own api endpoints for plugin specific task. To use thi
 Example:
 .. code-block:: python
 
-	class Plugin(GeoffreyPlugin):
-		...
-		def configure_app(self):
-			self.app.rounte('/<method>', callback=self.pluginmethod)
+   class Plugin(GeoffreyPlugin):
+       def configure_app(self):
+           self.app.rounte('/<method>', callback=self.pluginmethod)
 
-		def pluginmethod(self):
-			# super cool method magic specific for plugin
+       def pluginmethod(self):
+           # super cool method magic specific for plugin
 
 This path is relative to /api/v1/<project_id>/<plugin_id>/method/
 
 .. note:: 
 
-	Plugin routes **MUST** be precedeed by a /
+   Plugin routes **MUST** be precedeed by a /
 
 Client side plugins
 ===================
