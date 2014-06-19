@@ -38,6 +38,7 @@ $(function() {
 
       this.deferred = this.save();
       this.deferred.done(this.start);
+
     },
 
     start: function() {
@@ -167,30 +168,17 @@ $(function() {
   var Client = Backbone.RelationalModel.extend({
 
     initialize: function() {
-      var projects = this.get("projects");
+      this.set("project", new Project({ "id": project_id }));
       this.consumer = null;
-      this.deferred = projects.fetch();
     },
 
     start: function() {
-      var projects = this.get("projects");
-      this.deferred.done(function(){ projects.each(function(p){ p.start(); }); });
-      
+      this.get("project").start();
       if(!this.consumer){
         this.consumer = new Consumer();
         var CView = new ConsumerView({model: this.consumer});
       }
     },
-    
-    relations: [
-      {
-        type: Backbone.HasMany,
-        key: 'projects',
-        relatedModel: Project,
-        collectionType: Projects,
-        autoFetch: true
-      }
-    ]          
 
   });
 
@@ -222,5 +210,5 @@ $(function() {
   })
 
   window.app = new App();
-
 });
+

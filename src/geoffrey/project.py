@@ -31,8 +31,18 @@ class Project:
         for p in self.plugins.values():
             p.start()
 
+        try:
+            self.title = self.config.get('project', 'title')
+        except:
+            self.title = self.name
+
     def remove(self):
         """Remove this project from disk."""
 
         os.unlink(self.configfile)
         os.removedirs(os.path.dirname(self.configfile))
+
+    @property
+    def url(self):
+        """Returns the web-ui url for this project."""
+        return '/project/' + self.name

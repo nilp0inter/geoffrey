@@ -48,6 +48,8 @@ class WebServer:
 
         self.app.route('/', method='GET', callback=self.index)
         self.app.route('/index.html', method='GET', callback=self.index)
+        self.app.route('/project/<project_id>', method='GET',
+                       callback=self.project)
         self.app.route('/assets/<filepath:path>',
                        method='GET', callback=self.server_static)
         self.app.route('/plugins/<filepath:path>',
@@ -190,7 +192,15 @@ class WebServer:
     @jinja2_view('index.html')
     def index(self):
         """ Serve index.html redered with jinja2. """
-        return {}
+        return {'projects': [p for p in self.server.projects.values()]}
+
+    @jinja2_view('project.html')
+    def project(self, project_id):
+        """ Serve project.html redered with jinja2. """
+        try:
+            return {'project': self.server.projects[project_id]}
+        except KeyError:
+            raise HTTPError(404, "Unknown project")
 
     def server_static(self, filepath):
         """ Serve static files under web/assets at /assets. """
