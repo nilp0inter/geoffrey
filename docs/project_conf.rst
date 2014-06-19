@@ -11,7 +11,7 @@ Project global configuration.
 ``[project]`` Section Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``name``
+``title``
 
   Project verbose name.
 
