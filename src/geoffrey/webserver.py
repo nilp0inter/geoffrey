@@ -8,7 +8,7 @@ from bottle import response
 from bottle import HTTPError
 from bottle import static_file, TEMPLATE_PATH, jinja2_view
 
-from geoffrey.deps.aiobottle import AsyncBottle
+from geoffrey.deps.aiobottle import AsyncBottle as Bottle
 from geoffrey.deps.aiobottle import AsyncServer
 
 from geoffrey import utils
@@ -25,7 +25,7 @@ class WebServer:
     Websocket class.
 
     """
-    def __init__(self, server, bottle=AsyncBottle):
+    def __init__(self, server, bottle=Bottle):
         self.server = server
         self.webbase = os.path.join(os.path.dirname(__file__), "web")
         TEMPLATE_PATH[:] = [self.webbase]
@@ -44,7 +44,7 @@ class WebServer:
         #
         # Bottle `app` definition
         #
-        self.app = bottle()
+        self.app = Bottle()
 
         self.app.route('/', method='GET', callback=self.index)
         self.app.route('/index.html', method='GET', callback=self.index)
@@ -77,6 +77,17 @@ class WebServer:
         # Subscription API
         self.app.route('/api/v1/subscription/<consumer_id>',
                        method='POST', callback=self.subscribe)
+
+        # Plugin defined API
+
+        for project in self.server.projects:
+            for plugin in self.server.projects[project].plugins:
+                if self.server.projects[project].plugins[plugin].app is not None:
+                    self.app.mount(
+                        '/api/v1/{project_id}/{plugin_id}/method/'.format(project_id=project,
+                                                                          plugin_id=plugin),
+                        self.server.projects[project].plugins[plugin].app)
+
 
     def consumer(self, consumer_id=None):
         """ Register a consumer. """

@@ -3,6 +3,8 @@ import inspect
 import logging
 import os
 
+from bottle import Bottle
+
 from geoffrey.deps.straight.plugin import load
 from geoffrey.deps.straight.plugin.manager import PluginManager
 from geoffrey.hub import get_hub
@@ -71,6 +73,7 @@ class GeoffreyPlugin:
         self.tasks = []
         self._running_tasks = []
         self.project = project
+        self.app = Bottle()
         for task in self.get_tasks():
             kwargs = {}
             for name, subscription in self.get_subscriptions(task):

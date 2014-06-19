@@ -128,7 +128,6 @@ def test_plugin_no_datafiles(testplugin1):
                            expect_errors=True)
         assert plugin_s.status_code == 404
 
-
 def test_plugin_source(testplugin2):
     """ Test get plugin source. File exists. """
 
@@ -310,3 +309,32 @@ def test_subscription_goodrequest(consumer):
 
     assert res.status_code == 200
     assert consumer.criteria == criteria
+
+
+def test_plugin_api_injection(testplugin4):
+    """ Test get plugin source. No exists """
+
+    with TemporaryDirectory() as configdir:
+        config_file = os.path.join(configdir, 'geoffrey.conf')
+        project = 'newproject'
+        plugin_name = 'testplugin4'
+        project_path = os.path.join(configdir, 'projects', project)
+        config = os.path.join(project_path, 'project.conf')
+        os.makedirs(project_path)
+        content = """[project]
+
+        [plugin:{plugin_name}]
+        """.format(plugin_name=plugin_name, project_path=project_path)
+
+        utils.write_template(config, content)
+        server = Server(config=config_file)
+        server.projects[project].plugins[plugin_name] = testplugin4(config=config)
+
+        app = TestApp(WebServer(server=server, bottle=Bottle).app)
+        plugin_m = app.get('/api/v1/{project_name}/'
+                           '{plugin_name}/method/'
+                           'dummymethod'.format(project_name=project,
+                                                plugin_name=plugin_name))
+
+        assert plugin_m.status_code == 200
+
