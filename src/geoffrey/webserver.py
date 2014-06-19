@@ -47,6 +47,7 @@ class WebServer:
         self.app = bottle()
 
         self.app.route('/', method='GET', callback=self.index)
+        self.app.route('/index.html', method='GET', callback=self.index)
         self.app.route('/assets/<filepath:path>',
                        method='GET', callback=self.server_static)
         self.app.route('/plugins/<filepath:path>',

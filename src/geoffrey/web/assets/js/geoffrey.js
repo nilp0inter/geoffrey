@@ -6,7 +6,7 @@ $(function() {
   var Subscription = Backbone.Model.extend({
 
     defaults: {
-      criteria: [{}],
+      criteria: [{'plugin': 'todo'}],
     },
 
     urlRoot: function() {
@@ -55,6 +55,11 @@ $(function() {
           this_.set("connected", true);
         }
         this.socket.onmessage = function(evt){
+          var data = JSON.parse(evt.data);
+          var plugins = window.app.live_plugins;
+          for (var i = 0; i < plugins.length; i++) {
+              plugins[i].message(data);
+          }
         }
         this.socket.onclose = function(evt) {
           this_.set("connected", false);
@@ -93,10 +98,12 @@ $(function() {
 
     loadCode: function() {
       var url = '/api/v1/' + this.get("project").id + '/' + this.id + '/source/js'
+      $.getScript(url, function(){ });
     },
 
     start: function() {
       console.log("[" + this.get("project").id + "] Plugin `" + this.id + "` starting!");
+      this.loadCode();
     }
 
   });
@@ -119,12 +126,13 @@ $(function() {
 
     initialize: function() {
       var plugins = this.get("plugins");
-      plugins.fetch();
+      this.deferred = plugins.fetch();
     },
 
     start: function() {
       console.log("[" + this.id + "] Project starting!")
-      this.get("plugins").each(function(p){ p.start(); });
+      var plugins = this.get("plugins");
+      this.deferred.done(function() { plugins.each(function(p){ p.start(); }); });
     },
 
     relations: [
@@ -166,7 +174,7 @@ $(function() {
 
     start: function() {
       var projects = this.get("projects");
-      projects.each(function(p){ p.start(); });
+      this.deferred.done(function(){ projects.each(function(p){ p.start(); }); });
       
       if(!this.consumer){
         this.consumer = new Consumer();
@@ -192,6 +200,10 @@ $(function() {
 
     initialize: function() {
       this.client = new Client();
+      this.client.start()
+
+      this.live_plugins = []
+
     },
 
     events: {
@@ -210,6 +222,5 @@ $(function() {
   })
 
   window.app = new App();
-  window.app.client.start()
 
 });
