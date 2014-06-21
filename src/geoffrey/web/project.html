@@ -22,6 +22,7 @@
         <link href="/assets/css/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet" type="text/css" />
         <!-- Theme style -->
         <link href="/assets/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+        <link href="/assets/css/geoffrey.css" rel="stylesheet" type="text/css" />
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -45,28 +46,22 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </a>
+                
+                <div class="navbar-right">
+                  <ul class="nav navbar-nav">
+                    <li id="connection-info">
+                         <a href="#"><i class="fa fa-circle text-danger"></i> Offline</a>
+                    </li>
+                  </ul>
+                </div>
             </nav>
         </header>
         <div class="wrapper row-offcanvas row-offcanvas-left">
             <!-- Left side column. contains the logo and sidebar -->
             <aside class="left-side sidebar-offcanvas">
                 <!-- sidebar: style can be found in sidebar.less -->
-                <section class="sidebar">
-                    <!-- Sidebar user panel -->
-                    <div class="user-panel">
-                       <div class="pull-left info" id="connection-info">
-                         <a href="#"><i class="fa fa-circle text-danger"></i> Offline</a>
-                       </div>
-                    </div>
+                <section class="sidebar" id="left-bar">
                    <!-- sidebar menu: : style can be found in sidebar.less -->
-                    <ul class="sidebar-menu">
-                        <li class="active">
-                            <a href="index.html">
-                                <i class="fa fa-dashboard"></i> <span>Dashboard</span>
-                            </a>
-                        </li>
-                   
-                    </ul>
                 </section>
                 <!-- /.sidebar -->
             </aside>
@@ -86,21 +81,7 @@
                 </section>
 
                 <!-- Main content -->
-                <section class="content">
-
-                    <!-- Small boxes (Stat box) -->
-                    <div class="row">
-                        <div class="col-lg-3 col-xs-6">
-                        </div><!-- ./col -->
-                    </div><!-- /.row -->
-
-                    <!-- top row -->
-                    <div class="row">
-                        <div class="col-xs-12 connectedSortable">
-                            
-                        </div><!-- /.col -->
-                    </div>
-                    <!-- /.row -->
+                <section class="content" id="dashboard-canvas">
 
                     <!-- Main row -->
                     <div class="row">
@@ -167,56 +148,16 @@
           <a href="#"><i class="fa fa-circle text-<%= connected ? 'success' : 'danger' %>"></i> <%= connected ? 'Online' : 'Offline' %></a>
         </script>
 
-        <script type="text/template" id="widget-template">
-          <!-- TO DO List -->
-          <div class="box box-primary">
-              <div class="box-header">
-                  <i class="ion ion-clipboard"></i>
-                  <h3 class="box-title">To Do List</h3>
-                  <div class="box-tools pull-right">
-                      <ul class="pagination pagination-sm inline">
-                          <li><a href="#">&laquo;</a></li>
-                          <li><a href="#">1</a></li>
-                          <li><a href="#">&raquo;</a></li>
-                      </ul>
-                  </div>
-              </div><!-- /.box-header -->
-              <div class="box-body">
-                <% _.each(states, function(st) { %>
-                  <div class="box box-solid">
-                      <div class="box-body">
-                          <div style="margin-bottom:5px;">
-                          <small class="pull-right badge bg-blue"><%= st.value.todos.length %></small>
-                          <b><%= st.key %></b>
-                          </div>
-                  <ul class="todo-list">
-                    <% _.each(st.value.todos, function(todo) { %>
-                      <li>
-                          <!-- drag handle -->
-                          <span class="handle">
-                              <i class="fa fa-ellipsis-v"></i>
-                              <i class="fa fa-ellipsis-v"></i>
-                          </span>  
-                          <!-- checkbox -->
-                          <input type="checkbox" value="" name=""/>                                            
-                          <!-- todo text -->
-                          <span class="text"><%= todo.text %> <small class="label label-<%= todo.type == 'TODO' ? 'info' : 'danger' %>"><%= todo.type %></small></span>
-                          <!-- Emphasis label -->
-                          <!-- General tools such as edit or delete-->
-                          <div class="tools">
-                          </div>
-                      </li>
-                    <% }); %>
-                  </ul>
-              </div>
-                  </div>
-                <% }); %>
-              </div><!-- /.box-body -->
-              <div class="box-footer clearfix no-border">
-                  <button class="btn btn-default pull-right"><i class="fa fa-plus"></i> Add item</button>
-              </div>
-          </div><!-- /.box -->
-        <!-- ENDTODO -->
+        <script type="text/template" id="left-bar-template">
+          <ul class="sidebar-menu" id="left-menu">
+            <% _.each(entries, function(entry) { %> 
+              <li <% if (entry.active){ %>class="active"<% } %>>
+                  <a href="#<%- entry.route %> ">
+                      <i class="fa <%- entry.icon %>"></i> <span><%- entry.title %></span>
+                  </a>
+              </li>
+            <% }); %> 
+          </ul>
         </script>
 
     </body>

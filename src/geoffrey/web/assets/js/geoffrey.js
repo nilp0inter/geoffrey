@@ -1,12 +1,11 @@
 $(function() {
 
-
   // Subscription Model
   // ------------------
   var Subscription = Backbone.Model.extend({
 
     defaults: {
-      criteria: [{'plugin': 'todo'}],
+      criteria: [],
     },
 
     urlRoot: function() {
@@ -14,8 +13,21 @@ $(function() {
     },
 
     initialize: function() {
-      this.bind('change', function(){ this.save(); });
+      this.bind('change:criteria', function(){ this.save(); });
+      this.pluginCriteria = {};
     },
+
+    changePluginCriteria: function(pluginName, criteria) {
+      var oldCriteria = this.pluginCriteria[pluginName];
+      if (oldCriteria != criteria) {
+        this.pluginCriteria[pluginName] = criteria;
+        var newCriteria = [];
+        for (var i in this.pluginCriteria) {
+            newCriteria.push(this.pluginCriteria[i]);
+        }
+        this.set("criteria", newCriteria);
+      }
+    }
 
   });
 
@@ -182,6 +194,84 @@ $(function() {
 
   });
 
+
+  var MenuEntry = Backbone.Model.extend({});
+
+  var Menu = Backbone.Collection.extend({
+
+    model: MenuEntry
+
+  });
+
+  // Left bar view
+  var LeftBar = Backbone.View.extend({
+    el: "#left-bar",
+
+    template: _.template($('#left-bar-template').html()),
+
+    initialize: function() {
+      this.listenTo(this.collection, "change", this.render);
+      //this.render();
+    },
+
+    render: function() {
+      this.$el.html(this.template({entries: this.collection.toJSON()}));
+      return this;
+    }
+
+  });
+
+  var menu = new Menu([
+    {title: "Dashboard", route: "dashboard", icon: "fa-dashboard", active: true},
+    {title: "Settings", route: "settings", icon: "fa-wrench"},
+    {title: "Logs", route: "logs", icon: "fa-bars"}
+  ]);
+
+  var Workspace = Backbone.Router.extend({
+    
+    initialize: function(options) {
+      this.menu = options.menu;
+    },
+
+    routes: {
+      "": "dashboard",
+      "dashboard": "dashboard", 
+      "settings": "settings",
+      "logs": "logs",
+      "plugin/:plugin": "plugin",
+    },
+
+    changeActive: function(name) {
+      for (var i = 0; i < this.menu.models.length; i++ ){
+        var entry = this.menu.models[i];
+        if(entry.get("route") == name) {
+          entry.set("active", true);
+        } else {
+          entry.set("active", false);
+          $("#" + entry.get("route") + "-canvas").hide();
+        }
+      }
+      $("#" + name + "-canvas").show();
+    },
+
+    dashboard: function() {
+      this.changeActive("dashboard");
+    },  
+
+    settings: function() {
+      this.changeActive("settings");
+    },
+  
+    logs: function() {
+      this.changeActive("logs");
+    },
+
+    plugin: function(plugin) {
+       alert(plugin);
+    },
+
+  });
+
   // App
   var App = Backbone.View.extend({
     el: "#control",
@@ -190,22 +280,17 @@ $(function() {
       this.client = new Client();
       this.client.start()
 
+      this.leftBar = new LeftBar({
+        collection: menu
+      });
+
+      this.router = new Workspace({menu: menu});
+      Backbone.history.start();
+
       this.live_plugins = []
 
     },
 
-    events: {
-      "click #doloadcode": "loadcode",
-      "click #changecriteria": "changecriteria"
-    },
-
-    loadcode: function(e) {
-      this.client.start();
-    },
-
-    changecriteria: function(e) {
-      this.client.consumer.subscription.set("criteria", [{"plugin": "filesystem"}])
-    },
 
   })
 
