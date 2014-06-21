@@ -77,10 +77,15 @@ class GeoffreyPlugin:
         for task in self.get_tasks():
             kwargs = {}
             for name, subscription in self.get_subscriptions(task):
-                sub = subscription()  # Instantiate this subscription class
+                if isinstance(subscription, str):
+                    sub = getattr(self, subscription)()
+                else:
+                    sub = subscription()  # Instantiate this subscription class
                 self.subscriptions.append(sub)
                 kwargs[name] = sub
-            self.tasks.append(task(self, **kwargs))
+            signature = inspect.signature(task)
+            arguments = signature.bind(self, **kwargs)
+            self.tasks.append(task(*arguments.args, **arguments.kwargs))
 
         self.log = DefaultContextLogger(logger, project, self.name)
 
@@ -115,11 +120,11 @@ class GeoffreyPlugin:
     @classmethod
     def get_tasks(cls):
         """
-        Return the members of this class annotated with return Task.
+        Return the members of this instance annotated with return Task.
 
         """
         def _get_tasks():
-            members = inspect.getmembers(cls,predicate=inspect.isfunction)
+            members = inspect.getmembers(cls, predicate=inspect.isfunction)
             for name, member in members:
                 annotations = getattr(member, '__annotations__', {})
                 if annotations.get('return', None) == Task:
@@ -135,10 +140,13 @@ class GeoffreyPlugin:
         annotations = getattr(task, '__annotations__', {})
         def _get_subscriptions():
             for key, value in annotations.items():
-                inner_annotattion = getattr(value, '__annotations__', {})
-                wrapper_return = inner_annotattion.get('return', None)
-                if wrapper_return == _Subscription:
+                if isinstance(value, str):
                     yield key, value
+                else:
+                    inner_annotation = getattr(value, '__annotations__', {})
+                    wrapper_return = inner_annotation.get('return', None)
+                    if wrapper_return == _Subscription:
+                        yield key, value
         return list(_get_subscriptions())
 
     @property

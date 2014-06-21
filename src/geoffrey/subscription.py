@@ -61,7 +61,7 @@ class Consumer(_Subscription):
                     match_or_fail('key', event.key)))
 
 
-def subscription(filter_func, *args, **kwargs):
+def subscription(filter_func):
     """
     Wrapper for _Subscription can be used as decorator.
 
@@ -72,6 +72,8 @@ def subscription(filter_func, *args, **kwargs):
             return True
 
     """
-    def wrapper() -> _Subscription:
-        return _Subscription(filter_func, *args, **kwargs)
+    from functools import partial
+    def wrapper(*args, **kwargs) -> _Subscription:
+        return _Subscription(partial(filter_func, *args), **kwargs)
+
     return wrapper
