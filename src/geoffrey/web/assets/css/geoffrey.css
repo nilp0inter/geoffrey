@@ -1,0 +1,4 @@
+.connectedSortable {
+    /* https://github.com/almasaeed2010/AdminLTE/issues/41 */
+    min-height: 100px;
+}
