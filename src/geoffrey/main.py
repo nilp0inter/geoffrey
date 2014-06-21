@@ -12,15 +12,22 @@ logger = logging.getLogger(__name__)
 
 @asyncio.coroutine
 def print_tasks():
+    """
+    Print all asyncio tasks continuosly in debug mode.
+    XXX: Know why `done` tasks are not deleted.
+
+    """
     while True:
-        yield from asyncio.sleep(3)
-        logger.debug("Tasks: %s", asyncio.Task.all_tasks())
+        yield from asyncio.sleep(10)
         for task in asyncio.Task.all_tasks():
             if task.done():
-                try:
-                    logger.info("Task %s done: %s", task, task.result())
-                except:
-                    logger.exception("Task %s failed: %s", task)
+                exception = task.exception()
+                if exception is None:
+                    logger.info("Task DONE: %s = %s", task, task.result())
+                else:
+                    logger.error("Task FAILED: %s = %s", task, exception)
+            else:
+                logger.debug("Tasks RUNNING: %s", task)
 
 def main():
     """Function used by the main console entry_point."""
