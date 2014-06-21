@@ -41,11 +41,18 @@ class FileContent(plugin.GeoffreyPlugin):
             yield fnmatch(data, exp.strip())
 
     @subscription
-    def modified_files(event):
+    def modified_files(self, event):
         """Filed modified by the user."""
-        return (event.plugin == "filesystem" and
+        return (self.project.name == event.project and
+                event.plugin == "filesystem" and
                 event.fs_event in ("modified", "created"))
 
+    @subscription
+    def removed_files(self, event):
+        """Removed or moved files."""
+        return (self.project.name == event.project and
+                event.plugin == "filesystem" and
+                event.fs_event in ("deleted", "moved"))
 
     def get_file_state(self, filename, loop):
        with open(filename, 'rb') as f:
@@ -81,9 +88,15 @@ class FileContent(plugin.GeoffreyPlugin):
                               raw=raw)
        loop.call_soon_threadsafe(self.hub.put_nowait, state)
 
+    @asyncio.coroutine
+    def delete_files(self, events:"removed_files") -> plugin.Task:
+        while True:
+            event = yield from events.get()
+            state = self.new_state(key=event.key)
+            yield from self.hub.put(state)
 
     @asyncio.coroutine
-    def read_modified_files(self, events: modified_files) -> plugin.Task:
+    def read_modified_files(self, events:"modified_files") -> plugin.Task:
         loop = asyncio.get_event_loop()
         try:
             workers = self.config.getint(self._section_name, 'parallel')
@@ -105,7 +118,6 @@ class FileContent(plugin.GeoffreyPlugin):
             include_exp = ""
 
         while True:
-
             event = yield from events.get()
 
             if not (any(self._match(include_exp, event.key)) and
