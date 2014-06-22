@@ -2,6 +2,7 @@
 The filecontent plugin.
 
 """
+from difflib import HtmlDiff
 import asyncio
 import os
 import hashlib
@@ -11,6 +12,7 @@ from fnmatch import fnmatch
 import magic
 
 from geoffrey import plugin
+from geoffrey.data import DataKey
 from geoffrey.subscription import subscription
 
 
@@ -54,39 +56,52 @@ class FileContent(plugin.GeoffreyPlugin):
                 event.plugin == "filesystem" and
                 event.fs_event in ("deleted", "moved"))
 
-    def get_file_state(self, filename, loop):
-       with open(filename, 'rb') as f:
-           raw = f.read()
+    def get_file_state(self, last_state, filename, loop):
 
-       md5 = hashlib.md5(raw).hexdigest()
+        with open(filename, 'rb') as f:
+            raw = f.read()
 
-       try:
-           with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
-               mime_type = mime.id_buffer(raw)
-       except:
-           mime_type = 'unknown'
+        md5 = hashlib.md5(raw).hexdigest()
 
-       try:
-           with magic.Magic(flags=magic.MAGIC_MIME_ENCODING) as encoding:
-               file_encoding = encoding.id_buffer(raw)
-       except:
-           file_encoding = 'unknown'
+        try:
+            with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
+                mime_type = mime.id_buffer(raw)
+        except:
+            mime_type = 'unknown'
 
-       python_encoding = self.libmagic_encoding2python(file_encoding)
-       try:
-           if python_encoding is None:
-               python_encoding = 'utf-8'  # Give it a try
-           content = raw.decode(python_encoding)
-       except:
-           content = None
+        try:
+            with magic.Magic(flags=magic.MAGIC_MIME_ENCODING) as encoding:
+                file_encoding = encoding.id_buffer(raw)
+        except:
+            file_encoding = 'unknown'
 
-       state = self.new_state(key=filename,
-                              md5=md5,
-                              mime_type=mime_type,
-                              encoding=file_encoding,
-                              content=content,
-                              raw=raw)
-       loop.call_soon_threadsafe(self.hub.put_nowait, state)
+        python_encoding = self.libmagic_encoding2python(file_encoding)
+        try:
+            if python_encoding is None:
+                python_encoding = 'utf-8'  # Give it a try
+            content = raw.decode(python_encoding)
+        except:
+            content = None
+
+        if (last_state is not None and
+                last_state.content is not None and
+                content is not None):
+            differences = HtmlDiff().make_table(
+                last_state.content.splitlines(),
+                content.splitlines(),
+                context=True)
+        else:
+            differences = ''
+
+        state = self.new_state(key=filename,
+                               md5=md5,
+                               mime_type=mime_type,
+                               encoding=file_encoding,
+                               content=content,
+                               raw=raw,
+                               differences=differences)
+
+        loop.call_soon_threadsafe(self.hub.put_nowait, state)
 
     @asyncio.coroutine
     def delete_files(self, events:"removed_files") -> plugin.Task:
@@ -126,5 +141,15 @@ class FileContent(plugin.GeoffreyPlugin):
 
             filename = event.key
             if os.path.isfile(filename):
+
+                last_state_list = list(self.hub.get_states(
+                    DataKey(project=self.project.name,
+                            plugin="filecontent",
+                            key=filename)))
+                if last_state_list:
+                    last_state = last_state_list[0]
+                else:
+                    last_state = None
+
                 yield from loop.run_in_executor(executors, self.get_file_state,
-                                                filename, loop)
+                                                last_state, filename, loop)
