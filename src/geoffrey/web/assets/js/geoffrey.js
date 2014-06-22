@@ -14,18 +14,44 @@ $(function() {
 
     initialize: function() {
       this.bind('change:criteria', function(){ this.save(); });
-      this.pluginCriteria = {};
+      this._criteria = {};
+      this._callbacks = {};
+      this._matchers = {};
     },
 
-    changePluginCriteria: function(pluginName, criteria) {
-      var oldCriteria = this.pluginCriteria[pluginName];
-      if (oldCriteria != criteria) {
-        this.pluginCriteria[pluginName] = criteria;
+    setCriteria: function(name, subcriteria, callback) {
+      var oldCriteria = this._criteria[name];
+
+      if (oldCriteria != subcriteria) {
+        this._criteria[name] = subcriteria;
         var newCriteria = [];
-        for (var i in this.pluginCriteria) {
-            newCriteria.push(this.pluginCriteria[i]);
+        for (var i in this._criteria) {
+            newCriteria.push(this._criteria[i]);
         }
         this.set("criteria", newCriteria);
+      }
+
+      this._callbacks[name] = callback;
+      this._matchers[name] = _.matches(subcriteria);
+
+    },
+
+    deleteCriteria: function(name) {
+      delete this._criteria[name];
+      delete this._callbacks[name];
+      delete this._matchers[name];
+      var newCriteria = [];
+      for (var i in this._criteria) {
+          newCriteria.push(this._criteria[i]);
+      }
+      this.set("criteria", newCriteria);
+    },
+
+    distributeEvent: function(data) { 
+      for (var i in this._matchers) {
+        if (this._matchers[i](data)) {
+          this._callbacks[i](data);
+        }
       }
     }
 
@@ -49,15 +75,13 @@ $(function() {
       this.socket = null;
 
       this.deferred = this.save();
-      this.deferred.done(this.start);
 
-    },
-
-    start: function() {
     },
 
     updateSubscription: function() {
-      this.subscription.save();
+      var subscription = this.subscription;
+      subscription.save();
+
       if(!this.socket) {
         this.socket = new WebSocket(this.get("ws"));
         var consumer_id = this.get("id");
@@ -67,19 +91,20 @@ $(function() {
           this.send(JSON.stringify({'consumer_id': this_.get("id")}));
           this_.set("connected", true);
         }
+
         this.socket.onmessage = function(evt){
           var data = JSON.parse(evt.data);
-          var plugins = window.app.live_plugins;
-          for (var i = 0; i < plugins.length; i++) {
-              plugins[i].message(data);
-          }
+          subscription.distributeEvent(data);
         }
+
         this.socket.onclose = function(evt) {
           this_.set("connected", false);
         }
+
         this.socket.onerror = function(evt) {
           this_.set("connected", false);
         }
+
       }
     }
 
@@ -110,8 +135,11 @@ $(function() {
   var Plugin = Backbone.RelationalModel.extend({
 
     loadCode: function() {
-      var url = '/api/v1/' + this.get("project").id + '/' + this.id + '/source/js'
-      $.getScript(url, function(){ });
+      var pluginname = this.id;
+      var url = '/api/v1/' + this.get("project").id + '/' + pluginname + '/source/js'
+      $.getScript(url, function(){ }).fail(function() { 
+        console.log("Problem loading plugin " + pluginname);
+      });
     },
 
     start: function() {
@@ -287,13 +315,20 @@ $(function() {
       this.router = new Workspace({menu: menu});
       Backbone.history.start();
 
-      this.live_plugins = []
-
     },
 
+    subscribe: function(name, criteria, callback) {
+      var subscription = this.client.consumer.subscription;
+      subscription.setCriteria(name, criteria, callback);
+    }
 
   })
 
-  window.app = new App();
-});
+  loadCSS = function(href) {
+    var cssLink = $("<link rel='stylesheet' type='text/css' href='" + href + "'>");
+    $("head").append(cssLink); 
+  };
 
+  window.app = new App();
+
+});
