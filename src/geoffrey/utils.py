@@ -1,3 +1,4 @@
+import asyncio
 import re
 import uuid
 import logging
@@ -37,3 +38,24 @@ class GeoffreyLoggingHandler(logging.Handler):
                       message=record.getMessage(), level=record.levelname)
 
         self.hub.put_nowait(event)
+
+
+@asyncio.coroutine
+def execute(*args):
+    """
+    Return the result of an external command execution.
+
+    """
+    from asyncio import subprocess
+
+    subexec = asyncio.create_subprocess_exec
+    proc = yield from subexec(*args, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+    try:
+        stdout, stderr = yield from proc.communicate()
+    except:
+        proc.kill()
+        yield from proc.wait()
+        raise
+    exitcode = yield from proc.wait()
+    return (exitcode, stdout, stderr)
