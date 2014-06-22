@@ -36,8 +36,7 @@ make develop
 apt-get install -y git-core
 su - vagrant -c "git clone https://github.com/GeoffreyCI/fakeproject1.git /home/vagrant/fakeproject1"
 su - vagrant -c "git clone https://github.com/GeoffreyCI/fakeproject2.git /home/vagrant/fakeproject2"
-cp -Rvf /vagrant/examples/vagrantconfig /home/vagrant/.geoffrey
-chown -R vagrant:vagrant /home/vagrant/.geoffrey
+ln -s /vagrant/examples/vagrantconfig /home/vagrant/.geoffrey
 
 #
 # Install development plugins
