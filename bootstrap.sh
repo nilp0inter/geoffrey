@@ -31,3 +31,21 @@ source /home/vagrant/bin/activate
 cd /vagrant
 pip install -r requirements/tests.txt
 make develop
+
+# Setup examples & configuration
+apt-get install -y git-core
+su - vagrant -c "git clone https://github.com/GeoffreyCI/fakeproject1.git /home/vagrant/fakeproject1"
+su - vagrant -c "git clone https://github.com/GeoffreyCI/fakeproject2.git /home/vagrant/fakeproject2"
+cp -Rvf /vagrant/examples/vagrantconfig /home/vagrant/.geoffrey
+chown -R vagrant:vagrant /home/vagrant/.geoffrey
+
+#
+# Install development plugins
+#
+## geoffrey-pytest
+su - vagrant -c "git clone https://github.com/GeoffreyCI/geoffrey-pytest /home/vagrant/geoffrey-pytest"
+su - vagrant -c "/home/vagrant/bin/pip install -e /home/vagrant/geoffrey-pytest"
+
+## geoffrey-todo
+su - vagrant -c "git clone https://github.com/GeoffreyCI/geoffrey-todo /home/vagrant/geoffrey-todo"
+su - vagrant -c "/home/vagrant/bin/pip install -e /home/vagrant/geoffrey-todo"
