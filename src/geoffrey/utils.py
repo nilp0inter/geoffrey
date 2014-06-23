@@ -41,7 +41,7 @@ class GeoffreyLoggingHandler(logging.Handler):
 
 
 @asyncio.coroutine
-def execute(*args, stdin=None):
+def execute(*args, stdin=None, **kwargs):
     """
     Return the result of an external command execution.
 
@@ -52,7 +52,8 @@ def execute(*args, stdin=None):
     proc = yield from subexec(*args,
                               stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+                              stderr=subprocess.PIPE,
+                              **kwargs)
     try:
         stdout, stderr = yield from proc.communicate(stdin)
     except:
