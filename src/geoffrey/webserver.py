@@ -155,8 +155,8 @@ class WebServer:
 
     def plugin_state(self, project_id, plugin_id):
         """ Return the list of states of this plugin. """
-        from geoffrey.data import DataKey
-        criteria = DataKey(project=project_id, plugin=plugin_id, key=None)
+        from geoffrey.data import datakey
+        criteria = datakey(project=project_id, plugin=plugin_id)
         response.content_type = 'application/json'
         return json.dumps([s.serializable()
                            for s in self.server.hub.get_states(criteria)])

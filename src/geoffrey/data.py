@@ -2,11 +2,18 @@ import enum
 import json
 
 from collections import namedtuple
+from itertools import zip_longest
 
-DataKey = namedtuple('DataKey', ('project', 'plugin', 'key'))
-StateKey = DataKey
-_EMPTY_KEY = DataKey(None, None, None)
-_empty_key = _EMPTY_KEY
+DataKey = namedtuple('DataKey', ('project', 'plugin', 'key', 'task'))
+
+def datakey(*args, **kwargs):
+    """Helper function for build DataKey tuples."""
+    newargs = [kwargs.get(k, v)
+               for k, v in zip_longest(DataKey._fields, args)]
+    return DataKey(*newargs)
+
+_EMPTY_KEY = datakey()
+
 
 class EventType(enum.Enum):
     """The possible types of an event."""

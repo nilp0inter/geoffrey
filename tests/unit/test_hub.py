@@ -159,28 +159,28 @@ def test_new_state_created_event_put_nowait(hub, loop):
 
 
 def test_get_states_nomatch(hub):
-    from geoffrey.data import State, DataKey
+    from geoffrey.data import State, datakey
 
     state1 = State(key='badkey', value='something')
     hub.put_nowait(state1)
 
-    states = list(hub.get_states(DataKey(project=None,
-                                          plugin=None,
-                                          key='goodkey')))
+    states = list(hub.get_states(datakey(project=None,
+                                         plugin=None,
+                                         key='goodkey')))
 
     assert states == []
 
 
 def test_get_states_match_single_field(hub):
-    from geoffrey.data import State, DataKey
+    from geoffrey.data import State, datakey
     from geoffrey.data import EventType
 
     state1 = State(key='goodkey', value='something')
     hub.put_nowait(state1)
 
-    states = list(hub.get_states(DataKey(project=None,
-                                          plugin=None,
-                                          key='goodkey')))
+    states = list(hub.get_states(datakey(project=None,
+                                         plugin=None,
+                                         key='goodkey')))
 
     assert len(states) == 1
     assert states[0]._key == state1._key
@@ -188,15 +188,15 @@ def test_get_states_match_single_field(hub):
 
 
 def test_get_states_match_multiple_fields(hub):
-    from geoffrey.data import State, DataKey
+    from geoffrey.data import State, datakey
     from geoffrey.data import EventType
 
     state1 = State(project='goodproject', key='goodkey', value='something')
     hub.put_nowait(state1)
 
-    states = list(hub.get_states(DataKey(project='goodproject',
-                                          plugin=None,
-                                          key='goodkey')))
+    states = list(hub.get_states(datakey(project='goodproject',
+                                         plugin=None,
+                                         key='goodkey')))
 
     assert len(states) == 1
     assert states[0]._key == state1._key
@@ -204,7 +204,7 @@ def test_get_states_match_multiple_fields(hub):
 
 
 def test_get_states_match_mixed(hub):
-    from geoffrey.data import State, DataKey
+    from geoffrey.data import State, datakey
     from geoffrey.data import EventType
 
     state1 = State(project='goodproject', key='goodkey', value='something')
@@ -213,9 +213,9 @@ def test_get_states_match_mixed(hub):
     state2 = State(project='badproject', key='goodkey', value='something')
     hub.put_nowait(state2)
 
-    states = list(hub.get_states(DataKey(project='goodproject',
-                                          plugin=None,
-                                          key='goodkey')))
+    states = list(hub.get_states(datakey(project='goodproject',
+                                         plugin=None,
+                                         key='goodkey')))
 
     assert len(states) == 1
     assert states[0]._key == state1._key
