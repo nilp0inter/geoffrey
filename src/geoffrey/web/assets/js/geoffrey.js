@@ -233,13 +233,12 @@ $(function() {
 
   // Left bar view
   var LeftBar = Backbone.View.extend({
-    el: "#left-bar",
-
+    
     template: _.template($('#left-bar-template').html()),
 
     initialize: function() {
       this.listenTo(this.collection, "change", this.render);
-      //this.render();
+      this.render();
     },
 
     render: function() {
@@ -255,53 +254,10 @@ $(function() {
     {title: "Logs", route: "logs", icon: "fa-bars"}
   ]);
 
-  var Workspace = Backbone.Router.extend({
-    
-    initialize: function(options) {
-      this.menu = options.menu;
-    },
-
-    routes: {
-      "": "dashboard",
-      "dashboard": "dashboard", 
-      "settings": "settings",
-      "logs": "logs",
-      "plugin/:plugin": "plugin",
-    },
-
-    changeActive: function(name) {
-      for (var i = 0; i < this.menu.models.length; i++ ){
-        var entry = this.menu.models[i];
-        if(entry.get("route") == name) {
-          entry.set("active", true);
-        } else {
-          entry.set("active", false);
-          $("#" + entry.get("route") + "-canvas").hide();
-        }
-      }
-      $("#" + name + "-canvas").show();
-    },
-
-    dashboard: function() {
-      this.changeActive("dashboard");
-    },  
-
-    settings: function() {
-      this.changeActive("settings");
-    },
   
-    logs: function() {
-      this.changeActive("logs");
-    },
-
-    plugin: function(plugin) {
-       alert(plugin);
-    },
-
-  });
 
   // App
-  var App = Backbone.View.extend({
+  /*var App = Backbone.View.extend({
     el: "#control",
 
     initialize: function() {
@@ -322,13 +278,112 @@ $(function() {
       subscription.setCriteria(name, criteria, callback);
     }
 
-  })
+  })*/
+
+  var Dashboard = Backbone.View.extend({
+    template: _.template($('<div><div id="dashboard"></div></div>').html()),
+    render: function() {
+      this.$el.html(this.template());
+      return this;
+    },
+    initialize:function(){
+      this.render();
+    },
+    addWidget: function(widget){
+      this.$el.find("#dashboard").append(widget.$el);
+      $("#dashboard").shapeshift({columns:2});
+    }
+  });
+
+  var Settings = Backbone.View.extend({
+    template: _.template($('<div><h1>Settings</h1></div>').html()),
+    render: function() {
+      this.$el.html(this.template());
+      return this;
+    },
+    initialize:function(){
+      this.render();
+    }
+  });
+  var Workspace = Backbone.Router.extend({
+    
+   
+    routes: {
+      "": "dashboard",
+      "dashboard": "dashboard", 
+      "settings": "settings",
+      "logs": "logs",
+      "plugin/:plugin": "plugin",
+    },
+    initialize: function(){
+      this.client = new Client();
+      this.client.start()
+        this.leftBar = new LeftBar({
+          collection: menu
+        });
+        $("#left-bar").append(this.leftBar.$el);
+        //creamos la vista de dashboard porque se tienen que registrar los widgets
+        if(!this.dashboardView){
+          this.dashboardView = new Dashboard();
+          
+        }
+    },
+    subscribe: function(name, criteria, callback) {
+      var subscription = this.client.consumer.subscription;
+      subscription.setCriteria(name, criteria, callback);
+    },
+    registerWidget: function(widget){
+      console.log("Registering widget "+ widget);
+      this.dashboardView.addWidget(widget);
+
+    },
+    changeActive: function(name) {
+      /*for (var i = 0; i < this.menu.models.length; i++ ){
+        var entry = this.menu.models[i];
+        if(entry.get("route") == name) {
+          entry.set("active", true);
+        } else {
+          entry.set("active", false);
+          
+        }
+      }*/
+    },
+
+    dashboard: function() {
+      if(!this.dashboardView){
+        this.dashboardView = new Dashboard();
+        
+      }
+      $("#content").html(this.dashboardView.el);
+      $("#dashboard").shapeshift({columns:2});
+      this.changeActive("dashboard");
+    },  
+
+    settings: function() {
+      if(!this.settingsView){
+        this.settingsView = new Settings();
+
+      }
+      $("#content").html(this.settingsView.el);
+      this.changeActive("settings");
+    },
+  
+    logs: function() {
+      this.changeActive("logs");
+    },
+
+    plugin: function(plugin) {
+       alert(plugin);
+    },
+
+  });
 
   loadCSS = function(href) {
     var cssLink = $("<link rel='stylesheet' type='text/css' href='" + href + "'>");
     $("head").append(cssLink); 
   };
 
-  window.app = new App();
+  window.app = new Workspace();
+  Backbone.history.start(); 
 
 });

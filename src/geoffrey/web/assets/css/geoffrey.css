@@ -2,3 +2,12 @@
     /* https://github.com/almasaeed2010/AdminLTE/issues/41 */
     min-height: 100px;
 }
+
+#dashboard{
+	position:relative;
+}
+#dashboard>div{
+	width:45%;
+	position:absolute;
+	margin-right:5%;
+}
