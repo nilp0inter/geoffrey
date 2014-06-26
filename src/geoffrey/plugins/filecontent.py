@@ -12,7 +12,7 @@ from fnmatch import fnmatch
 import magic
 
 from geoffrey import plugin
-from geoffrey.data import DataKey
+from geoffrey.data import datakey
 from geoffrey.subscription import subscription
 
 
@@ -143,9 +143,10 @@ class FileContent(plugin.GeoffreyPlugin):
             if os.path.isfile(filename):
 
                 last_state_list = list(self.hub.get_states(
-                    DataKey(project=self.project.name,
+                    datakey(project=self.project.name,
                             plugin="filecontent",
-                            key=filename)))
+                            key=filename,
+                            task="read_modified_files")))
                 if last_state_list:
                     last_state = last_state_list[0]
                 else:

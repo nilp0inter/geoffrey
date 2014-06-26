@@ -6,16 +6,16 @@ import pytest
 from geoffrey.server import Server
 from geoffrey.project import Project
 
-
+@pytest.mark.wip
 def test_autocreate_conf():
     """Autocreate main configuration if missing."""
-
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'doesnotexists', 'geoffrey.conf')
         Server.read_main_config(config_file)
         assert os.path.isfile(config_file)
 
 
+@pytest.mark.wip
 def test_autocreate_project_dir():
     """Autocreate projects root if missing."""
 
