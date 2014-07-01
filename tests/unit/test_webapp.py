@@ -328,7 +328,9 @@ def test_plugin_api_injection(testplugin4):
 
         utils.write_template(config, content)
         server = Server(config=config_file)
-        server.projects[project].plugins[plugin_name] = testplugin4(config=config)
+        plugin = testplugin4(config=config)
+        server.projects[project].plugins[plugin_name] = plugin
+        plugin.start()
 
         app = TestApp(WebServer(server=server, bottle=Bottle).app)
         plugin_m = app.get('/api/v1/{project_name}/'
