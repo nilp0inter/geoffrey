@@ -4,7 +4,8 @@ import json
 from collections import namedtuple
 from itertools import zip_longest
 
-DataKey = namedtuple('DataKey', ('project', 'plugin', 'key', 'task'))
+DataKey = namedtuple('DataKey', ('project', 'plugin', 'key', 'task', 'content'))
+
 
 def datakey(*args, **kwargs):
     """Helper function for build DataKey tuples."""
@@ -36,6 +37,7 @@ class EventType(enum.Enum):
 
 class Data:
     """ Geoffrey Data definition. """
+
     def __init__(self, **kwargs):
         self._key = DataKey(*(kwargs.get(k, None)
                              for k in DataKey._fields))
@@ -61,7 +63,8 @@ class Data:
         return dump
 
     def dumps(self):
-        return json.dumps(self.serializable(), indent=2)
+        from geoffrey.utils import jsonencoder
+        return jsonencoder.encode(self.serializable())
 
     def to_keyvalue(self):
         return (self._key, self._value)

@@ -158,8 +158,9 @@ class WebServer:
         from geoffrey.data import datakey
         criteria = datakey(project=project_id, plugin=plugin_id)
         response.content_type = 'application/json'
-        return json.dumps([s.serializable()
-                           for s in self.server.hub.get_states(criteria)])
+        return utils.jsonencoder.encode(
+            [s.serializable()
+             for s in self.server.hub.get_states(criteria)])
 
     def subscribe(self, consumer_id):
         """ Change the subscription criteria of this consumer. """

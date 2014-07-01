@@ -2,6 +2,7 @@ import asyncio
 import re
 import uuid
 import logging
+import json
 
 from geoffrey.hub import get_hub
 from geoffrey.data import Event
@@ -62,3 +63,5 @@ def execute(*args, stdin=None, **kwargs):
         raise
     exitcode = yield from proc.wait()
     return (exitcode, stdout, stderr)
+
+jsonencoder = json.JSONEncoder(skipkeys=True, default=lambda o: None)
