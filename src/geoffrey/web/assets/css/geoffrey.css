@@ -4,10 +4,15 @@
 }
 
 #dashboard{
-	position:relative;
+    position: relative;
+    width: 100%;
 }
+
 #dashboard>div{
-	width:45%;
-	position:absolute;
-	margin-right:5%;
+    position: absolute; 
 }
+
+#dashboard div[data-ss-colspan="1"] { width: 25%; }
+#dashboard div[data-ss-colspan="2"] { width: 50%; }
+#dashboard div[data-ss-colspan="3"] { width: 75%; }
+#dashboard div[data-ss-colspan="4"] { width: 100%; }

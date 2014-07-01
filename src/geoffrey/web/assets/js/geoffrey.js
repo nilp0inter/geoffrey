@@ -223,20 +223,22 @@ $(function() {
   });
 
 
-  var MenuEntry = Backbone.Model.extend({});
+  var MenuEntry = Backbone.Model.extend({
+    idAttribute: "route"
+  });
 
   var Menu = Backbone.Collection.extend({
-
     model: MenuEntry
-
   });
 
   // Left bar view
   var LeftBar = Backbone.View.extend({
-    
+    el: "#left-bar",
+
     template: _.template($('#left-bar-template').html()),
 
     initialize: function() {
+      this.$el.attr("class", "sidebar");
       this.listenTo(this.collection, "change", this.render);
       this.render();
     },
@@ -248,140 +250,153 @@ $(function() {
 
   });
 
-  var menu = new Menu([
-    {title: "Dashboard", route: "dashboard", icon: "fa-dashboard", active: true},
-    {title: "Settings", route: "settings", icon: "fa-wrench"},
-    {title: "Logs", route: "logs", icon: "fa-bars"}
-  ]);
+  //Model wrapper for the widget view.
+  var Widget = Backbone.Model.extend({
+  });
 
+  // Widget collection
+  var Widgets = Backbone.Collection.extend({
+    model: Widget
+  });
+
+  // Content displayed in the right side of the screen
+  var ContentModel = Backbone.Model.extend({
+  });
+
+  // Main Content 
+  var ContentView = Backbone.View.extend({
+    el: ".right-side",
+    template: _.template($('#right-side-template').html()),
+    initialize: function() {
+      this.listenTo(this.model, "change", this.render);
+      this.render();
+    },
+    render: function() {
+      this.$el.html(this.template({model: this.model.toJSON()}));
+      var content = this.model.get("content");
+      if (content) {
+          $(".content").html(content.el);
+          content.render();
+      }
+      return this;
+    }
+  });
   
 
-  // App
-  /*var App = Backbone.View.extend({
-    el: "#control",
+  var Dashboard = Backbone.View.extend({
+    id: "dashboard",
 
     initialize: function() {
+      this.listenTo(this.collection, "add", this.render);
+      this.listenTo(this.collection, "remove", this.render);
+    },
+
+    render: function() {
+      var this_ = this;
+
+      // Remove and add all widgets to the dashboard
+      this.$el.empty();
+      this.collection.map(function(widget){
+        var view = widget.get("view");
+        this_.$el.append(view.$el)
+      });
+
+      // Shapeshift them!
+      this.$el.shapeshift({
+          columns: 4,
+          align: "left",
+          colWidth: 1,  /* this will readjust on the first child creation */
+      });
+
+    },
+
+    addWidget: function(widget) {
+      this.collection.add({view: widget});
+    }
+
+  });
+
+  var Settings = Backbone.View.extend({
+    id: "settings",
+
+    render: function() {
+      this.$el.html('<div><h1>Settings</h1></div>');
+      return this;
+    },
+
+    initialize:function(){
+      this.render();
+    }
+
+  });
+
+  var menu = new Menu([
+    {title: "Dashboard",
+     subtitle: "Control panel",
+     route: "dashboard",
+     icon: "fa-dashboard",
+     active: true,
+     content: new Dashboard({collection: new Widgets()})},
+
+    {title: "Settings",
+     subtitle: "Project configuration",
+     route: "settings",
+     icon: "fa-wrench",
+     content: new Settings()},
+
+    {title: "Logs",
+     subtitle: "Geoffrey logs",
+     route: "logs",
+     icon: "fa-bars",
+     content: new Settings()},
+  ]);
+
+  var Workspace = Backbone.Router.extend({
+    routes: {
+      "": function() { this.navigate("go/dashboard", {trigger: true}) },
+      "go/:menu": "changeActive",
+    },
+    initialize: function(){
       this.client = new Client();
       this.client.start()
 
       this.leftBar = new LeftBar({
         collection: menu
       });
+      this.content = new ContentView({
+        model: new ContentModel()
+      });
 
-      this.router = new Workspace({menu: menu});
-      Backbone.history.start();
-
-    },
-
-    subscribe: function(name, criteria, callback) {
-      var subscription = this.client.consumer.subscription;
-      subscription.setCriteria(name, criteria, callback);
-    }
-
-  })*/
-
-  var Dashboard = Backbone.View.extend({
-    template: _.template($('<div><div id="dashboard"></div></div>').html()),
-    render: function() {
-      this.$el.html(this.template());
-      return this;
-    },
-    initialize:function(){
-      this.render();
-    },
-    addWidget: function(widget){
-      this.$el.find("#dashboard").append(widget.$el);
-      $("#dashboard").shapeshift({columns:2});
-    }
-  });
-
-  var Settings = Backbone.View.extend({
-    template: _.template($('<div><h1>Settings</h1></div>').html()),
-    render: function() {
-      this.$el.html(this.template());
-      return this;
-    },
-    initialize:function(){
-      this.render();
-    }
-  });
-  var Workspace = Backbone.Router.extend({
-    
-   
-    routes: {
-      "": "dashboard",
-      "dashboard": "dashboard", 
-      "settings": "settings",
-      "logs": "logs",
-      "plugin/:plugin": "plugin",
-    },
-    initialize: function(){
-      this.client = new Client();
-      this.client.start()
-        this.leftBar = new LeftBar({
-          collection: menu
-        });
-        $("#left-bar").append(this.leftBar.$el);
-        //creamos la vista de dashboard porque se tienen que registrar los widgets
-        if(!this.dashboardView){
-          this.dashboardView = new Dashboard();
-          
-        }
     },
     subscribe: function(name, criteria, callback) {
       var subscription = this.client.consumer.subscription;
       subscription.setCriteria(name, criteria, callback);
     },
     registerWidget: function(widget){
-      console.log("Registering widget "+ widget);
-      this.dashboardView.addWidget(widget);
-
+      var dashboard = menu.get("dashboard").get("content");
+      dashboard.addWidget(widget);
     },
     changeActive: function(name) {
-      /*for (var i = 0; i < this.menu.models.length; i++ ){
-        var entry = this.menu.models[i];
+      for (var i = 0; i < menu.models.length; i++ ){
+        var entry = menu.models[i];
         if(entry.get("route") == name) {
           entry.set("active", true);
+          this.content.model.set('title', entry.get("title"));
+          this.content.model.set('subtitle', entry.get("subtitle"));
+          this.content.model.set('icon', entry.get("icon"));
+          this.content.model.set('content', entry.get("content"));
         } else {
           entry.set("active", false);
-          
         }
-      }*/
-    },
-
-    dashboard: function() {
-      if(!this.dashboardView){
-        this.dashboardView = new Dashboard();
-        
       }
-      $("#content").html(this.dashboardView.el);
-      $("#dashboard").shapeshift({columns:2});
-      this.changeActive("dashboard");
-    },  
-
-    settings: function() {
-      if(!this.settingsView){
-        this.settingsView = new Settings();
-
-      }
-      $("#content").html(this.settingsView.el);
-      this.changeActive("settings");
     },
-  
-    logs: function() {
-      this.changeActive("logs");
-    },
-
-    plugin: function(plugin) {
-       alert(plugin);
-    },
-
   });
 
   loadCSS = function(href) {
     var cssLink = $("<link rel='stylesheet' type='text/css' href='" + href + "'>");
     $("head").append(cssLink); 
   };
+
 
   window.app = new Workspace();
   Backbone.history.start(); 

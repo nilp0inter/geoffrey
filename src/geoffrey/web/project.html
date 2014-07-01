@@ -67,24 +67,7 @@
             </aside>
 
             <!-- Right side column. Contains the navbar and content of the page -->
-            <aside class="right-side">
-                <!-- Content Header (Page header) -->
-                <section class="content-header">
-                    <h1>
-                        Dashboard
-                        <small>Control panel</small>
-                    </h1>
-                    <ol class="breadcrumb">
-                        <li><a href="#"><i class="fa fa-dashboard"></i> {{ project.title }}</a></li>
-                        <li class="active">Dashboard</li>
-                    </ol>
-                </section>
-
-                <!-- Main content -->
-                <section class="content" id="content">
-
-                  
-                </section><!-- /.content -->
+            <aside class="right-side" id="right-side">
             </aside><!-- /.right-side -->
         </div><!-- ./wrapper -->
 
@@ -147,13 +130,29 @@
           <ul class="sidebar-menu" id="left-menu">
             <% _.each(entries, function(entry) { %> 
               <li <% if (entry.active){ %>class="active"<% } %>>
-                  <a href="#<%- entry.route %> ">
+                  <a href="#go/<%- entry.route %> ">
                       <i class="fa <%- entry.icon %>"></i> <span><%- entry.title %></span>
                   </a>
               </li>
             <% }); %> 
           </ul>
         </script>
+        <script type="text/template" id="right-side-template">
+          <!-- Content Header (Page header) -->
+          <section class="content-header">
+              <h1>
+                  <%- model.title %> 
+                  <small><%- model.subtitle %></small>
+              </h1>
+              <ol class="breadcrumb">
+                  <li><a href="#"><i class="fa <%- model.icon %>"></i> {{ project.title }}</a></li>
+                  <li class="active"><%- model.title %></li>
+              </ol>
+          </section>
 
+          <!-- Main content -->
+          <section class="content" id="content">
+          </section><!-- /.content -->
+        </script>
     </body>
 </html>
