@@ -4,7 +4,13 @@ import json
 from collections import namedtuple
 from itertools import zip_longest
 
-DataKey = namedtuple('DataKey', ('project', 'plugin', 'key', 'task', 'content'))
+DataKey = namedtuple('DataKey',
+                     ('project',
+                      'plugin',         # The plugin that generate this data.
+                      'key',            # The subject thing
+                      'task',           # The task that generate this data.
+                      'content_type'))  # Is this data following some
+                                        # convention?
 
 
 def datakey(*args, **kwargs):

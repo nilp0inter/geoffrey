@@ -32,6 +32,7 @@ Plugins
    :maxdepth: 2
 
    plugins
+   content_types
 
 
 Code documentation
