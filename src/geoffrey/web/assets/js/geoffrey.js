@@ -300,12 +300,13 @@ $(function() {
         var view = widget.get("view");
         this_.$el.append(view.$el)
       });
-
+      colWidth = $(".content").width() / 4;
       // Shapeshift them!
       this.$el.shapeshift({
           columns: 4,
           align: "left",
-          colWidth: 1,  /* this will readjust on the first child creation */
+          colWidth: colWidth,
+          gutterX: 0,
       });
 
     },
