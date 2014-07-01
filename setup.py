@@ -38,6 +38,7 @@ setuptools.setup(
         'enum34',
         'watchdog>=0.7.1',
         'filemagic==1.6',
+        'Pygments==1.6',
     ],
     entry_points={
         "console_scripts": ["geoffrey = geoffrey.main:main"]

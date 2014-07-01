@@ -10,6 +10,10 @@ from concurrent.futures import ThreadPoolExecutor
 from fnmatch import fnmatch
 
 import magic
+from pygments.lexers import get_lexer_for_mimetype, get_lexer_for_filename
+from pygments.formatters import HtmlFormatter
+from pygments import highlight
+from pygments.util import ClassNotFound
 
 from geoffrey import plugin
 from geoffrey.data import datakey
@@ -70,6 +74,14 @@ class FileContent(plugin.GeoffreyPlugin):
             mime_type = 'unknown'
 
         try:
+            lexer = get_lexer_for_filename(filename)
+        except ClassNotFound:
+            try:
+                lexer = get_lexer_for_mimetype(mime_type)
+            except ClassNotFound:
+                lexer = None
+
+        try:
             with magic.Magic(flags=magic.MAGIC_MIME_ENCODING) as encoding:
                 file_encoding = encoding.id_buffer(raw)
         except:
@@ -82,6 +94,9 @@ class FileContent(plugin.GeoffreyPlugin):
             content = raw.decode(python_encoding)
         except:
             content = None
+            highlighted = None
+        else:
+            highlighted = highlight(content, lexer, HtmlFormatter(linenos="table"))
 
         if (last_state is not None and
                 last_state.content is not None and
@@ -93,13 +108,16 @@ class FileContent(plugin.GeoffreyPlugin):
         else:
             differences = ''
 
-        state = self.new_state(key=filename,
+
+        state = self.new_state(task="read_modified_files",
+                               key=filename,
                                md5=md5,
                                mime_type=mime_type,
                                encoding=file_encoding,
                                content=content,
                                raw=raw,
-                               differences=differences)
+                               differences=differences,
+                               highlighted=highlighted)
 
         loop.call_soon_threadsafe(self.hub.put_nowait, state)
 
