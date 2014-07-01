@@ -89,12 +89,22 @@ class GeoffreyPlugin:
 
         self.log = DefaultContextLogger(logger, project, self.name)
 
+    def configure_app(self):
+        """Override this method to add custom API endpoints."""
+        self.app.route('/', callback=self.get_api)
+
+    def get_api(self):
+        """Get web API definitions."""
+        from geoffrey.utils import get_api
+        return get_api(self.app.routes, prefix="/")
+
     def start(self):
         """
         Start the tasks of this plugin and add its subscriptions to
         the hub.
 
         """
+        self.configure_app()
         for task in self.tasks:  # pragma: no cover
             self._running_tasks.append(asyncio.Task(task))
         self.hub.add_subscriptions(self.subscriptions)

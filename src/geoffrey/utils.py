@@ -65,3 +65,15 @@ def execute(*args, stdin=None, **kwargs):
     return (exitcode, stdout, stderr)
 
 jsonencoder = json.JSONEncoder(skipkeys=True, default=lambda o: None)
+
+def get_api(app_routes, prefix):
+    """ Return a list of endpoints for documentation. """
+    from cgi import escape
+    routes = {escape(route.rule)
+              for route in app_routes
+              if route.rule.startswith(prefix)}
+    html_list = '<ul>'
+    for route in sorted(routes):
+        html_list += '<li>{}</li>'.format(route)
+    html_list += '</ul>'
+    return html_list

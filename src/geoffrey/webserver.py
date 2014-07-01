@@ -227,19 +227,10 @@ class WebServer:
 
         raise HTTPError(404, "plugin not found" + pluginname + str([plugin.name for plugin in plugins]))
 
-
-    # Get web API definitions
     def get_api(self):
-        """ Return a list of endpoints for documentation. """
-        from cgi import escape
-        routes = {escape(route.rule)
-                  for route in self.app.routes
-                  if route.rule.startswith('/api')}
-        html_list = '<ul>'
-        for route in sorted(routes):
-            html_list += '<li>{}</li>'.format(route)
-        html_list += '</ul>'
-        return html_list
+        """Get web API definitions."""
+        from geoffrey.utils import get_api
+        return get_api(self.app.routes, prefix='/api')
 
     def start(self):
         """ Run the internal webserver. """
