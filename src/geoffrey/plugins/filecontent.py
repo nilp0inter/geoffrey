@@ -2,18 +2,18 @@
 The filecontent plugin.
 
 """
-from difflib import HtmlDiff
-import asyncio
-import os
-import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from fnmatch import fnmatch
+import mimetypes
+import asyncio
+import hashlib
+import json
+import os
 
+from bottle import request
+from bottle import response
+from bottle import HTTPError
 import magic
-from pygments.lexers import get_lexer_for_mimetype, get_lexer_for_filename
-from pygments.formatters import HtmlFormatter
-from pygments import highlight
-from pygments.util import ClassNotFound
 
 from geoffrey import plugin
 from geoffrey.data import datakey
@@ -26,6 +26,10 @@ class FileContent(plugin.GeoffreyPlugin):
     the file content.
 
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.files = set()
+
     @staticmethod
     def libmagic_encoding2python(file_encoding):
         if file_encoding == 'us-ascii':
@@ -41,6 +45,80 @@ class FileContent(plugin.GeoffreyPlugin):
         else:
             python_encoding = None
         return python_encoding
+
+    def configure_app(self):
+        self.app.route('/filelist', callback=self.filelist)
+        self.app.route('/filetree', callback=self.filetree)
+        self.app.route('/content', callback=self.get_content)
+        super().configure_app()
+
+    def get_content(self):
+        """Return the content of this."""
+        from geoffrey.data import datakey
+        filename = request.query.get("filename", None)
+        if filename is None:
+            raise HTTPError(404, 'filename parameter is mandatory.')
+
+        states = self.hub.get_states(datakey(key=filename,
+                                             plugin="filecontent",
+                                             project=self.project.name))
+        for state in states:
+            if state.content is None:
+                raise HTTPError(404, 'No content.')
+            else:
+                return state.content
+
+        raise HTTPError(404, 'file not found.')
+
+
+    def filelist(self, *args, **kwargs):
+        """List of files."""
+        response.content_type = 'application/json'
+        return json.dumps(list(self.files))
+
+    def filetree(self, *args, **kwargs):
+        """JSON structure for jstree."""
+        from pathlib import Path
+        response.content_type = 'application/json'
+
+        if not self.files:
+            return json.dumps([])
+
+        def elem_from_path(elem, parent):
+            id_ = str(elem)
+
+            if elem == parent:
+                parent = "#"
+                text = str(elem)
+            else:
+                parent = str(elem.parent)
+                text = elem.name
+
+            if elem.is_dir():
+                icon = 'glyphicon glyphicon-folder-open'
+            elif elem.is_file():
+                icon = 'glyphicon glyphicon-file'
+            else:
+                icon = ""
+
+            return {'id': id_, 'parent': parent, 'text': text, 'icon': icon}
+
+        parent_parts = []
+        for parts in zip(*[Path(p).parts for p in self.files]):
+            common_parts = list(set(parts))
+            if len(common_parts) > 1:
+                break
+            else:
+                parent_parts.append(common_parts[0])
+        parent = Path(os.path.join(*parent_parts))
+
+        elements = set([parent])
+        for filename in self.files:
+            path = Path(filename)
+            elements.update([path])
+            elements.update([p for p in path.parents if p > parent])
+
+        return json.dumps([elem_from_path(elem, parent=parent) for elem in elements])
 
     def _match(self, expressions, data):
         for exp in expressions:
@@ -60,54 +138,39 @@ class FileContent(plugin.GeoffreyPlugin):
                 event.plugin == "filesystem" and
                 event.fs_event in ("deleted", "moved"))
 
-    def get_file_state(self, last_state, filename, loop):
+    def get_file_state(self, filename, loop):
 
         with open(filename, 'rb') as f:
             raw = f.read()
 
+        # Calculate a MD5 hash of the file.
         md5 = hashlib.md5(raw).hexdigest()
 
-        try:
-            with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
-                mime_type = mime.id_buffer(raw)
-        except:
-            mime_type = 'unknown'
-
-        try:
-            lexer = get_lexer_for_filename(filename)
-        except ClassNotFound:
+        # Get the mime type (extension || libmagic || 'unknown').
+        mime_type, _ = mimetypes.guess_type(filename)
+        if mime_type is None:
             try:
-                lexer = get_lexer_for_mimetype(mime_type)
-            except ClassNotFound:
-                lexer = None
+                with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
+                    mime_type = mime.id_buffer(raw)
+            except:
+                mime_type = 'unknown'
 
+        # Get the file encoding.
         try:
             with magic.Magic(flags=magic.MAGIC_MIME_ENCODING) as encoding:
                 file_encoding = encoding.id_buffer(raw)
         except:
             file_encoding = 'unknown'
 
+        # If is a known encoding, decode the binary data.
         python_encoding = self.libmagic_encoding2python(file_encoding)
         try:
+            # If is unknown give a try to the most common one.
             if python_encoding is None:
                 python_encoding = 'utf-8'  # Give it a try
             content = raw.decode(python_encoding)
         except:
             content = None
-            highlighted = None
-        else:
-            highlighted = highlight(content, lexer, HtmlFormatter(linenos="table"))
-
-        if (last_state is not None and
-                last_state.content is not None and
-                content is not None):
-            differences = HtmlDiff().make_table(
-                last_state.content.splitlines(),
-                content.splitlines(),
-                context=True)
-        else:
-            differences = ''
-
 
         state = self.new_state(task="read_modified_files",
                                key=filename,
@@ -115,9 +178,7 @@ class FileContent(plugin.GeoffreyPlugin):
                                mime_type=mime_type,
                                encoding=file_encoding,
                                content=content,
-                               raw=raw,
-                               differences=differences,
-                               highlighted=highlighted)
+                               raw=raw)
 
         loop.call_soon_threadsafe(self.hub.put_nowait, state)
 
@@ -125,6 +186,10 @@ class FileContent(plugin.GeoffreyPlugin):
     def delete_files(self, events:"removed_files") -> plugin.Task:
         while True:
             event = yield from events.get()
+            try:
+                self.files.remove(event.key)
+            except:
+                pass
             state = self.new_state(key=event.key)
             yield from self.hub.put(state)
 
@@ -158,17 +223,7 @@ class FileContent(plugin.GeoffreyPlugin):
                 continue
 
             filename = event.key
-            if os.path.isfile(filename):
+            self.files.update([filename])
 
-                last_state_list = list(self.hub.get_states(
-                    datakey(project=self.project.name,
-                            plugin="filecontent",
-                            key=filename,
-                            task="read_modified_files")))
-                if last_state_list:
-                    last_state = last_state_list[0]
-                else:
-                    last_state = None
-
-                yield from loop.run_in_executor(executors, self.get_file_state,
-                                                last_state, filename, loop)
+            yield from loop.run_in_executor(executors, self.get_file_state,
+                                            filename, loop)
