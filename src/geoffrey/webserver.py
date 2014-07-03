@@ -1,5 +1,6 @@
-import os
 import json
+import logging
+import os
 import uuid
 
 from bottle import run
@@ -89,6 +90,10 @@ class WebServer:
                         '/api/v1/{project_id}/{plugin_id}/method/'.format(project_id=project,
                                                                           plugin_id=plugin),
                         self.server.projects[project].plugins[plugin].app)
+
+
+        asyncbottle_logger = logging.getLogger('asyncbottle')
+        asyncbottle_logger.setLevel(logging.CRITICAL)
 
 
     def consumer(self, consumer_id=None):
