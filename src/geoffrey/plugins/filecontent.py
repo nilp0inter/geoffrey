@@ -62,11 +62,9 @@ class FileContent(plugin.GeoffreyPlugin):
         states = self.hub.get_states(datakey(key=filename,
                                              plugin="filecontent",
                                              project=self.project.name))
+        response.content_type = 'application/json'
         for state in states:
-            if state.content is None:
-                raise HTTPError(404, 'No content.')
-            else:
-                return state.content
+            return state.dumps()
 
         raise HTTPError(404, 'file not found.')
 
