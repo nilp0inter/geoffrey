@@ -17,7 +17,6 @@
     "tests"
   ],
   "dependencies": {
-    "codemirror": "~4.3.0",
     "backbone": "~1.1.2",
     "jstree": "~3.0.2",
     "ladda": "~0.9.4",
@@ -26,6 +25,7 @@
     "jquery": "~2.1.1",
     "underscore": "~1.6.0",
     "backbone-relational": "~0.8.8",
-    "jqueryui-touch-punch": "*"
+    "jqueryui-touch-punch": "*",
+    "codemirror": "git@github.com:nilp0inter/CodeMirror.git#25ed4b8d9"
   }
 }
