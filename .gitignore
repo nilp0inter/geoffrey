@@ -57,3 +57,6 @@ docs/_build/
 
 # Vim swp files
 *.swp
+
+# Bower packages
+src/geoffrey/web/assets/libs/

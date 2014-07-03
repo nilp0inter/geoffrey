@@ -32,6 +32,16 @@ cd /vagrant
 pip install -r requirements/tests.txt
 make develop
 
+# Install NPM & bower
+apt-add-repository -y ppa:chris-lea/node.js
+apt-get update
+apt-get install -y nodejs
+npm install -g bower
+
+# Install JS dependencies
+cd /vagrant
+su - vagrant -c 'bower install -q'
+
 # Setup examples & configuration
 apt-get install -y git-core
 su - vagrant -c "git clone https://github.com/GeoffreyCI/fakeproject1.git /home/vagrant/fakeproject1"
