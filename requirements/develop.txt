@@ -2,3 +2,5 @@ pytest==2.5.2
 behave==1.2.4
 WebTest==2.0.14
 coverage==3.7.1
+cookiecutter==0.7.1
+ipython
