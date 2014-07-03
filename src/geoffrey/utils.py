@@ -4,6 +4,8 @@ import uuid
 import logging
 import json
 
+from xml.etree import ElementTree
+
 from geoffrey.hub import get_hub
 from geoffrey.data import Event
 
@@ -77,3 +79,19 @@ def get_api(app_routes, prefix):
         html_list += '<li>{}</li>'.format(route)
     html_list += '</ul>'
     return html_list
+
+
+def parse_checkstyle(stdout):
+    tree = ElementTree.fromstring(stdout)
+    filetag = tree.find('file')
+    errors = []
+    for error in filetag.getchildren():
+        error_data = {}
+        for item, value in error.items():
+            if value.isnumeric():
+                error_data[item] = int(value)
+            else:
+                error_data[item] = value
+        errors.append(error_data)
+    return errors
+
