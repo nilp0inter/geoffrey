@@ -219,7 +219,8 @@ class FileContent(plugin.GeoffreyPlugin):
             event = yield from events.get()
 
             if not (any(self._match(include_exp, event.key)) and
-                    not any(self._match(exclude_exp, event.key))):
+                    not any(self._match(exclude_exp, event.key)))\
+               or os.path.isdir(event.key):
                 continue
 
             filename = event.key
