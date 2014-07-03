@@ -76,6 +76,9 @@ class WebServer:
         self.app.route('/api/v1/<project_id>/<plugin_id>/state',
                        method='GET', callback=self.plugin_state)
 
+        self.app.route('/api/v1/state',
+                       method='GET', callback=self.get_state)
+
         # Subscription API
         self.app.route('/api/v1/subscription/<consumer_id>',
                        method='POST', callback=self.subscribe)
@@ -152,6 +155,14 @@ class WebServer:
                 root = os.path.dirname(fullpath)
                 filename = os.path.basename(fullpath)
                 return static_file(filename, root=root)
+
+    def get_state(self):
+        from geoffrey.data import datakey
+        criteria = datakey(**request.query)
+        response.content_type = 'application/json'
+        return utils.jsonencoder.encode(
+            [s.serializable()
+             for s in self.server.hub.get_states(criteria)])
 
     def plugin_state(self, project_id, plugin_id):
         """ Return the list of states of this plugin. """
