@@ -32,7 +32,10 @@ class FileSystem(plugin.GeoffreyPlugin):
 
     @asyncio.coroutine
     def queue_event(self, fsevent):
-        key = fsevent.src_path.decode('utf-8')
+        if isinstance(fsevent.src_path, bytes):
+            key = fsevent.src_path.decode('utf-8')
+        else:
+            key = fsevent.src_path
         type_ = fsevent.event_type
         event = self.new_event(key=key, fs_event=type_)
         yield from self.hub.put(event)
