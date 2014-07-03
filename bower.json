@@ -1,0 +1,31 @@
+{
+  "name": "geoffrey",
+  "version": "0.0.1",
+  "homepage": "https://github.com/nilp0inter/geoffrey",
+  "authors": [
+    "Roberto Abdelkader Martínez Pérez <robertomartinezp@gmail.com>"
+  ],
+  "description": "Geoffrey is a real time continuous integration server.",
+  "license": "GPLv3",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/geoffrey/web/assets/libs",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "codemirror": "~4.3.0",
+    "backbone": "~1.1.2",
+    "jstree": "~3.0.2",
+    "ladda": "~0.9.4",
+    "bootstrap": "~3.2.0",
+    "jquery-ui": "~1.11.0",
+    "jquery": "~2.1.1",
+    "underscore": "~1.6.0",
+    "backbone-relational": "~0.8.8",
+    "jqueryui-touch-punch": "*"
+  }
+}

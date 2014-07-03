@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from io import open
 import os
 import setuptools
@@ -38,7 +37,6 @@ setuptools.setup(
         'enum34',
         'watchdog>=0.7.1',
         'filemagic==1.6',
-        'Pygments==1.6',
     ],
     entry_points={
         "console_scripts": ["geoffrey = geoffrey.main:main"]
@@ -48,5 +46,5 @@ setuptools.setup(
     namespace_packages=['geoffrey', 'geoffrey.plugins'],
     package_dir={'': 'src'},
     include_package_data=True,
-    package_data={'geoffrey': ['web/*.*', 'web/assets/*.*']},
+    package_data={'geoffrey': ['web/*.*', 'web/assets/*.*', 'plugins/*/*']},
 )

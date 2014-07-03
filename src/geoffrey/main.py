@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def print_tasks():
     """
     Print all asyncio tasks continuosly in debug mode.
-    XXX: Know why `done` tasks are not deleted.
+    XXX: Figure out why `done` tasks are not deleted.
 
     """
     while True:

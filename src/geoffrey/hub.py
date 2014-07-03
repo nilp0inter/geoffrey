@@ -52,15 +52,14 @@ class EventHUB:
             raise RuntimeError("HUB run method can't be exec twice.")
 
         while True:
-            try:
-                data = self.events.get_nowait()
-            except:
-                yield from asyncio.sleep(1)
-            else:
-                logger.debug("Sending %s to %d subscriptions",
-                             data, len(self.subscriptions))
-                for subscription in self.subscriptions:
-                    yield from subscription.put(data)
+            data = yield from self.events.get()
+            logger.debug("Sending %s to %d subscriptions",
+                         data, len(self.subscriptions))
+            for subscription in self.subscriptions:
+                try:
+                    subscription.put_nowait(data)
+                except:
+                    pass
 
     def _process_data(self, data):
         """

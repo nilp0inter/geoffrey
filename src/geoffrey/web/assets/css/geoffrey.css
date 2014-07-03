@@ -16,3 +16,5 @@
 #dashboard div[data-ss-colspan="2"] { width: 48%; }
 #dashboard div[data-ss-colspan="3"] { width: 73%; }
 #dashboard div[data-ss-colspan="4"] { width: 98%; }
+
+.highlight > pre { background-color: #202020; }

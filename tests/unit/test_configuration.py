@@ -6,7 +6,6 @@ import pytest
 from geoffrey.server import Server
 from geoffrey.project import Project
 
-@pytest.mark.wip
 def test_autocreate_conf():
     """Autocreate main configuration if missing."""
     with TemporaryDirectory() as configdir:
@@ -15,10 +14,8 @@ def test_autocreate_conf():
         assert os.path.isfile(config_file)
 
 
-@pytest.mark.wip
 def test_autocreate_project_dir():
     """Autocreate projects root if missing."""
-
     with TemporaryDirectory() as configdir:
         config_file = os.path.join(configdir, 'geoffrey.conf')
         Server(config=config_file)
@@ -102,3 +99,4 @@ def test_project_plugins():
         assert isinstance(plugins['dummyplugin1'], DummyPlugin1)
         assert 'dummyplugin2' in plugins
         assert isinstance(plugins['dummyplugin2'], DummyPlugin2)
+
