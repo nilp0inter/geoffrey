@@ -18,3 +18,9 @@
 #dashboard div[data-ss-colspan="4"] { width: 98%; }
 
 .highlight > pre { background-color: #202020; }
+
+.CodeMirror {
+    height: auto !important; 
+    overflow-y: hidden;
+    overflow-x: auto;
+}

@@ -223,12 +223,12 @@ $(function() {
   });
 
 
-  var MenuEntry = Backbone.Model.extend({
+  window.MenuEntry = Backbone.Model.extend({
     idAttribute: "route"
   });
 
   var Menu = Backbone.Collection.extend({
-    model: MenuEntry
+    model: window.MenuEntry
   });
 
   // Left bar view
@@ -239,12 +239,17 @@ $(function() {
 
     initialize: function() {
       this.$el.attr("class", "sidebar");
-      this.listenTo(this.collection, "change", this.render);
+      this.listenTo(this.collection, "add", this.render);
+      this.listenTo(this.collection, "remove", this.render);
       this.render();
     },
 
     render: function() {
       this.$el.html(this.template({entries: this.collection.toJSON()}));
+      if (window.app) {
+        window.app.navigate(window.location.hash.substring(1),
+                            {trigger: true, replace:true});
+      }
       return this;
     }
 
@@ -267,10 +272,6 @@ $(function() {
   var ContentView = Backbone.View.extend({
     el: ".right-side",
     template: _.template($('#right-side-template').html()),
-    initialize: function() {
-      this.listenTo(this.model, "change", this.render);
-      this.render();
-    },
     render: function() {
       this.$el.html(this.template({model: this.model.toJSON()}));
       var content = this.model.get("content");
@@ -317,6 +318,7 @@ $(function() {
 
   });
 
+  /*
   var Settings = Backbone.View.extend({
     id: "settings",
 
@@ -331,13 +333,15 @@ $(function() {
 
   });
 
+  */
+
   var menu = new Menu([
     {title: "Dashboard",
      subtitle: "Control panel",
      route: "dashboard",
      icon: "fa-dashboard",
      active: true,
-     content: new Dashboard({collection: new Widgets()})},
+     content: new Dashboard({collection: new Widgets()})}/*,
 
     {title: "Settings",
      subtitle: "Project configuration",
@@ -350,6 +354,7 @@ $(function() {
      route: "logs",
      icon: "fa-bars",
      content: new Settings()},
+     */
   ]);
 
   var Workspace = Backbone.Router.extend({
@@ -364,18 +369,26 @@ $(function() {
       this.leftBar = new LeftBar({
         collection: menu
       });
+
       this.content = new ContentView({
         model: new ContentModel()
       });
-
+      
     },
     subscribe: function(name, criteria, callback) {
       var subscription = this.client.consumer.subscription;
       subscription.setCriteria(name, criteria, callback);
     },
+    unsubscribe: function(name) {
+      var subscription = this.client.consumer.subscription;
+      subscription.deleteCriteria(name);
+    },
     registerWidget: function(widget){
       var dashboard = menu.get("dashboard").get("content");
       dashboard.addWidget(widget);
+    },
+    registerMenu: function(entry){
+      menu.add(entry);
     },
     changeActive: function(name) {
       for (var i = 0; i < menu.models.length; i++ ){
@@ -390,6 +403,8 @@ $(function() {
           entry.set("active", false);
         }
       }
+      this.leftBar.render();
+      this.content.render();
     },
   });
 
@@ -398,8 +413,11 @@ $(function() {
     $("head").append(cssLink); 
   };
 
-
   window.app = new Workspace();
   Backbone.history.start(); 
+
+  // When reload the page go to dashboard. Because maybe the desired
+  // view is not loaded yet.
+  window.app.navigate("go/dashboard", {trigger: true});
 
 });
