@@ -77,8 +77,8 @@ class WebServer:
         self.app.route('/api/v1/<project_id>/<plugin_id>/state',
                        method='GET', callback=self.plugin_state)
 
-        self.app.route('/api/v1/state',
-                       method='GET', callback=self.get_state)
+        self.app.route('/api/v1/states',
+                       method='GET', callback=self.get_states)
 
         # Subscription API
         self.app.route('/api/v1/subscription/<consumer_id>',
@@ -161,7 +161,7 @@ class WebServer:
                 filename = os.path.basename(fullpath)
                 return static_file(filename, root=root)
 
-    def get_state(self):
+    def get_states(self):
         from geoffrey.data import datakey
         criteria = datakey(**request.query)
         response.content_type = 'application/json'
