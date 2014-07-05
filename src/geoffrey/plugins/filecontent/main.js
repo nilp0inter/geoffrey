@@ -31,16 +31,18 @@ $(function() {
 
       $("#tree").on("select_node.jstree", function (e, data) {
         var filename = data.selected[0];
-        $.get( "/api/v1/" + project_id + "/filecontent/method/content?filename=" + filename, function( data ) {
-          this_.editor.getDoc().setValue(data.value.content);
+        $.get( "/api/v1/states?project=" + project_id + "&plugin=filecontent&task=read_modified_files&key=" + filename, function( data ) {
+          if (data.length) {
+            this_.editor.getDoc().setValue(data[0].value.content);
 
-          var modes = CodeMirror.modeInfo.filter(function(mode){ return mode.mime==data.value.mime_type})
-
-          if(modes.length) {
-            this_.editor.setOption("mode", modes[0].mode);
-            CodeMirror.autoLoadMode(this_.editor, modes[0].mode); 
-          } else {
-            this_.editor.setOption("mode", "null");
+            var modes = CodeMirror.modeInfo.filter(function(mode){ return mode.mime==data[0].value.mime_type})
+  
+            if(modes.length) {
+              this_.editor.setOption("mode", modes[0].mode);
+              CodeMirror.autoLoadMode(this_.editor, modes[0].mode); 
+            } else {
+              this_.editor.setOption("mode", "null");
+            }
           }
         }); 
       });
