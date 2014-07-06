@@ -4,7 +4,7 @@ Content Types
 File
 ----
 
-``content`` **file**
+``content_type`` **file**
 
 ``key`` File real path.
 
@@ -13,7 +13,7 @@ File
 Highlight
 ---------
 
-``content``: **highlight**
+``content_type``: **highlight**
 
 ``key``: File path.
 
@@ -33,6 +33,8 @@ Highlight element
 ``text``: Highlight description (short text).
 
 ``link``: Relative link to highlight description.
+
+``type``: Highlight type.
 
 Ticket
 ------
