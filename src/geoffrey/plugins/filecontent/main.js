@@ -7,12 +7,25 @@ $(function() {
       this.listenTo(window.app, 'route', this.updateSubscriptions);
     },
 
+    open_file: function(nodename) {
+      this.tree.jstree("deselect_all");
+      this.tree.jstree("open_node", nodename);
+      this.tree.jstree("select_node", nodename);
+    },
+
     createTree: function(node) {
       var this_ = this;
-      this.filename = node;
+
+
 
       if(this.tree){
-        this.tree.jstree().refresh();
+        if(this.tree.jstree().refresh){
+          this.tree.jstree().refresh();
+        } else {
+          this.tree = null;
+          this.createTree(node);
+          return;
+        }
       } else {
           var tree = $("#tree").jstree({
             'core': {
@@ -31,6 +44,7 @@ $(function() {
           $("#tree").on("select_node.jstree", function (e, data) {
             var filename = data.selected[0];
             this_.filename = filename;
+
             $.get( "/api/v1/states?project=" + project_id + "&plugin=filecontent&task=read_modified_files&key=" + filename, function( data ) {
               if (data.length) {
                 this_.editor.getDoc().setValue(data[0].value.content);
@@ -51,10 +65,12 @@ $(function() {
       }
 
       if(node) {
+        this.filename = node;
         this.tree.on("refresh.jstree", function (e, data) {
-          this_.tree.jstree("deselect_all");
-          this_.tree.jstree("open_node", node);
-          this_.tree.jstree("select_node", node);
+          open_file(node);
+        });
+        this.tree.on("ready.jstree", function (e, data) {
+          open_file(node);
         });
       }
     },
@@ -126,7 +142,18 @@ $(function() {
           function(data) {
             this_.createTree(data.key);
           }); 
+
         this.subscribeHighlights();
+        if (this.filename && this.tree) {
+          this.tree.on("refresh.jstree", function (e, data) {
+            this_.open_file(this_.filename);
+          });
+          this.tree.on("ready.jstree", function (e, data) {
+            this_.open_file(this_.filename);
+          });
+        }
+
+        this.tree.jstree().refresh();
       } else {
         window.app.unsubscribe('update_filecontent_files'); 
         window.app.unsubscribe('update_filecontent_highlights'); 
