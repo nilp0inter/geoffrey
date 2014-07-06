@@ -7,6 +7,28 @@ $(function() {
       this.listenTo(window.app, 'route', this.updateSubscriptions);
     },
 
+    openNode: function(nodename) {
+      this.tree.jstree("deselect_all");
+      this.tree.jstree("open_node", nodename);
+      this.tree.jstree("select_node", nodename);
+    },
+
+    refreshEditor: function() {
+      // Force codemirror to recheck for errors.
+      this_.editor.setValue(this_.editor.getValue());
+    },
+
+    setUp: function() {
+      // Subscribe
+      // Bind events
+      // Open node
+    },
+
+    tearDown: function() {
+      // Unsubscribe
+      // Unbind events
+    },
+
     open_file: function(nodename) {
       this.tree.jstree("deselect_all");
       this.tree.jstree("open_node", nodename);
@@ -16,12 +38,11 @@ $(function() {
     createTree: function(node) {
       var this_ = this;
 
-
-
       if(this.tree){
         if(this.tree.jstree().refresh){
           this.tree.jstree().refresh();
         } else {
+          this.tree.off();
           this.tree = null;
           this.createTree(node);
           return;
@@ -41,8 +62,10 @@ $(function() {
             }
           });
 
+          tree.off();
           $("#tree").on("select_node.jstree", function (e, data) {
             var filename = data.selected[0];
+            this_.subscribeHighlights(filename);
             this_.filename = filename;
 
             $.get( "/api/v1/states?project=" + project_id + "&plugin=filecontent&task=read_modified_files&key=" + filename, function( data ) {
@@ -61,18 +84,17 @@ $(function() {
             }); 
           });
 
-          this.tree = tree;
+        this.tree = tree;
+
       }
 
-      if(node) {
-        this.filename = node;
-        this.tree.on("refresh.jstree", function (e, data) {
-          open_file(node);
-        });
-        this.tree.on("ready.jstree", function (e, data) {
-          open_file(node);
-        });
-      }
+      this.tree.on("refresh.jstree", function (e, data) {
+        this_.open_file(node);
+      });
+      this.tree.on("ready.jstree", function (e, data) {
+        this_.open_file(node);
+      });
+
     },
 
     createEditor: function() {
@@ -91,7 +113,7 @@ $(function() {
                       highlights.push({
                           from: {line: msg.start_line-1, chr: msg.start_char},
                           to: {line: msg.end_line-1, chr: msg.end_char},
-                          message: msg.text,
+                          message: '[' + data[p].plugin + '] ' + msg.text,
                           severity: msg.type
                       });
                   }
@@ -140,40 +162,32 @@ $(function() {
             'plugin': 'filecontent'
           },
           function(data) {
+            console.log("Received " + data.key);
+            this_.filename = data.key;
             this_.createTree(data.key);
           }); 
 
-        this.subscribeHighlights();
-        if (this.filename && this.tree) {
-          this.tree.on("refresh.jstree", function (e, data) {
-            this_.open_file(this_.filename);
-          });
-          this.tree.on("ready.jstree", function (e, data) {
-            this_.open_file(this_.filename);
-          });
-        }
-
-        this.tree.jstree().refresh();
       } else {
         window.app.unsubscribe('update_filecontent_files'); 
         window.app.unsubscribe('update_filecontent_highlights'); 
       }
     },
 
-    subscribeHighlights: function() {
-      if (this.filename) {
+    subscribeHighlights: function(filename) {
+      var this_ = this;
         window.app.subscribe(
           'update_filecontent_highlights',
           {
             'project': project_id,
             'content_type': 'highlight',
-            'key': this.filename
+            'key': filename
           },
           function(data) {
-            this_.editor.refresh();
-          }); 
-        }
-      }
+            // Force codemirror to recheck for errors.
+            this_.editor.setValue(this_.editor.getValue());
+          }
+        ); 
+    }
 
   });
 
