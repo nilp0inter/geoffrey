@@ -26,6 +26,6 @@
     "underscore": "~1.6.0",
     "backbone-relational": "~0.8.8",
     "jqueryui-touch-punch": "*",
-    "codemirror": "git@github.com:nilp0inter/CodeMirror.git#6d6c09b9b4d87"
+    "codemirror": "git@github.com:nilp0inter/CodeMirror.git#ea095b87a"
   }
 }
