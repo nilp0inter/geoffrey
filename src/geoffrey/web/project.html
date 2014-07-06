@@ -173,6 +173,9 @@
               <li <% if (entry.active){ %>class="active"<% } %>>
                   <a href="#go/<%- entry.route %> ">
                       <i class="fa <%- entry.icon %>"></i> <span><%- entry.title %></span>
+                      <% if (entry.badgeText) { %>
+                        <small class="badge pull-right bg-<%- entry.badgeColor %>"><%- entry.badgeText %></small>
+                      <% } %>
                   </a>
               </li>
             <% }); %> 
