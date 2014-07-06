@@ -90,20 +90,20 @@ $(function() {
         this.socket.onopen = function(evt) {
           this.send(JSON.stringify({'consumer_id': this_.get("id")}));
           this_.set("connected", true);
-        }
+        };
 
         this.socket.onmessage = function(evt){
           var data = JSON.parse(evt.data);
           subscription.distributeEvent(data);
-        }
+        };
 
         this.socket.onclose = function(evt) {
           this_.set("connected", false);
-        }
+        };
 
         this.socket.onerror = function(evt) {
           this_.set("connected", false);
-        }
+        };
 
       }
     }
@@ -136,7 +136,7 @@ $(function() {
 
     loadCode: function() {
       var pluginname = this.id;
-      var url = '/api/v1/' + this.get("project").id + '/' + pluginname + '/source/js'
+      var url = '/api/v1/' + this.get("project").id + '/' + pluginname + '/source/js';
       $.getScript(url, function(){ }).fail(function() { 
         console.log("Problem loading plugin " + pluginname);
       });
@@ -156,7 +156,7 @@ $(function() {
     model: Plugin,
 
     url: function() {
-      return '/api/v1/' + this.project.id + '/plugins'
+      return '/api/v1/' + this.project.id + '/plugins';
     }
 
   });
@@ -171,7 +171,7 @@ $(function() {
     },
 
     start: function() {
-      console.log("[" + this.id + "] Project starting!")
+      console.log("[" + this.id + "] Project starting!");
       var plugins = this.get("plugins");
       this.deferred.done(function() { plugins.each(function(p){ p.start(); }); });
     },
@@ -288,6 +288,7 @@ $(function() {
     id: "dashboard",
 
     initialize: function() {
+      this.$el.addClass("dashboard");
       this.listenTo(this.collection, "add", this.render);
       this.listenTo(this.collection, "remove", this.render);
     },
@@ -299,7 +300,7 @@ $(function() {
       this.$el.empty();
       this.collection.map(function(widget){
         var view = widget.get("view");
-        this_.$el.append(view.$el)
+        this_.$el.append(view.$el);
       });
       colWidth = $(".content").width() / 4;
       // Shapeshift them!
@@ -359,12 +360,12 @@ $(function() {
 
   var Workspace = Backbone.Router.extend({
     routes: {
-      "": function() { this.navigate("go/dashboard", {trigger: true}) },
+      "": function() { this.navigate("go/dashboard", {trigger: true}); },
       "go/:menu": "changeActive",
     },
     initialize: function(){
       this.client = new Client();
-      this.client.start()
+      this.client.start();
 
       this.leftBar = new LeftBar({
         collection: menu

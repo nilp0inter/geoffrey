@@ -3,24 +3,24 @@
     min-height: 100px;
 }
 
-#dashboard{
+.dashboard{
     position: relative;
     width: 100%;
 }
 
-#dashboard>div{
+.dashboard>div{
     position: absolute; 
 }
 
-#dashboard div[data-ss-colspan="1"] { width: 23%; }
-#dashboard div[data-ss-colspan="2"] { width: 48%; }
-#dashboard div[data-ss-colspan="3"] { width: 73%; }
-#dashboard div[data-ss-colspan="4"] { width: 98%; }
+.dashboard div[data-ss-colspan="1"] { width: 23%; }
+.dashboard div[data-ss-colspan="2"] { width: 48%; }
+.dashboard div[data-ss-colspan="3"] { width: 73%; }
+.dashboard div[data-ss-colspan="4"] { width: 98%; }
 
 .highlight > pre { background-color: #202020; }
 
 .CodeMirror {
-    height: auto !important; 
+    height: auto; 
     overflow-y: hidden;
     overflow-x: auto;
 }
