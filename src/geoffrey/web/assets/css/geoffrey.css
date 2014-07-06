@@ -20,9 +20,7 @@
 .highlight > pre { background-color: #202020; }
 
 .CodeMirror {
-
-    overflow-y: hidden;
-    overflow-x: auto;
+    height: 650px;
 }
 
 .CodeMirror-lint-message-info, .CodeMirror-lint-message-note {

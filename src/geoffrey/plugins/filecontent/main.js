@@ -6,12 +6,20 @@ $(function() {
     id: "filecontent",
 
     initialize: function() {
+      var this_ = this;
+
       this.model = new FilecontentModel({});
 
       loadCSS('/assets/libs/codemirror/theme/blackboard.css');
 
       this.listenTo(window.app, 'route', this.managePanel);
       this.listenTo(this.model, 'change', this.fileChange);
+
+      $.get("/plugins/filecontent/panel.html", function(template){
+        this_.template = _.template(template);
+      }).done(function() { 
+        this_.render();
+      });
     },
 
     fileChange: function() {
@@ -194,7 +202,8 @@ $(function() {
 
     render: function() {
       this.$el.addClass("row");
-      this.$el.html('<div id="editor" class="col-md-9"><textarea id="code" cols="120" rows="30"></textarea></div></div><div id="tree" class="col-md-3"></div>');
+      console.log(this.template);
+      this.$el.html(this.template());
     },
 
     managePanel: function(route, params) {
