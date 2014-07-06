@@ -35,6 +35,9 @@ Highlight element
 ``link``: Relative link to highlight description.
 
 ``type``: Highlight type.
+  - *error*
+  - *warning*
+  - *info*
 
 Ticket
 ------
