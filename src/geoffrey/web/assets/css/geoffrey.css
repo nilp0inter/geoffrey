@@ -20,7 +20,7 @@
 .highlight > pre { background-color: #202020; }
 
 .CodeMirror {
-    height: auto; 
+
     overflow-y: hidden;
     overflow-x: auto;
 }
@@ -55,3 +55,6 @@
   background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAGGSURBVDjLxZO/alRBFMZ/c6MmomKhBLv4AIJiYekjCFopKSzyCnkGW99BbMTOQhsrBcFKsLCJhRYBNYYsWXNn5s6Z81nMGu+626XwFDOHge/PmfkmSOIk1XHCOvWn0ZdXsulPpAFZQbUgG5BlVDOURLWELEJJXLz3JMwTVOP0tfsLChIEmC2A4OD5g0UHebLLWQl5bAcBJAcC4i9D6FZRiUtGMMOHb9j0PXhGGtruA3hCnpBHzly+i5d+CUHNgCFPoDIDjcEJeQ8yNCxxYL/2m+U55Yh7mpFE8NhE7GiRwGsi7bzF8meoA8io6ZC1jfWm7AnVCPLld1DjPna4y/kbm4Djw1emH56h2oN6VFNzIKOOCI6DFCTKj48cvN6m9jtQC64yAjcXrjrnoBu/94VbDymTPSZvHs/A6RgsT0gZqC1M/46AJcJKx7mbW8RPL5m+e8HKpeusXbmNI1AFDHBkmZHzFpO9p3fkJSNLqEQsfgc6uhCQJRgy7qlF2ypXHynMEfy33/gbubc6XKsT2+MAAAAASUVORK5CYII=);
 }
 
+.CodeMirror-fullscreen {
+  z-index: 1040;
+}
