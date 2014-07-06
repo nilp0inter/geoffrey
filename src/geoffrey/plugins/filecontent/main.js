@@ -55,7 +55,7 @@ $(function() {
 
           var modes = CodeMirror.modeInfo.filter(
             function(mode){
-              return mode.mime==data[0].value.mime_type
+              return mode.mime == data[0].value.mime_type;
             }
           );
     
@@ -96,33 +96,32 @@ $(function() {
            Update highlights on CodeMirror.
            This method is called by CodeMirror's lint plugin.
         */
+        function setHighlights(data) {
+          /*
+             Transform the Geoffrey's highlight convention to CodeMirror
+             highlights and calls `updateLinting`.
+          */
+          var highlights = [];
+          for(var p=0; p<data.length; p++) {
+              var hl = data[p].value.highlights;
+              for(var v=0; v<hl.length; v++){
+                  var msg = hl[v];
+                  highlights.push({
+                      from: {line: msg.start_line-1, chr: msg.start_char},
+                      to: {line: msg.end_line-1, chr: msg.end_char},
+                      message: '[' + data[p].plugin + '] ' + msg.text,
+                      severity: msg.type
+                  });
+              }
+          }
+          updateLinting(cm, highlights);
+        }
         if (this_.model.get("filename")) {
           var highlightUrl = "/api/v1/states?" + $.param({
             project: project_id,
             content_type: "highlight",
             key: this_.model.get("filename")
           });
-
-          function setHighlights(data) {
-            /*
-               Transform the Geoffrey's highlight convention to CodeMirror
-               highlights and calls `updateLinting`.
-            */
-            var highlights = [];
-            for(var p=0; p<data.length; p++) {
-                var hl = data[p].value.highlights;
-                for(var v=0; v<hl.length; v++){
-                    var msg = hl[v];
-                    highlights.push({
-                        from: {line: msg.start_line-1, chr: msg.start_char},
-                        to: {line: msg.end_line-1, chr: msg.end_char},
-                        message: '[' + data[p].plugin + '] ' + msg.text,
-                        severity: msg.type
-                    });
-                }
-            }
-            updateLinting(cm, highlights);
-          }
           $.get(highlightUrl, setHighlights); // Set's the highlights async.
         }
       }
@@ -133,8 +132,9 @@ $(function() {
         lineNumbers: true,
         styleActiveLine: true,
         matchBrackets: true,
-        readOnly: false,
+        readOnly: true,
         gutters: ["CodeMirror-lint-markers"],
+        viewportMargin: 10,
         lint: {
           "getAnnotations": updateHighlights,
           "async": true,
@@ -186,15 +186,15 @@ $(function() {
 
     render: function() {
       this.$el.addClass("row");
-      this.$el.html('<div id="editor" class="col-md-9" style="min-height: 777px"><textarea id="code" cols="120" rows="30" name="foo"></textarea></div></div><div id="tree" class="col-md-3"></div>');
+      this.$el.html('<div id="editor" class="col-md-9"><textarea id="code" cols="120" rows="30"></textarea></div></div><div id="tree" class="col-md-3"></div>');
     },
 
     managePanel: function(route, params) {
       /* Setup or teardown this panel based on current route */
       if(params[0] == "filecontent") {  // Enter this panel, active subscriptions.
-        this.setUp()
+        this.setUp();
       } else {
-        this.tearDown()
+        this.tearDown();
       }
     },
   });
