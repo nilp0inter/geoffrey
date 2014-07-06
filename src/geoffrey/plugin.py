@@ -15,7 +15,12 @@ from geoffrey.utils import slugify, GeoffreyLoggingHandler
 logger = logging.getLogger(__name__)
 logger.addHandler(GeoffreyLoggingHandler())
 
+
 class DefaultContextLogger:
+    """
+    Add geoffrey specific data to logger.
+
+    """
     def __init__(self, logger, project, plugin):
         self.logger = logger
         self.project = project
@@ -135,7 +140,7 @@ class GeoffreyPlugin:
         """
         def _get_tasks():
             members = inspect.getmembers(cls, predicate=inspect.isfunction)
-            for name, member in members:
+            for _, member in members:
                 annotations = getattr(member, '__annotations__', {})
                 if annotations.get('return', None) == Task:
                     yield member
@@ -164,14 +169,15 @@ class GeoffreyPlugin:
         if self.project is not None:
             return self.project.name
 
-    def new_state(self, key, **kwargs):
+    def new_state(self, key, content_type="data", **kwargs):
         """
         Handy method that for creates a new state prefilled with the
         information of this plugin.
 
         """
-        return State(project=self._project_name,
-                     plugin=self.name, key=key, **kwargs)
+
+        return State(project=self._project_name, plugin=self.name, key=key,
+                     content_type=content_type, **kwargs)
 
     def new_event(self, key, **kwargs):
         """
@@ -190,8 +196,6 @@ class GeoffreyPlugin:
         Where the client sources and the assets directory lives.
 
         """
-        import inspect
-
         classfile = inspect.getfile(self.__class__)
         root = os.path.join(os.path.dirname(classfile), self.name)
 

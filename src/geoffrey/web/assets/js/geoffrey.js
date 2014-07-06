@@ -90,20 +90,20 @@ $(function() {
         this.socket.onopen = function(evt) {
           this.send(JSON.stringify({'consumer_id': this_.get("id")}));
           this_.set("connected", true);
-        }
+        };
 
         this.socket.onmessage = function(evt){
           var data = JSON.parse(evt.data);
           subscription.distributeEvent(data);
-        }
+        };
 
         this.socket.onclose = function(evt) {
           this_.set("connected", false);
-        }
+        };
 
         this.socket.onerror = function(evt) {
           this_.set("connected", false);
-        }
+        };
 
       }
     }
@@ -136,7 +136,7 @@ $(function() {
 
     loadCode: function() {
       var pluginname = this.id;
-      var url = '/api/v1/' + this.get("project").id + '/' + pluginname + '/source/js'
+      var url = '/api/v1/' + this.get("project").id + '/' + pluginname + '/source/js';
       $.getScript(url, function(){ }).fail(function() { 
         console.log("Problem loading plugin " + pluginname);
       });
@@ -156,7 +156,7 @@ $(function() {
     model: Plugin,
 
     url: function() {
-      return '/api/v1/' + this.project.id + '/plugins'
+      return '/api/v1/' + this.project.id + '/plugins';
     }
 
   });
@@ -171,7 +171,7 @@ $(function() {
     },
 
     start: function() {
-      console.log("[" + this.id + "] Project starting!")
+      console.log("[" + this.id + "] Project starting!");
       var plugins = this.get("plugins");
       this.deferred.done(function() { plugins.each(function(p){ p.start(); }); });
     },
@@ -223,12 +223,12 @@ $(function() {
   });
 
 
-  var MenuEntry = Backbone.Model.extend({
+  window.MenuEntry = Backbone.Model.extend({
     idAttribute: "route"
   });
 
   var Menu = Backbone.Collection.extend({
-    model: MenuEntry
+    model: window.MenuEntry
   });
 
   // Left bar view
@@ -239,12 +239,17 @@ $(function() {
 
     initialize: function() {
       this.$el.attr("class", "sidebar");
-      this.listenTo(this.collection, "change", this.render);
+      this.listenTo(this.collection, "add", this.render);
+      this.listenTo(this.collection, "remove", this.render);
       this.render();
     },
 
     render: function() {
       this.$el.html(this.template({entries: this.collection.toJSON()}));
+      if (window.app) {
+        window.app.navigate(window.location.hash.substring(1),
+                            {trigger: true, replace:true});
+      }
       return this;
     }
 
@@ -267,10 +272,6 @@ $(function() {
   var ContentView = Backbone.View.extend({
     el: ".right-side",
     template: _.template($('#right-side-template').html()),
-    initialize: function() {
-      this.listenTo(this.model, "change", this.render);
-      this.render();
-    },
     render: function() {
       this.$el.html(this.template({model: this.model.toJSON()}));
       var content = this.model.get("content");
@@ -287,6 +288,7 @@ $(function() {
     id: "dashboard",
 
     initialize: function() {
+      this.$el.addClass("dashboard");
       this.listenTo(this.collection, "add", this.render);
       this.listenTo(this.collection, "remove", this.render);
     },
@@ -298,7 +300,7 @@ $(function() {
       this.$el.empty();
       this.collection.map(function(widget){
         var view = widget.get("view");
-        this_.$el.append(view.$el)
+        this_.$el.append(view.$el);
       });
       colWidth = $(".content").width() / 4;
       // Shapeshift them!
@@ -317,6 +319,7 @@ $(function() {
 
   });
 
+  /*
   var Settings = Backbone.View.extend({
     id: "settings",
 
@@ -331,13 +334,15 @@ $(function() {
 
   });
 
+  */
+
   var menu = new Menu([
     {title: "Dashboard",
      subtitle: "Control panel",
      route: "dashboard",
      icon: "fa-dashboard",
      active: true,
-     content: new Dashboard({collection: new Widgets()})},
+     content: new Dashboard({collection: new Widgets()})}/*,
 
     {title: "Settings",
      subtitle: "Project configuration",
@@ -350,32 +355,41 @@ $(function() {
      route: "logs",
      icon: "fa-bars",
      content: new Settings()},
+     */
   ]);
 
   var Workspace = Backbone.Router.extend({
     routes: {
-      "": function() { this.navigate("go/dashboard", {trigger: true}) },
+      "": function() { this.navigate("go/dashboard", {trigger: true}); },
       "go/:menu": "changeActive",
     },
     initialize: function(){
       this.client = new Client();
-      this.client.start()
+      this.client.start();
 
       this.leftBar = new LeftBar({
         collection: menu
       });
+
       this.content = new ContentView({
         model: new ContentModel()
       });
-
+      
     },
     subscribe: function(name, criteria, callback) {
       var subscription = this.client.consumer.subscription;
       subscription.setCriteria(name, criteria, callback);
     },
+    unsubscribe: function(name) {
+      var subscription = this.client.consumer.subscription;
+      subscription.deleteCriteria(name);
+    },
     registerWidget: function(widget){
       var dashboard = menu.get("dashboard").get("content");
       dashboard.addWidget(widget);
+    },
+    registerMenu: function(entry){
+      menu.add(entry);
     },
     changeActive: function(name) {
       for (var i = 0; i < menu.models.length; i++ ){
@@ -390,6 +404,8 @@ $(function() {
           entry.set("active", false);
         }
       }
+      this.leftBar.render();
+      this.content.render();
     },
   });
 
@@ -398,8 +414,11 @@ $(function() {
     $("head").append(cssLink); 
   };
 
-
   window.app = new Workspace();
   Backbone.history.start(); 
+
+  // When reload the page go to dashboard. Because maybe the desired
+  // view is not loaded yet.
+  window.app.navigate("go/dashboard", {trigger: true});
 
 });

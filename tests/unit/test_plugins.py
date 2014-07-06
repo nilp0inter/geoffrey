@@ -82,7 +82,13 @@ def test_plugin_start_tasks_on_start(hub, loop, event):
     assert hub.events.qsize() == 0
 
     hub.add_subscriptions(p.subscriptions)
-    loop.run_until_complete(asyncio.wait(p.tasks + [hub.run(), queue_event()],
+
+    # NOTE: Weirdest thing ever. If you toggle the next two Tasks, the test
+    #       will hung.
+    asyncio.Task(queue_event())
+    asyncio.Task(hub.run())
+
+    loop.run_until_complete(asyncio.wait(p.tasks,
                                          return_when=asyncio.FIRST_COMPLETED))
     assert p.data == event
 

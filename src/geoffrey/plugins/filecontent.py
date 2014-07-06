@@ -49,26 +49,7 @@ class FileContent(plugin.GeoffreyPlugin):
     def configure_app(self):
         self.app.route('/filelist', callback=self.filelist)
         self.app.route('/filetree', callback=self.filetree)
-        self.app.route('/content', callback=self.get_content)
         super().configure_app()
-
-    def get_content(self):
-        """Return the content of this."""
-        from geoffrey.data import datakey
-        filename = request.query.get("filename", None)
-        if filename is None:
-            raise HTTPError(404, 'filename parameter is mandatory.')
-
-        states = self.hub.get_states(datakey(key=filename,
-                                             plugin="filecontent",
-                                             project=self.project.name))
-        for state in states:
-            if state.content is None:
-                raise HTTPError(404, 'No content.')
-            else:
-                return state.content
-
-        raise HTTPError(404, 'file not found.')
 
 
     def filelist(self, *args, **kwargs):
