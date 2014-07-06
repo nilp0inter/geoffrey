@@ -83,6 +83,8 @@ def get_api(app_routes, prefix):
 
 def parse_checkstyle(stdout):
     tree = ElementTree.fromstring(stdout)
+    if not tree:
+        return []
     filetag = tree.find('file')
     errors = []
     for error in filetag.getchildren():
