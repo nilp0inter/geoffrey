@@ -18,6 +18,7 @@ from geoffrey.webserver import WebServer
 
 DEFAULT_CONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.geoffrey')
 DEFAULT_CONFIG_FILENAME = os.path.join(DEFAULT_CONFIG_ROOT, 'geoffrey.conf')
+STATES_FILE = os.path.join(DEFAULT_CONFIG_ROOT, 'states.pickle')
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ class Server:
         # collection.
         self.tasks = []
         self.consumers = {}
+
+        if os.path.isfile(STATES_FILE):
+            self.hub.restore_states(STATES_FILE)
 
     @property
     def projects_root(self):
@@ -85,6 +89,7 @@ class Server:
     def handle_ctrl_c(self):
         """Control Ctrl-C to the server."""
         logger.warning("Pressed Ctrl-C. Exiting.")
+        self.hub.save_states(STATES_FILE)
         self.loop.stop()
 
     def run(self):
