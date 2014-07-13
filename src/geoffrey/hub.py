@@ -42,6 +42,13 @@ class EventHUB:
                 # Everything right. <zeusvoice>RELEASE THE STATE!!</zeusvoice>
                 yield State.from_keyvalue(key, value)
 
+    def get_one_state(self, key_criteria):
+        """Like get_states but return the first matching state or None."""
+        try:
+            return next(self.get_states(key_criteria))
+        except StopIteration:
+            return None
+
     @asyncio.coroutine
     def run(self):
         """Infite loop that send events to the subscribers."""

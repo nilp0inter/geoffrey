@@ -26,6 +26,8 @@
     "underscore": "~1.6.0",
     "backbone-relational": "~0.8.8",
     "jqueryui-touch-punch": "*",
-    "codemirror": "git@github.com:nilp0inter/CodeMirror.git#ea095b87a"
+    "codemirror": "git@github.com:nilp0inter/CodeMirror.git#ea095b87a",
+    "datatables": "~1.10.0",
+    "jquery.sparkline": "http://omnipotent.net/jquery.sparkline/2.1.2/jquery.sparkline.js"
   }
 }
