@@ -11,7 +11,6 @@ from geoffrey import defaults
 from geoffrey import hub
 from geoffrey import utils
 from geoffrey.websocket import WebsocketServer
-from geoffrey.deps.aiobottle import AsyncBottle
 
 from geoffrey.webserver import WebServer
 
@@ -103,7 +102,7 @@ class Server:
         self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
 
         # WEBSERVER
-        web_app = WebServer(server=self, bottle=AsyncBottle)
+        web_app = WebServer(server=self)
         web_app.start()
 
         # WEBSOCKET SERVER

@@ -1,3 +1,7 @@
+"""
+Geoffrey embedded web server.
+
+"""
 import json
 import logging
 import os
@@ -26,7 +30,7 @@ class WebServer:
     Websocket class.
 
     """
-    def __init__(self, server, bottle=Bottle):
+    def __init__(self, server):
         self.server = server
         self.webbase = os.path.join(os.path.dirname(__file__), "web")
         TEMPLATE_PATH[:] = [self.webbase]
@@ -85,15 +89,13 @@ class WebServer:
                        method='POST', callback=self.subscribe)
 
         # Plugin defined API
-
-        for project in self.server.projects:
-            for plugin in self.server.projects[project].plugins:
-                if self.server.projects[project].plugins[plugin].app is not None:
+        for project_name, project in self.server.projects.items():
+            for plugin_name, plugin in project.plugins.items():
+                if plugin.app is not None:
                     self.app.mount(
-                        '/api/v1/{project_id}/{plugin_id}/method/'.format(project_id=project,
-                                                                          plugin_id=plugin),
-                        self.server.projects[project].plugins[plugin].app)
-
+                        '/api/v1/{project_id}/{plugin_id}/method/'.format(
+                            project_id=project_name, plugin_id=plugin_name),
+                        plugin.app)
 
         asyncbottle_logger = logging.getLogger('asyncbottle')
         asyncbottle_logger.setLevel(logging.CRITICAL)
@@ -107,15 +109,16 @@ class WebServer:
             new_consumer = Consumer()
             self.server.consumers[consumer_uuid] = new_consumer
             self.server.hub.subscriptions.append(new_consumer)
-            websocket_port = self.server.config.getint('geoffrey',
-                                                       'websocket_server_port',
-                                                       fallback=8701)
-            websocket_address = request.get_header('host').split(':', 1)[0]
-            ws = 'ws://{address}:{port}'.format(address=websocket_address,
-                                                port=websocket_port)
+            websocket_port = self.server.config.getint(
+                'geoffrey', 'websocket_server_port', fallback=8701)
+            server_address = request.get_header('host').split(':', 1)[0]
+
+            websocket_address = 'ws://{address}:{port}'.format(
+                address=server_address, port=websocket_port)
+
             response.content_type = 'application/json'
             return json.dumps({'id': consumer_uuid,
-                               'ws': ws})
+                               'ws': websocket_address})
         else:
             try:
                 self.server.consumers.pop(consumer_id)
@@ -162,6 +165,7 @@ class WebServer:
                 return static_file(filename, root=root)
 
     def get_states(self):
+        """Return a view of the requested states."""
         from geoffrey.data import datakey
         criteria = datakey(**request.query)
         response.content_type = 'application/json'
@@ -194,10 +198,11 @@ class WebServer:
                 if not isinstance(criteria, list):
                     raise ValueError("criteria must be a list")
 
-                for c in criteria:
-                    if not isinstance(c, dict):
-                        raise ValueError("criteria elements must be dictionaries")
-                    for key, value in c.items():
+                for elem in criteria:
+                    if not isinstance(elem, dict):
+                        raise ValueError(
+                            "criteria elements must be dictionaries")
+                    for key, value in elem.items():
                         if not isinstance(key, str) or \
                                 not isinstance(value, str):
                             raise ValueError("invalid data type")
@@ -241,7 +246,10 @@ class WebServer:
                     raise HTTPError(404, "no assets for this plugin")
         plugins = get_all_plugins(self.config, project=None)
 
-        raise HTTPError(404, "plugin not found" + pluginname + str([plugin.name for plugin in plugins]))
+        current_plugins = str([plugin.name for plugin in plugins])
+        raise HTTPError(404,
+                        "plugin not found {} {}".format(
+                            pluginname, current_plugins))
 
     def get_api(self):
         """Get web API definitions."""

@@ -14,7 +14,7 @@ def test_index():
     """ Test webserver index page """
 
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     index = app.get('/')
     assert index.status_code == 200
     assert b'<title>Geoffrey' in index.body
@@ -24,7 +24,7 @@ def test_add_consumer():
     """ Test add consumer for web interface """
 
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     consumer = app.post('/api/v1/consumer', {})
     assert consumer.status_code == 200
     assert b'"id":' in consumer.body
@@ -37,7 +37,7 @@ def test_remove_consumer():
     """ Test remove consumer for web interface """
 
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     consumer_created = app.post('/api/v1/consumer', {}).body.decode('utf-8')
     consumer_data = json.loads(consumer_created)
     consumer = app.delete('/api/v1/consumer/{}'.format(consumer_data['id']))
@@ -48,7 +48,7 @@ def test_remove_nonexistant_consumer():
     """ Test remove a non existant consumer for web interface """
 
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     consumer_id = 'NONEXISTINGCONSUMER'
     consumer = app.delete('/api/v1/consumer/{}'.format(consumer_id),
                           expect_errors=404)
@@ -65,7 +65,7 @@ def test_get_projects():
         project2 = 'ìòúü?!¿ñ¡'
         server.create_project(project1)
         server.create_project(project2)
-        app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+        app = _TestApp(WebServer(server=server).app)
         projects = app.get('/api/v1/projects')
         project_data = json.loads(projects.body.decode('utf-8'))
         assert projects.status_code == 200
@@ -91,7 +91,7 @@ def test_get_plugins():
 
         utils.write_template(config, content)
         server = Server(config=config_file)
-        app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+        app = _TestApp(WebServer(server=server).app)
         plugins = app.get('/api/v1/{}/plugins'.format(project))
         assert plugins.status_code == 200
         assert plugins.json == [{'id': 'dummyplugin'}]
@@ -119,7 +119,7 @@ def test_plugin_no_datafiles(testplugin1):
         server = Server(config=config_file)
         server.projects[project].plugins[plugin_name] = testplugin1(config=config)
 
-        app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+        app = _TestApp(WebServer(server=server).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
                            '{language}'.format(project_name=project,
@@ -150,7 +150,7 @@ def test_plugin_source(testplugin2):
         server = Server(config=config_file)
         server.projects[project].plugins[plugin_name] = testplugin2(config=None)
 
-        ws = WebServer(server=server, bottle=Bottle)
+        ws = WebServer(server=server)
         app = _TestApp(ws.app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
@@ -183,7 +183,7 @@ def test_plugin_source_invalid_language(testplugin2):
         server = Server(config=config_file)
         server.projects[project].plugins[plugin_name] = testplugin2(config=None)
 
-        app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+        app = _TestApp(WebServer(server=server).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/source/'
                            '{language}'.format(project_name=project,
@@ -217,7 +217,7 @@ def test_plugin_state():
         state2 = State(project='badproject', plugin=plugin_name, key='goodkey', value='something')
         server.hub.states[state2._key] = state2._value
 
-        app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+        app = _TestApp(WebServer(server=server).app)
         plugin_s = app.get('/api/v1/{project_name}/'
                            '{plugin}/state'.format(project_name=project,
                                                    plugin=plugin_name))
@@ -234,7 +234,7 @@ def test_plugin_state():
 def test_server_static():
     """ Test get static file """
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     static_file = 'geoffrey.jpg'
     static = app.get('/assets/{}'.format(static_file))
     assert static.status_code == 200
@@ -244,7 +244,7 @@ def test_get_api():
     """ Test current API definition """
 
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     api = app.get('/api/v1')
     assert api.status_code == 200
     assert b"/api/v1" in api.body
@@ -260,7 +260,7 @@ def test_subscription_noconsumer():
     """ Test modify subscription of a non existant consumer. """
 
     server = Server()
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     consumer_id = 'NONEXISTINGCONSUMER'
     res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
                         {'criteria': [{}]}, expect_errors=404)
@@ -274,7 +274,7 @@ def test_subscription_badrequest(consumer):
     consumer_id = 'goodconsumer'
     server.consumers[consumer_id] = consumer
 
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
 
     res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
                         {'nocriteria': [{}]}, expect_errors=400)
@@ -303,7 +303,7 @@ def test_subscription_goodrequest(consumer):
 
     assert consumer.criteria != criteria
 
-    app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+    app = _TestApp(WebServer(server=server).app)
     res = app.post_json('/api/v1/subscription/{}'.format(consumer_id),
                         {"criteria": criteria})
 
@@ -332,7 +332,7 @@ def test_plugin_api_injection(testplugin4):
         server.projects[project].plugins[plugin_name] = plugin
         plugin.start()
 
-        app = _TestApp(WebServer(server=server, bottle=Bottle).app)
+        app = _TestApp(WebServer(server=server).app)
         plugin_m = app.get('/api/v1/{project_name}/'
                            '{plugin_name}/method/'
                            'dummymethod'.format(project_name=project,
