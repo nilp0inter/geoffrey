@@ -1,6 +1,9 @@
+"""
+Utility function and classes.
+
+"""
 import asyncio
 import re
-import uuid
 import logging
 import json
 
@@ -68,6 +71,7 @@ def execute(*args, stdin=None, **kwargs):
 
 jsonencoder = json.JSONEncoder(skipkeys=True, default=lambda o: None)
 
+
 def get_api(app_routes, prefix):
     """ Return a list of endpoints for documentation. """
     from cgi import escape
@@ -96,4 +100,3 @@ def parse_checkstyle(stdout):
                 error_data[item] = value
         errors.append(error_data)
     return errors
-

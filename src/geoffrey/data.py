@@ -1,8 +1,9 @@
+#pylint: disable=E1101,E1103,W0212,W0622,W0232,W0142
 import enum
-import json
 
 from collections import namedtuple
 from itertools import zip_longest
+
 
 DataKey = namedtuple('DataKey',
                      ('project',

@@ -1,10 +1,10 @@
+#pylint: disable=E1101
 import argparse
 import asyncio
 import logging
 import os
 
 from geoffrey.server import Server
-from geoffrey.utils import GeoffreyLoggingHandler
 
 FORMAT = '%(asctime)-15s [%(levelname)-8s] %(name)s: %(message)s'
 
@@ -32,11 +32,11 @@ def print_tasks():
 def main():
     """Function used by the main console entry_point."""
     parser = argparse.ArgumentParser()
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
     if os.environ.get('GEOFFREYDEBUG', '0') == '1':
         loglevel = logging.DEBUG
-        _print_tasks = asyncio.Task(print_tasks())
+        asyncio.Task(print_tasks())
     else:
         loglevel = logging.INFO
 
