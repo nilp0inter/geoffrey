@@ -365,6 +365,8 @@ $(function() {
       "go/:menu": "changeActive",
     },
     initialize: function(){
+      var this_ = this;
+
       this.client = new Client();
       this.client.start();
 
@@ -375,7 +377,18 @@ $(function() {
       this.content = new ContentView({
         model: new ContentModel()
       });
-      
+
+      this.currentPanel = null;
+      this.on("route", function(router, route, params) {
+        if(router == "changeActive") {
+          var panel = route[0];
+          this_.trigger("panel:enter:" + panel);
+          if(this_.currentPanel && panel != this_.currentPanel) {
+            this_.trigger("panel:leave:" + this_.currentPanel);
+          }
+          this_.currentPanel = panel;
+        }
+      });
     },
     subscribe: function(name, criteria, callback) {
       var subscription = this.client.consumer.subscription;
