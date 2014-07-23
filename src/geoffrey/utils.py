@@ -2,6 +2,7 @@
 Utility function and classes.
 
 """
+#pylint: disable=I0011,E1101
 import asyncio
 import re
 import logging
@@ -13,22 +14,23 @@ from geoffrey.hub import get_hub
 from geoffrey.data import Event
 
 
-alphanumeric = re.compile(r'[\x80-\xFF(\W+)]')
+ALPHANUMERIC = re.compile(r'[\x80-\xFF(\W+)]')
 
 
 def write_template(filename, content):
     """ Write content to disk. """
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(content)
+    with open(filename, 'w', encoding='utf-8') as file_:
+        file_.write(content)
 
 
 def slugify(text):
     """ Replace all bad characters by `_`. """
-    slugified = alphanumeric.sub('_', text.lower().rstrip())
+    slugified = ALPHANUMERIC.sub('_', text.lower().rstrip())
     return slugified
 
 
 class GeoffreyLoggingHandler(logging.Handler):
+    """Use the Geoffrey infraestructure as a logging handler."""
     def __init__(self):
         self.hub = get_hub()
         super().__init__()
@@ -68,6 +70,7 @@ def execute(*args, stdin=None, **kwargs):
         raise
     exitcode = yield from proc.wait()
     return (exitcode, stdout, stderr)
+
 
 jsonencoder = json.JSONEncoder(skipkeys=True, default=lambda o: None)
 

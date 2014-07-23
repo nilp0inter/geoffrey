@@ -1,3 +1,4 @@
+#pylint: disable=I0011,E1101
 import asyncio
 import logging
 import json
