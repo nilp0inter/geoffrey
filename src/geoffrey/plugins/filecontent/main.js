@@ -20,6 +20,41 @@ $(function() {
       }).done(function() { 
         this_.render();
       });
+
+      this.listenTo(window.app, 'panel:enter:filecontent', this.setUp);
+      this.listenTo(window.app, 'panel:leave:filecontent', this.tearDown);
+    },
+
+    setCoverage: function(data) {
+      function makeMarker(lineStatus) {
+        var marker = document.createElement("div");
+        switch (lineStatus) {
+          case "yes":
+            marker.style.backgroundColor = "#00ff00";
+            break;
+          case "no":
+            marker.style.backgroundColor = "#ff0000";
+            break;
+          case "partial":
+            marker.style.backgroundColor = "#ffff00";
+            break;
+        }
+        marker.innerHTML = "&nbsp;";
+        return marker;
+      }
+      for (var n=1; n<=this.editor.lastLine(); n++){
+        var info = this.editor.lineInfo(n);
+        if (info.gutterMarkers) {
+          this.editor.setGutterMarker(n, "geoffrey-coverage", null);  // Clear this gutter.
+        }
+      }
+      var coverage = data.value.coverage;
+      for (var i=0; i<=coverage.length; i++) {
+        var mark = coverage[i];
+        if (mark) {
+          this.editor.setGutterMarker(mark.line, "geoffrey-coverage", makeMarker(mark.status));
+        }
+      }
     },
 
     fileChange: function() {
@@ -37,6 +72,19 @@ $(function() {
           this_.refreshEditor(data.key);
         }
       ); 
+
+      window.app.subscribe(
+        'update_filecontent_coverage',
+        {
+          'project': project_id,
+          'content_type': 'coverage',
+          'key': this.model.get("filename") 
+        },
+        function(data) {
+          // Force codemirror to recheck for errors.
+          this_.setCoverage(data);
+        }
+      ); 
     },
 
     openNode: function(filename) {
@@ -50,6 +98,14 @@ $(function() {
     refreshEditor: function(filename) {
       /* Force codemirror to recheck for errors. */
       var this_ = this;
+      
+      // Save all marks
+      var markers = [];
+      for (var n=1; n<=this.editor.lastLine(); n++){
+        markers.push(this.editor.lineInfo(n));
+      }
+
+      // Get the contents
       var codeUrl = "/api/v1/states?" + $.param({
         project: project_id,
         plugin: "filecontent",
@@ -72,6 +128,18 @@ $(function() {
             CodeMirror.autoLoadMode(this_.editor, modes[0].mode); 
           } else {
             this_.editor.setOption("mode", "null");
+          }
+        }
+        for (var n=0; n<=markers.length; n++) {
+          var line = markers[n];
+          if (line && line.gutterMarkers) {
+            var lineMarkers = line.gutterMarkers;
+            if (lineMarkers) {
+              for (key in lineMarkers) {
+                var value = lineMarkers[key];
+                this_.editor.setGutterMarker(n, key, value);
+              }
+            }
           }
         }
       }
@@ -141,7 +209,7 @@ $(function() {
         styleActiveLine: true,
         matchBrackets: true,
         readOnly: true,
-        gutters: ["CodeMirror-lint-markers"],
+        gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers", "geoffrey-coverage"],
         viewportMargin: 10,
         lint: {
           "getAnnotations": updateHighlights,
@@ -168,7 +236,6 @@ $(function() {
 
         function(data) {
           $("#tree").jstree("deselect_all");
-          
           $("#tree").jstree().refresh();
           this_.model.set("filename", data.key);
         }
@@ -195,6 +262,7 @@ $(function() {
       // Unsubscribe
       window.app.unsubscribe('update_filecontent_files'); 
       window.app.unsubscribe('update_filecontent_highlights'); 
+      window.app.unsubscribe('update_filecontent_coverage'); 
 
       // Unbind events
       this.tree.off("select_node.jstree");
@@ -202,16 +270,12 @@ $(function() {
 
     render: function() {
       this.$el.addClass("row");
-      console.log(this.template);
       this.$el.html(this.template());
     },
 
     managePanel: function(route, params) {
       /* Setup or teardown this panel based on current route */
       if(params[0] == "filecontent") {  // Enter this panel, active subscriptions.
-        this.setUp();
-      } else {
-        this.tearDown();
       }
     },
   });

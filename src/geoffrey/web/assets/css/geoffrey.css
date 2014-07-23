@@ -4,7 +4,7 @@
 }
 
 .dashboard{
-    position: relative;
+    position: relative !important;
     width: 100%;
 }
 
@@ -55,4 +55,8 @@
 
 .CodeMirror-fullscreen {
   z-index: 1040;
+}
+
+.geoffrey-coverage {
+  width: 3px;;
 }
