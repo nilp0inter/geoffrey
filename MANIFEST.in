@@ -1,0 +1,4 @@
+include *.txt
+include *.rst
+graft src/geoffrey
+recursive-exclude src/geoffrey *.pyc *__pycache__*

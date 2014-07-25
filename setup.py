@@ -50,5 +50,4 @@ setuptools.setup(
     namespace_packages=['geoffrey', 'geoffrey.plugins'],
     package_dir={'': 'src'},
     include_package_data=True,
-    package_data={'geoffrey': ['web/*.*', 'web/assets/*.*', 'plugins/*/*']},
 )
