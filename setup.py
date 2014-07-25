@@ -2,6 +2,7 @@
 """
 Geoffrey setup file.
 """
+#pylint: disable=I0011, W0122
 import io
 import os
 import setuptools
