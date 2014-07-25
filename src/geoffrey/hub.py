@@ -1,6 +1,7 @@
 """
 The EventHUB and related functions..
 
+
 """
 import asyncio
 import logging
@@ -68,7 +69,7 @@ class EventHUB:
                 except:
                     pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, force_change=False):
         """
         Process the data received by the hub.
 
@@ -83,7 +84,7 @@ class EventHUB:
             key, value = data.to_keyvalue()
             if key in self.states:  # Key already exists.
                 if value:
-                    if value != self.states[key]:
+                    if value != self.states[key] or force_change:
                         # Modified value
                         self.states[key] = value
                         ev = data.to_event(EventType.modified)
@@ -113,7 +114,7 @@ class EventHUB:
         return (None, None)
 
     @asyncio.coroutine
-    def put(self, data):
+    def put(self, data, force_change=False):
         """
         Put a state or event in the hub.
 
@@ -122,14 +123,14 @@ class EventHUB:
             yield from hub.put(data)
 
         """
-        isfinal, event = self._process_data(data)
+        isfinal, event = self._process_data(data, force_change=force_change)
         if event is not None:
             if isfinal:
                 yield from self.events.put(event)
             else:
-                yield from self.put(event)
+                yield from self.put(event, force_change=force_change)
 
-    def put_nowait(self, data):
+    def put_nowait(self, data, force_change=False):
         """
         Put a state or event in the hub.
 
@@ -138,12 +139,12 @@ class EventHUB:
             hub.put_nowait(data)
 
         """
-        isfinal, event = self._process_data(data)
+        isfinal, event = self._process_data(data, force_change=force_change)
         if event is not None:
             if isfinal:
                 self.events.put_nowait(event)
             else:
-                self.put_nowait(event)
+                self.put_nowait(event, force_change=force_change)
 
     def save_states(self, filename):
         """Save the state table to disk."""
