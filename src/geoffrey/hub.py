@@ -1,8 +1,9 @@
 """
 The EventHUB and related functions..
 
-
 """
+#pylint: disable=I0011, E1101, W0212, W0603, C0103
+from asyncio.queues import QueueFull
 import asyncio
 import logging
 import pickle
@@ -19,13 +20,14 @@ class EventHUB:
     """The main data exchanger."""
     instance = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.events = asyncio.Queue()
         self.subscriptions = []
         self.running = False
         self.states = {}
 
     def add_subscriptions(self, subscriptions):
+        """Extend the subscription list with the given `subscriptions`."""
         self.subscriptions.extend(subscriptions)
 
     def get_states(self, key_criteria):
@@ -66,10 +68,45 @@ class EventHUB:
             for subscription in self.subscriptions:
                 try:
                     subscription.put_nowait(data)
-                except:
+                except QueueFull:
                     pass
 
-    def _process_data(self, data, force_change=False):
+    def _process_state(self, state, force_change):
+        """
+        Process the given `state` and produce events according to the
+        rules.
+
+        """
+        logger.debug("State received: %s", state)
+        key, value = state.to_keyvalue()
+        if key in self.states:  # Key already exists.
+            if value:
+                if value != self.states[key] or force_change:
+                    # Modified value
+                    self.states[key] = value
+                    event = state.to_event(EventType.modified)
+                    return (False, event)
+                else:
+                    # Same value.
+                    # (It's covered but coverage does not detect it.)
+                    return (None, None) # pragma: nocover
+            else:
+                # No value means deletion.
+                del self.states[key]
+                event = Event.from_keyvalue(key, None,
+                                            type=EventType.deleted)
+                return (False, event)
+        elif value:
+            # New value. Creation
+            self.states[key] = value
+            event = state.to_event(type=EventType.created)
+            return (False, event)
+        else:
+            # No value means. Deletion. But is an unknown key.
+            # (It's covered but coverage does not detect it.)
+            return (None, None) # pragma: nocover
+
+    def _process_data(self, data, force_change):
         """
         Process the data received by the hub.
 
@@ -77,41 +114,11 @@ class EventHUB:
 
         """
         if isinstance(data, Event):
-            logger.debug("Event received: %s", data)
             return (True, data)
         elif isinstance(data, State):
-            logger.debug("State received: %s", data)
-            key, value = data.to_keyvalue()
-            if key in self.states:  # Key already exists.
-                if value:
-                    if value != self.states[key] or force_change:
-                        # Modified value
-                        self.states[key] = value
-                        ev = data.to_event(EventType.modified)
-                        return (False, ev)
-                    else:
-                        # Same value.
-                        # (It's covered but coverage does not detect it.)
-                        pass  # pragma: nocover
-                else:
-                    # No value means deletion.
-                    del self.states[key]
-                    ev = Event.from_keyvalue(key, None,
-                                             type=EventType.deleted)
-                    return (False, ev)
-            elif value:
-                # New value. Creation
-                self.states[key] = value
-                ev = data.to_event(type=EventType.created)
-                return (False, ev)
-            else:
-                # No value means. Deletion. But is an unknown key.
-                # (It's covered but coverage does not detect it.)
-                pass  # pragma: nocover
+            return self._process_state(data, force_change=force_change)
         else:
             raise TypeError("Unknown data type.")
-
-        return (None, None)
 
     @asyncio.coroutine
     def put(self, data, force_change=False):
@@ -148,13 +155,13 @@ class EventHUB:
 
     def save_states(self, filename):
         """Save the state table to disk."""
-        with open(filename, 'wb') as f:
-            pickle.dump(self.states, f)
+        with open(filename, 'wb') as outputfile:
+            pickle.dump(self.states, outputfile)
 
     def restore_states(self, filename):
         """Load the state table from disk."""
-        with open(filename, 'rb') as f:
-            self.states = pickle.load(f)
+        with open(filename, 'rb') as inputfile:
+            self.states = pickle.load(inputfile)
 
 
 def get_hub():
