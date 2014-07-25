@@ -78,25 +78,25 @@ def test_project_configuration():
                                            config=project_config)
         assert 'project' in project.config.sections()
 
-def test_project_plugins():
-    """The project know its active plugins."""
-    from geoffrey.plugins.dummy import DummyPlugin1, DummyPlugin2
-
-    with TemporaryDirectory() as configdir:
-        config_file = os.path.join(configdir, 'geoffrey.conf')
-        fake_project_dir = os.path.join(configdir, 'projects', 'project1')
-        os.makedirs(fake_project_dir)
-        fake_project_config = os.path.join(fake_project_dir, 'project.conf')
-        with open(fake_project_config, 'w') as f:
-            f.write("""
-                [project]
-                [plugin:dummyplugin1]
-                [plugin:dummyplugin2]""")
-
-        server = Server(config=config_file)
-        plugins = server.projects['project1'].plugins
-        assert 'dummyplugin1' in plugins
-        assert isinstance(plugins['dummyplugin1'], DummyPlugin1)
-        assert 'dummyplugin2' in plugins
-        assert isinstance(plugins['dummyplugin2'], DummyPlugin2)
-
+# def test_project_plugins():
+#     """The project know its active plugins."""
+#     from geoffrey.plugins.dummy import DummyPlugin1, DummyPlugin2
+# 
+#     with TemporaryDirectory() as configdir:
+#         config_file = os.path.join(configdir, 'geoffrey.conf')
+#         fake_project_dir = os.path.join(configdir, 'projects', 'project1')
+#         os.makedirs(fake_project_dir)
+#         fake_project_config = os.path.join(fake_project_dir, 'project.conf')
+#         with open(fake_project_config, 'w') as f:
+#             f.write("""
+#                 [project]
+#                 [plugin:dummyplugin1]
+#                 [plugin:dummyplugin2]""")
+# 
+#         server = Server(config=config_file)
+#         plugins = server.projects['project1'].plugins
+#         assert 'dummyplugin1' in plugins
+#         assert isinstance(plugins['dummyplugin1'], DummyPlugin1)
+#         assert 'dummyplugin2' in plugins
+#         assert isinstance(plugins['dummyplugin2'], DummyPlugin2)
+# 

@@ -17,7 +17,6 @@ with io.open(os.path.join(PKG_DIR, "__meta__.py"), 'rb') as f:
 with io.open(os.path.join(BASE_DIR, "README.rst"), encoding="utf-8") as f:
     LONG_DESCRIPTION = f.read()
 
-
 setuptools.setup(
     name=META["__packagename__"],
     version=META["__version__"],
@@ -34,20 +33,19 @@ setuptools.setup(
     url=META["__url__"],
     install_requires=[
         'aiohttp==0.6.4',
-        'asyncio==0.4.1',
         'bottle==0.12.5',
         'Jinja2==2.7.2',
         'websockets==2.0',
-        'enum34',
-        'watchdog>=0.7.1',
-        'filemagic==1.6',
+
+        #'asyncio==0.4.1',
+        #'enum34',
+        #        'watchdog>=0.7.1',
+        #        'filemagic==1.6',
     ],
     entry_points={
         "console_scripts": ["geoffrey = geoffrey.main:main"]
     },
-
-    packages=['geoffrey', 'geoffrey.plugins'],
-    namespace_packages=['geoffrey', 'geoffrey.plugins'],
+    packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
 )

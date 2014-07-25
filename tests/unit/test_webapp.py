@@ -74,27 +74,27 @@ def test_get_projects():
                 'name': project2} in project_data
 
 
-def test_get_plugins():
-    """ Test get plugin list for project """
-
-    with TemporaryDirectory() as configdir:
-        config_file = os.path.join(configdir, 'geoffrey.conf')
-        project = 'newproject'
-        plugin_name = 'dummyplugin'
-        project_path = os.path.join(configdir, 'projects', project)
-        config = os.path.join(project_path, 'project.conf')
-        os.makedirs(project_path)
-        content = """[project]
-
-        [plugin:{plugin_name}]
-        """.format(plugin_name=plugin_name, project_path=project_path)
-
-        utils.write_template(config, content)
-        server = Server(config=config_file)
-        app = _TestApp(WebServer(server=server).app)
-        plugins = app.get('/api/v1/{}/plugins'.format(project))
-        assert plugins.status_code == 200
-        assert plugins.json == [{'id': 'dummyplugin'}]
+# def test_get_plugins():
+#     """ Test get plugin list for project """
+# 
+#     with TemporaryDirectory() as configdir:
+#         config_file = os.path.join(configdir, 'geoffrey.conf')
+#         project = 'newproject'
+#         plugin_name = 'dummyplugin'
+#         project_path = os.path.join(configdir, 'projects', project)
+#         config = os.path.join(project_path, 'project.conf')
+#         os.makedirs(project_path)
+#         content = """[project]
+# 
+#         [plugin:{plugin_name}]
+#         """.format(plugin_name=plugin_name, project_path=project_path)
+# 
+#         utils.write_template(config, content)
+#         server = Server(config=config_file)
+#         app = _TestApp(WebServer(server=server).app)
+#         plugins = app.get('/api/v1/{}/plugins'.format(project))
+#         assert plugins.status_code == 200
+#         assert plugins.json == [{'id': 'dummyplugin'}]
 
 
 def test_plugin_no_datafiles(testplugin1):

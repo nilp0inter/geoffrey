@@ -1,4 +1,4 @@
 include *.txt
 include *.rst
 graft src/geoffrey
-recursive-exclude src/geoffrey *.pyc *__pycache__*
+recursive-exclude src/geoffrey *.pyc */__pycache__/* */.git */.*

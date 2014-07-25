@@ -248,7 +248,7 @@ def get_plugins(config, *args, **kwargs):
     Returns PluginManager with all available plugins for this config.
 
     """
-    loader = load('geoffrey.plugins',
+    loader = load('geoffreyplugins',
                   subclasses=GeoffreyPlugin)
 
     all_plugins = loader.produce(
