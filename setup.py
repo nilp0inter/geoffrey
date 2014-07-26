@@ -36,11 +36,6 @@ setuptools.setup(
         'bottle==0.12.5',
         'Jinja2==2.7.2',
         'websockets==2.0',
-
-        #'asyncio==0.4.1',
-        #'enum34',
-        #        'watchdog>=0.7.1',
-        #        'filemagic==1.6',
     ],
     entry_points={
         "console_scripts": ["geoffrey = geoffrey.main:main"]
