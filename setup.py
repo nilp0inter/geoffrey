@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
 Geoffrey setup file.
+
 """
 #pylint: disable=I0011, W0122
 import io
@@ -19,11 +20,29 @@ with io.open(os.path.join(BASE_DIR, "README.rst"), encoding="utf-8") as f:
 
 extras_require = {}
 
-extras_require["local"] = ["geoffrey-filesystem",
-                           "geoffrey-filecontent"]
+extras_require["local"] = [
+    "geoffrey-filesystem",
+    "geoffrey-filecontent"]
 
-extras_require["python"] = ["geoffrey-pytest"]
-extras_require["misc"] = ["geoffrey-todo"]
+extras_require["python"] = [
+    "geoffrey-cheesecake",
+    "geoffrey-clonedigger",
+    "geoffrey-csslint",
+    "geoffrey-filecontent",
+    "geoffrey-filesystem",
+    "geoffrey-jshint",
+    "geoffrey-pyflakes",
+    "geoffrey-pylint",
+    "geoffrey-pyreverse",
+    "geoffrey-pytest",
+    "geoffrey-radon",
+    "geoffrey-snakefood"]
+
+extras_require["java"] = [
+    "geoffrey-clonedigger"]
+
+extras_require["misc"] = [
+    "geoffrey-todo"]
 
 extras_require["all"] = [p for p in (v for v in extras_require.values())]
 

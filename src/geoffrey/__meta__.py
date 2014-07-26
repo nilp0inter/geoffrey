@@ -30,7 +30,7 @@ DEVELOPERS = {
 }
 
 __packagename__ = "geoffrey"
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 __summary__ = "Geoffrey: Real Time Continuous Integration Server"
 __keywords__ = "geoffrey continuous integration server"
 __url__ = "https://github.com/nilp0inter/geoffrey"
