@@ -3,6 +3,7 @@ import configparser
 import logging
 import os
 import signal
+from sys import platform
 
 import websockets
 
@@ -99,8 +100,6 @@ class Server:
         websocket_server_port = self.config.getint(
             'geoffrey', 'websocket_server_port', fallback=8701)
 
-        self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
-
         # WEBSERVER
         web_app = WebServer(server=self)
         web_app.start()
@@ -114,8 +113,16 @@ class Server:
         # HUB
         self.tasks.append(asyncio.Task(self.hub.run()))
 
+
         logger.debug("Starting the main loop.")
-        self.loop.run_forever()
+        if platform == 'win32':
+            try:
+                self.loop.run_forever()
+            except KeyboardInterrupt:
+                self.handle_ctrl_c()
+        else:
+            self.loop.add_signal_handler(signal.SIGINT, self.handle_ctrl_c)
+            self.loop.run_forever()
 
     def create_project(self, project_name):
         """Create a new project."""
@@ -132,3 +139,4 @@ class Server:
             project.remove()
         else:
             raise RuntimeError("Geoffrey can't delete unmanaged projects.")
+
