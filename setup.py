@@ -65,6 +65,7 @@ setuptools.setup(
         'bottle==0.12.5',
         'Jinja2==2.7.2',
         'websockets==2.1',
+        'jsonschema==2.3.0',
     ],
     entry_points={
         "console_scripts": ["geoffrey = geoffrey.main:main"]
