@@ -7,18 +7,19 @@ import logging
 import os
 import uuid
 
-from bottle import run
+from bottle import HTTPError
 from bottle import request
 from bottle import response
-from bottle import HTTPError
+from bottle import run
 from bottle import static_file, TEMPLATE_PATH, jinja2_view
+import jsonschema
 
+from geoffrey import schema
+from geoffrey import utils
 from geoffrey.deps.aiobottle import AsyncBottle as Bottle
 from geoffrey.deps.aiobottle import AsyncServer
-
-from geoffrey import utils
-from geoffrey.subscription import Consumer
 from geoffrey.plugin import get_all_plugins
+from geoffrey.subscription import Consumer
 
 
 class WebServer:
@@ -188,28 +189,13 @@ class WebServer:
             consumer = self.server.consumers[consumer_id]
         except KeyError:
             raise HTTPError(404, 'Consumer not registered.')
+
+        try:
+            jsonschema.validate(request.json, schema.subscription)
+        except jsonschema.ValidationError as err:
+            raise HTTPError(400, err)
         else:
-            try:
-                if not "criteria" in request.json:
-                    raise ValueError("'criteria' key is mandatory.")
-
-                criteria = request.json["criteria"]
-
-                if not isinstance(criteria, list):
-                    raise ValueError("criteria must be a list")
-
-                for elem in criteria:
-                    if not isinstance(elem, dict):
-                        raise ValueError(
-                            "criteria elements must be dictionaries")
-                    for key, value in elem.items():
-                        if not isinstance(key, str) or \
-                                not isinstance(value, str):
-                            raise ValueError("invalid data type")
-            except Exception as err:
-                raise HTTPError(400, err)
-            else:
-                consumer.criteria = criteria
+            consumer.criteria = request.json["criteria"]
 
     @jinja2_view('index.html')
     def index(self):
@@ -233,23 +219,12 @@ class WebServer:
         """ Serve static files under pluginname/assets. """
         try:
             pluginname, filename = filepath.split('/', 1)
-        except:
+            plugin = [p for p in get_all_plugins(self.config, project=None)
+                      if p.name==pluginname and plugin.assets is not None][0]
+        except (ValueError, IndexError):
             raise HTTPError(404, "invalid plugin name")
 
-        plugins = get_all_plugins(self.config, project=None)
-        for plugin in plugins:
-            if plugin.name == pluginname:
-                root = plugin.assets
-                if root is not None:
-                    return static_file(filename, root=root)
-                else:
-                    raise HTTPError(404, "no assets for this plugin")
-        plugins = get_all_plugins(self.config, project=None)
-
-        current_plugins = str([plugin.name for plugin in plugins])
-        raise HTTPError(404,
-                        "plugin not found {} {}".format(
-                            pluginname, current_plugins))
+        return static_file(filename, root=plugin.assets)
 
     def get_api(self):
         """Get web API definitions."""

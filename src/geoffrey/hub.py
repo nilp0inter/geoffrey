@@ -32,18 +32,11 @@ class EventHUB:
 
     def get_states(self, key_criteria):
         """Generator with the matching states of the key_criteria."""
-        for key, value in self.states.items():
-            for field in key_criteria._fields:
-                expected = getattr(key_criteria, field)
-                if expected is None:  # expected=None means I don't care
-                    continue
-
-                current = getattr(key, field)
-                if current != expected:
-                    break
-            else:
-                # Everything right. <zeusvoice>RELEASE THE STATE!!</zeusvoice>
-                yield State.from_keyvalue(key, value)
+        kc = key_criteria._asdict().items()
+        for stk, stv in self.states.items():
+            # exv: Expected Value == None -means I don't care- 
+            if all(exv is None or getattr(stk, exk) == exv for exk, exv in kc):
+                yield State.from_keyvalue(stk, stv)
 
     def get_one_state(self, key_criteria):
         """Like get_states but return the first matching state or None."""
@@ -81,7 +74,7 @@ class EventHUB:
         key, value = state.to_keyvalue()
         if key in self.states:  # Key already exists.
             if value:
-                if value != self.states[key] or force_change:
+                if force_change or value != self.states[key]:
                     # Modified value
                     self.states[key] = value
                     event = state.to_event(EventType.modified)
